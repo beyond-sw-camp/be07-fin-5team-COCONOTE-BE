@@ -1,11 +1,13 @@
-package com.example.want.common;
+package com.example.coconote.common;
 
 
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import javax.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
 
 @Getter
@@ -15,4 +17,8 @@ public abstract class BaseEntity {
     private LocalDateTime createdTime;
     @UpdateTimestamp
     private LocalDateTime updatedTime;
+
+    @Enumerated(EnumType.STRING)
+    private IsDeleted isDeleted = IsDeleted.N;
+    private LocalDateTime deletedTime;
 }// 삭제 필요하면 어노테이션 찾아서 하세여

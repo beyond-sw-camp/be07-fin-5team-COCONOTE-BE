@@ -1,1 +1,10 @@
-spring.application.name=coconote
+spring:
+  profiles:
+    active: local # default
+    group:
+      local:
+        - secret
+      dev:
+        - secret
+      prod:
+        - secret

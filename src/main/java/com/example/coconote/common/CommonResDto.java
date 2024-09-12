@@ -1,4 +1,4 @@
-package com.example.want.common;
+package com.example.coconote.common;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
