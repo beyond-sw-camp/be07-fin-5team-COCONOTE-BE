@@ -1,0 +1,32 @@
+server:
+  port: 8080
+
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: ${local.datasource.url}
+    username: ${local.datasource.username}
+    password: ${local.datasource.password}
+  jpa:
+    database-platform: org.hibernate.dialect.MariaDBDialect
+    database: mysql
+    generate-ddl: true
+    hibernate:
+      ddl-auto: create
+    show_sql: true
+    open-in-view: false
+
+springdoc:
+  api-docs:
+    groups:
+      enabled: true
+  #    path: /api-docs
+  cache:
+    disabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    display-request-duration: true
+    groups-order: DESC
