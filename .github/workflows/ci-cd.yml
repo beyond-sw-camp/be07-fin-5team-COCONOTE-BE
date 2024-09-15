@@ -67,6 +67,6 @@ jobs:
             else
               echo "docker is already installed"
             fi
-            sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-            sudo docker-compose pull coconote_app
-            sudo docker-compose up -d
+            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+            docker-compose pull coconote_app
+            docker-compose up -d
