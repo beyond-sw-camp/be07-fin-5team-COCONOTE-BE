@@ -57,7 +57,7 @@ jobs:
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
+          username: jsangmin
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 50022
           script: |
