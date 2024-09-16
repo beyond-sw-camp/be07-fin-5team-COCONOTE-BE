@@ -36,6 +36,13 @@ public class FolderController {
 
     }
 
+    @DeleteMapping("/{folderId}")
+    public ResponseEntity<?> deleteFolder(@PathVariable Long folderId, String email){
+        folderService.deleteFolder(folderId, email);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "폴더가 성공적으로 삭제되었습니다.", null);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
 
 
 }
