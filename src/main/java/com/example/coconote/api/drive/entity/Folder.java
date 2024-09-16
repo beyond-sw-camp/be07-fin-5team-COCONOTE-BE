@@ -33,4 +33,7 @@ public class Folder extends BaseEntity {
     private Channel channel;
 
 
+    public void changeFolderName(String folderName) {
+        this.folderName = folderName;
+    }
 }
