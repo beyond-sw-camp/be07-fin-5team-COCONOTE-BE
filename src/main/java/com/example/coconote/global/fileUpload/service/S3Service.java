@@ -6,21 +6,25 @@ import com.example.coconote.global.fileUpload.repository.FileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
-import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
-import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
-
+import software.amazon.awssdk.services.s3.presigner.model.*;
 
 import java.time.Duration;
-import java.util.HashSet;
+import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class S3Service {
+
+    private static final Set<String> BLOCKED_EXTENSIONS = Set.of(
+            "exe", "bat", "cmd", "sh", "msi", "dll", "vbs"
+    );
 
     private final S3Presigner s3Presigner;
     private final S3Client s3Client;
@@ -32,60 +36,92 @@ public class S3Service {
     @Value("${aws.s3.bucket}")
     private String bucketName;
 
-    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-    private static final Set<String> BLOCKED_EXTENSIONS = new HashSet<>(Set.of("exe", "bat", "cmd", "sh", "msi", "dll", "vbs"));
-
-
+//      주어진 파일 이름으로 S3에 업로드하기 위한 프리사인드 URL을 생성합니다.
+    @Transactional
     public PresignedUrlResDto generatePresignedUrl(String fileName) {
-//        파일의 확장자가 실행 파일 확장자인지 확인, 파일 이름에 '..'이 포함되어 있는지 확인
-        if (isBlockedExtension(fileName) || fileName.contains("..")) {
-            throw new IllegalArgumentException("Invalid file type");
-        }
+        validateFileName(fileName);
 
-//        파일 이름이 중복되지 않도록 UUID를 이용하여 파일 이름 생성
-        String key = UUID.randomUUID().toString() + "-" + fileName;
-        PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(10))
-                .putObjectRequest(b -> b.bucket(bucketName).key(key))
-                .build();
+        String key = generateUniqueFileKey(fileName);
+        String presignedUrl = createPresignedUploadUrl(key);
+        String fileUrl = buildS3FileUrl(key);
 
-//        파일 업로드 presigned URL 생성
-        PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(presignRequest);
+        saveFileMetadata(fileName, key, fileUrl);
 
-        String s3Url = "https://" + bucketName + ".s3." + region + ".amazonaws.com/" + key;
-
-
-
-//        파일 업로드 URL과 파일 이름을 반환
-        FileEntity fileEntity = FileEntity.builder()
-                .fileName(fileName)
-                .s3Key(key)
-                .fileUrl(s3Url)
-                .build();
-        fileRepository.save(fileEntity);
-        return new PresignedUrlResDto(presignedRequest.url().toString(), key, s3Url);
+        return new PresignedUrlResDto(presignedUrl, key, fileUrl);
     }
 
-    public void deleteFile(String fileName) {
-        s3Client.deleteObject(DeleteObjectRequest.builder()
-                .bucket(bucketName)
-                .key(fileName)
-                .build());
+//      주어진 파일 키로 S3에서 파일을 삭제하고, 데이터베이스에서 제거
+    @Transactional
+    public void deleteFile(String key) {
+        deleteFileFromS3(key);
+        deleteFileMetadata(key);
+    }
 
-        FileEntity fileEntity = fileRepository.findByS3Key(fileName)
-                .orElseThrow(() -> new IllegalArgumentException("File not found"));
-        fileRepository.delete(fileEntity);
+
+//
+//
+//    함수들
+    private void validateFileName(String fileName) {
+        if (isBlockedExtension(fileName) || fileName.contains("..")) {
+            throw new IllegalArgumentException("유효하지 않은 파일 형식입니다.");
+        }
     }
 
     private boolean isBlockedExtension(String fileName) {
-        if (fileName == null || fileName.isEmpty()) {
-            return false;
-        }
+        String extension = getFileExtension(fileName);
+        return BLOCKED_EXTENSIONS.contains(extension.toLowerCase());
+    }
+
+    private String getFileExtension(String fileName) {
         int lastDotIndex = fileName.lastIndexOf('.');
-        if (lastDotIndex == -1 || lastDotIndex == fileName.length() - 1) {
-            return false;
-        }
-        String extension = fileName.substring(lastDotIndex + 1).toLowerCase();
-        return BLOCKED_EXTENSIONS.contains(extension);
+        return (lastDotIndex != -1 && lastDotIndex != fileName.length() - 1)
+                ? fileName.substring(lastDotIndex + 1)
+                : "";
+    }
+
+    private String generateUniqueFileKey(String fileName) {
+        return UUID.randomUUID() + "-" + fileName;
+    }
+
+    private String createPresignedUploadUrl(String key) {
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build();
+
+        PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofMinutes(10))
+                .putObjectRequest(putObjectRequest)
+                .build();
+
+        PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(presignRequest);
+        return presignedRequest.url().toString();
+    }
+
+    private String buildS3FileUrl(String key) {
+        return String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, key);
+    }
+
+    private void saveFileMetadata(String fileName, String key, String fileUrl) {
+        FileEntity fileEntity = FileEntity.builder()
+                .fileName(fileName)
+                .s3Key(key)
+                .fileUrl(fileUrl)
+                .build();
+        fileRepository.save(fileEntity);
+    }
+
+    private void deleteFileFromS3(String key) {
+        DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build();
+        s3Client.deleteObject(deleteRequest);
+    }
+
+    private void deleteFileMetadata(String key) {
+        FileEntity fileEntity = fileRepository.findByS3Key(key)
+                .orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다."));
+        fileRepository.delete(fileEntity);
     }
 }
