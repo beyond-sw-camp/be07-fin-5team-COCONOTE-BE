@@ -1,6 +1,7 @@
 package com.example.coconote.api.drive.controller;
 
 import com.example.coconote.api.drive.dto.request.CreateFolderReqDto;
+import com.example.coconote.api.drive.dto.response.FolderChangeNameResDto;
 import com.example.coconote.api.drive.dto.response.FolderCreateResDto;
 import com.example.coconote.api.drive.service.FolderService;
 import com.example.coconote.common.CommonResDto;
@@ -8,10 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/drive/folder")
@@ -29,5 +27,15 @@ public class FolderController {
         CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "폴더가 성공적으로 생성되었습니다..", folderCreateResDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }
+
+    @PatchMapping("/{folderId}/update/name")
+    public ResponseEntity<?> updateFolderName(@PathVariable Long folderId, @RequestParam String folderName, String email){
+        FolderChangeNameResDto folderChangeNameResDto = folderService.updateFolderName(folderId, folderName, email);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "폴더 이름이 성공적으로 수정되었습니다.", null);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+
+    }
+
+
 
 }
