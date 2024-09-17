@@ -5,14 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
-public class FileMetadataReqDto {
-    private Long channelId;
-    private Long folderId;
-    private List<FileSaveListDto> fileSaveListDto;
+public class FileSaveListDto {
+    private String fileName;
+    private String fileUrl;
 }

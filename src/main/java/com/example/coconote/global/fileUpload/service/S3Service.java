@@ -1,6 +1,11 @@
 package com.example.coconote.global.fileUpload.service;
 
+import com.example.coconote.api.channel.entity.Channel;
+import com.example.coconote.api.channel.repository.ChannelRepository;
+import com.example.coconote.api.drive.entity.Folder;
+import com.example.coconote.api.drive.repository.FolderRepository;
 import com.example.coconote.global.fileUpload.dto.request.FileMetadataReqDto;
+import com.example.coconote.global.fileUpload.dto.request.FileSaveListDto;
 import com.example.coconote.global.fileUpload.dto.request.FileUploadRequest;
 import com.example.coconote.global.fileUpload.dto.response.FileMetadataResDto;
 import com.example.coconote.global.fileUpload.entity.FileEntity;
@@ -32,6 +37,8 @@ public class S3Service {
     private final S3Presigner s3Presigner;
     private final S3Client s3Client;
     private final FileRepository fileRepository;
+    private final ChannelRepository channelRepository;
+    private final FolderRepository folderRepository;
 
     @Value("${aws.s3.region}")
     private String region;
@@ -104,33 +111,51 @@ public class S3Service {
 
     // 파일 메타데이터 저장 (프론트엔드로부터 Presigned URL을 받아 저장)
     @Transactional
-    public List<FileMetadataResDto> saveFileMetadata(List<FileMetadataReqDto> fileMetadataDtoList) {
+    public List<FileMetadataResDto> saveFileMetadata(FileMetadataReqDto fileMetadataDto) {
+        // 채널 검증
+        if (fileMetadataDto == null) {
+            throw new IllegalArgumentException("파일 메타데이터가 필요합니다.");
+        }
+
+        if (fileMetadataDto.getChannelId() == null) {
+            throw new IllegalArgumentException("채널 ID가 필요합니다.");
+        }
+
+        Channel channel = channelRepository.findById(fileMetadataDto.getChannelId())
+                .orElseThrow(() -> new IllegalArgumentException("채널을 찾을 수 없습니다."));
+
+        // 폴더 검증
+        Folder folder;
+        if (fileMetadataDto.getFolderId() != null) {
+            folder = channel.getFolders().stream()
+                    .filter(f -> f.getId().equals(fileMetadataDto.getFolderId()))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
+        } else {
+            // 폴더가 없을 경우 첫 번째 폴더 사용
+            folder = channel.getFolders().stream()
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
+        }
+
         // 파일 엔티티 생성 및 저장
-        List<FileEntity> fileEntities = fileMetadataDtoList.stream()
-                .map(this::createFileEntity) // 각 파일 메타데이터에서 FileEntity 생성
+        List<FileEntity> fileEntities = fileMetadataDto.getFileSaveListDto().stream()
+                .map(fileSaveListDto -> createFileEntity(fileSaveListDto, folder))
                 .collect(Collectors.toList());
 
-        List<FileEntity> savedEntities = new ArrayList<>();
-        for (FileEntity fileEntity : fileEntities) {
-            log.info("fileEntity: {}", fileEntity);
-            savedEntities.add(fileRepository.save(fileEntity)); // DB에 저장
-            log.info("savedEntity: {}", fileEntity);
-        }
+        List<FileEntity> savedEntities = fileRepository.saveAll(fileEntities);
 
-        List<FileMetadataResDto> response = new ArrayList<>();
-
-        for (FileEntity savedEntity : savedEntities) {
-            response.add(FileMetadataResDto.fromEntity(savedEntity));
-        }
-        return response;
+        return savedEntities.stream()
+                .map(FileMetadataResDto::fromEntity)
+                .collect(Collectors.toList());
     }
 
-    // FileMetadataReqDto에서 FileEntity를 생성하고 프론트에서 받은 Presigned URL을 사용
-    private FileEntity createFileEntity(FileMetadataReqDto fileMetadataDto) {
-
+    // FileSaveListDto에서 FileEntity를 생성
+    private FileEntity createFileEntity(FileSaveListDto fileSaveListDto, Folder folder) {
         return FileEntity.builder()
-                .fileName(fileMetadataDto.getFileName()) // 원본 파일 이름 저장
-                .fileUrl(fileMetadataDto.getFileUrl()) // 프론트에서 전달된 Presigned URL을 데이터베이스에 저장
+                .fileName(fileSaveListDto.getFileName()) // 원본 파일 이름 저장
+                .fileUrl(fileSaveListDto.getFileUrl()) // 프론트에서 전달된 Presigned URL을 데이터베이스에 저장
+                .folder(folder) // 폴더 정보 추가
                 .build();
     }
 }

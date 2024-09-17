@@ -1,10 +1,8 @@
 package com.example.coconote.global.fileUpload.entity;
 
+import com.example.coconote.api.drive.entity.Folder;
 import com.example.coconote.common.BaseEntity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,4 +19,8 @@ public class FileEntity extends BaseEntity {
     private Long id;
     private String fileName;
     private String fileUrl;
+
+    @ManyToOne
+    @JoinColumn(name = "folder_id")
+    private Folder folder;
 }
