@@ -20,6 +20,5 @@ public class FileEntity extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String fileName;
-    private String s3Key;
     private String fileUrl;
 }

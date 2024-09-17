@@ -1,23 +1,26 @@
 package com.example.coconote.global.fileUpload.service;
 
-import com.example.coconote.global.fileUpload.dto.response.PresignedUrlResDto;
+import com.example.coconote.global.fileUpload.dto.request.FileMetadataReqDto;
+import com.example.coconote.global.fileUpload.dto.request.FileUploadRequest;
+import com.example.coconote.global.fileUpload.dto.response.FileMetadataResDto;
 import com.example.coconote.global.fileUpload.entity.FileEntity;
 import com.example.coconote.global.fileUpload.repository.FileRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
-import software.amazon.awssdk.services.s3.presigner.model.*;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class S3Service {
@@ -36,92 +39,98 @@ public class S3Service {
     @Value("${aws.s3.bucket}")
     private String bucketName;
 
-//      주어진 파일 이름으로 S3에 업로드하기 위한 프리사인드 URL을 생성합니다.
-    @Transactional
-    public PresignedUrlResDto generatePresignedUrl(String fileName) {
-        validateFileName(fileName);
+    private static final long MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
-        String key = generateUniqueFileKey(fileName);
-        String presignedUrl = createPresignedUploadUrl(key);
-        String fileUrl = buildS3FileUrl(key);
-
-        saveFileMetadata(fileName, key, fileUrl);
-
-        return new PresignedUrlResDto(presignedUrl, key, fileUrl);
+    // 다중 파일에 대한 Presigned URL 생성
+    public Map<String, String> generatePresignedUrls(List<FileUploadRequest> files) {
+        return files.stream().collect(Collectors.toMap(
+                FileUploadRequest::getFileName,
+                this::generatePresignedUrlAfterValidation
+        ));
     }
 
-//      주어진 파일 키로 S3에서 파일을 삭제하고, 데이터베이스에서 제거
-    @Transactional
-    public void deleteFile(String key) {
-        deleteFileFromS3(key);
-        deleteFileMetadata(key);
+    private String generatePresignedUrlAfterValidation(FileUploadRequest file) {
+        validateFile(file.getFileSize(), file.getFileName());
+        String uniqueFileName = generateUniqueFileName(file.getFileName()); // UUID가 포함된 고유한 파일 이름 생성
+        return generatePresignedUrl(uniqueFileName);
     }
 
-
-//
-//
-//    함수들
-    private void validateFileName(String fileName) {
-        if (isBlockedExtension(fileName) || fileName.contains("..")) {
-            throw new IllegalArgumentException("유효하지 않은 파일 형식입니다.");
+    private void validateFile(long fileSize, String fileName) {
+        if (fileSize > MAX_FILE_SIZE) {
+            throw new IllegalArgumentException("파일 크기가 너무 큽니다: " + fileName);
+        }
+        String fileExtension = getFileExtension(fileName).toLowerCase();
+        if (BLOCKED_EXTENSIONS.contains(fileExtension)) {
+            throw new IllegalArgumentException("이 파일 형식은 업로드할 수 없습니다: " + fileExtension);
         }
     }
 
-    private boolean isBlockedExtension(String fileName) {
-        String extension = getFileExtension(fileName);
-        return BLOCKED_EXTENSIONS.contains(extension.toLowerCase());
-    }
-
+    // 파일 확장자 추출 메서드
     private String getFileExtension(String fileName) {
         int lastDotIndex = fileName.lastIndexOf('.');
-        return (lastDotIndex != -1 && lastDotIndex != fileName.length() - 1)
-                ? fileName.substring(lastDotIndex + 1)
-                : "";
+        return (lastDotIndex == -1) ? "" : fileName.substring(lastDotIndex + 1);
     }
 
-    private String generateUniqueFileKey(String fileName) {
-        return UUID.randomUUID() + "-" + fileName;
+    // 고유한 파일 이름을 생성하는 메서드 (UUID + 파일 확장자, URL이 너무 길어서)
+    private String generateUniqueFileName(String originalFileName) {
+        String uuid = UUID.randomUUID().toString();
+        String extension = "";
+
+        // 파일 확장자 추출
+        int dotIndex = originalFileName.lastIndexOf('.');
+        if (dotIndex != -1) {
+            extension = originalFileName.substring(dotIndex);  // 확장자 포함
+        }
+
+        // 파일 이름을 UUID + 확장자로 축약하여 생성
+        return uuid + extension;
     }
 
-    private String createPresignedUploadUrl(String key) {
+    // 단일 파일 Presigned URL 생성
+    public String generatePresignedUrl(String fileName) {
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
-                .key(key)
+                .key(fileName)  // UUID가 포함된 고유한 파일 이름 사용
                 .build();
 
-        PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(10))
-                .putObjectRequest(putObjectRequest)
-                .build();
+        PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(presignPutObjectRequest ->
+                presignPutObjectRequest
+                        .signatureDuration(Duration.ofMinutes(10)) // 10분 유효
+                        .putObjectRequest(putObjectRequest)
+        );
 
-        PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(presignRequest);
         return presignedRequest.url().toString();
     }
 
-    private String buildS3FileUrl(String key) {
-        return String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, key);
+    // 파일 메타데이터 저장 (프론트엔드로부터 Presigned URL을 받아 저장)
+    @Transactional
+    public List<FileMetadataResDto> saveFileMetadata(List<FileMetadataReqDto> fileMetadataDtoList) {
+        // 파일 엔티티 생성 및 저장
+        List<FileEntity> fileEntities = fileMetadataDtoList.stream()
+                .map(this::createFileEntity) // 각 파일 메타데이터에서 FileEntity 생성
+                .collect(Collectors.toList());
+
+        List<FileEntity> savedEntities = new ArrayList<>();
+        for (FileEntity fileEntity : fileEntities) {
+            log.info("fileEntity: {}", fileEntity);
+            savedEntities.add(fileRepository.save(fileEntity)); // DB에 저장
+            log.info("savedEntity: {}", fileEntity);
+        }
+
+        List<FileMetadataResDto> response = new ArrayList<>();
+
+        for (FileEntity savedEntity : savedEntities) {
+            response.add(FileMetadataResDto.fromEntity(savedEntity));
+        }
+        return response;
     }
 
-    private void saveFileMetadata(String fileName, String key, String fileUrl) {
-        FileEntity fileEntity = FileEntity.builder()
-                .fileName(fileName)
-                .s3Key(key)
-                .fileUrl(fileUrl)
+    // FileMetadataReqDto에서 FileEntity를 생성하고 프론트에서 받은 Presigned URL을 사용
+    private FileEntity createFileEntity(FileMetadataReqDto fileMetadataDto) {
+
+        return FileEntity.builder()
+                .fileName(fileMetadataDto.getFileName()) // 원본 파일 이름 저장
+                .fileUrl(fileMetadataDto.getFileUrl()) // 프론트에서 전달된 Presigned URL을 데이터베이스에 저장
                 .build();
-        fileRepository.save(fileEntity);
-    }
-
-    private void deleteFileFromS3(String key) {
-        DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
-                .bucket(bucketName)
-                .key(key)
-                .build();
-        s3Client.deleteObject(deleteRequest);
-    }
-
-    private void deleteFileMetadata(String key) {
-        FileEntity fileEntity = fileRepository.findByS3Key(key)
-                .orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다."));
-        fileRepository.delete(fileEntity);
     }
 }
