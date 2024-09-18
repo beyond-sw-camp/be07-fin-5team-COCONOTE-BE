@@ -38,6 +38,13 @@ dependencies {
 //    swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.4'
 
+
+//    redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    //embedded-redis
+    //complie을 implementation으로 수정
+    implementation group: 'it.ozimov', name: 'embedded-redis', version: '0.7.2'
+
 //    websocket chat
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.springframework.boot:spring-boot-starter-freemarker'
