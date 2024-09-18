@@ -1,8 +1,10 @@
 package com.example.coconote.api.drive.controller;
 
 import com.example.coconote.api.drive.dto.request.CreateFolderReqDto;
+import com.example.coconote.api.drive.dto.request.MoveFolderReqDto;
 import com.example.coconote.api.drive.dto.response.FolderChangeNameResDto;
 import com.example.coconote.api.drive.dto.response.FolderCreateResDto;
+import com.example.coconote.api.drive.dto.response.MoveFolderResDto;
 import com.example.coconote.api.drive.service.FolderService;
 import com.example.coconote.common.CommonResDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,6 +36,13 @@ public class FolderController {
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "폴더 이름이 성공적으로 수정되었습니다.", null);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
 
+    }
+
+    @PatchMapping("/move")
+    public ResponseEntity<?> moveFolder(@RequestBody MoveFolderReqDto moveFolderReqDto, String email){
+        MoveFolderResDto response = folderService.moveFolder(moveFolderReqDto.getFolderId(),moveFolderReqDto.getParentId(), email);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "폴더가 성공적으로 이동되었습니다.", response);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
 

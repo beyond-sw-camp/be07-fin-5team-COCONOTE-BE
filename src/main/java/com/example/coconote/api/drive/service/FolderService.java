@@ -5,8 +5,11 @@ import com.example.coconote.api.channel.repository.ChannelRepository;
 import com.example.coconote.api.drive.dto.request.CreateFolderReqDto;
 import com.example.coconote.api.drive.dto.response.FolderChangeNameResDto;
 import com.example.coconote.api.drive.dto.response.FolderCreateResDto;
+import com.example.coconote.api.drive.dto.response.MoveFolderResDto;
 import com.example.coconote.api.drive.entity.Folder;
 import com.example.coconote.api.drive.repository.FolderRepository;
+import com.example.coconote.api.member.entity.Member;
+import com.example.coconote.api.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class FolderService {
     private final FolderRepository folderRepository;
     private final ChannelRepository channelRepository;
+    private final MemberRepository memberRepository;
 
 
     @Transactional
@@ -48,4 +52,22 @@ public class FolderService {
     }
 
 
+    @Transactional
+    public MoveFolderResDto moveFolder(String folderId, String parentId, String email) {
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
+        Folder folder = folderRepository.findById(Long.parseLong(folderId)).orElseThrow(() -> new IllegalArgumentException("폴더가 존재하지 않습니다."));
+        Folder parentFolder = folderRepository.findById(Long.parseLong(parentId)).orElseThrow(() -> new IllegalArgumentException("부모 폴더가 존재하지 않습니다."));
+        if (!folder.getChannel().getId().equals(parentFolder.getChannel().getId())) {
+            throw new IllegalArgumentException("폴더가 다른 채널에 있습니다.");
+        }
+//        todo  바꾸려는 유저가 채널에 속해있는지 확인
+
+        folder.moveParentFolder(parentFolder);
+        return MoveFolderResDto.builder()
+                .folderId(folder.getId())
+                .parentId(folder.getParentFolder().getId())
+                .folderName(folder.getFolderName())
+                .channelId(folder.getChannel().getId())
+                .build();
+    }
 }

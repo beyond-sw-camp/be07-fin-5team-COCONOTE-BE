@@ -36,4 +36,8 @@ public class Folder extends BaseEntity {
     public void changeFolderName(String folderName) {
         this.folderName = folderName;
     }
+
+    public void moveParentFolder(Folder parentFolder) {
+        this.parentFolder = parentFolder;
+    }
 }
