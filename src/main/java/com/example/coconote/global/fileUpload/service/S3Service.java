@@ -4,6 +4,8 @@ import com.example.coconote.api.channel.entity.Channel;
 import com.example.coconote.api.channel.repository.ChannelRepository;
 import com.example.coconote.api.drive.entity.Folder;
 import com.example.coconote.api.drive.repository.FolderRepository;
+import com.example.coconote.api.member.entity.Member;
+import com.example.coconote.api.member.repository.MemberRepository;
 import com.example.coconote.global.fileUpload.dto.request.FileMetadataReqDto;
 import com.example.coconote.global.fileUpload.dto.request.FileSaveListDto;
 import com.example.coconote.global.fileUpload.dto.request.FileUploadRequest;
@@ -39,6 +41,7 @@ public class S3Service {
     private final FileRepository fileRepository;
     private final ChannelRepository channelRepository;
     private final FolderRepository folderRepository;
+    private final MemberRepository memberRepository;
 
     @Value("${aws.s3.region}")
     private String region;
@@ -111,7 +114,11 @@ public class S3Service {
 
     // 파일 메타데이터 저장 (프론트엔드로부터 Presigned URL을 받아 저장)
     @Transactional
-    public List<FileMetadataResDto> saveFileMetadata(FileMetadataReqDto fileMetadataDto) {
+    public List<FileMetadataResDto> saveFileMetadata(FileMetadataReqDto fileMetadataDto, String email) {
+//        유저 검증
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
         // 채널 검증
         if (fileMetadataDto == null) {
             throw new IllegalArgumentException("파일 메타데이터가 필요합니다.");
@@ -140,7 +147,7 @@ public class S3Service {
 
         // 파일 엔티티 생성 및 저장
         List<FileEntity> fileEntities = fileMetadataDto.getFileSaveListDto().stream()
-                .map(fileSaveListDto -> createFileEntity(fileSaveListDto, folder))
+                .map(fileSaveListDto -> createFileEntity(fileSaveListDto, folder, member))
                 .collect(Collectors.toList());
 
         List<FileEntity> savedEntities = fileRepository.saveAll(fileEntities);
@@ -151,11 +158,37 @@ public class S3Service {
     }
 
     // FileSaveListDto에서 FileEntity를 생성
-    private FileEntity createFileEntity(FileSaveListDto fileSaveListDto, Folder folder) {
+    private FileEntity createFileEntity(FileSaveListDto fileSaveListDto, Folder folder, Member member) {
         return FileEntity.builder()
                 .fileName(fileSaveListDto.getFileName()) // 원본 파일 이름 저장
                 .fileUrl(fileSaveListDto.getFileUrl()) // 프론트에서 전달된 Presigned URL을 데이터베이스에 저장
                 .folder(folder) // 폴더 정보 추가
+                .creator(member)
                 .build();
+    }
+
+    @Transactional
+    public void deleteFile(Long fileId, String email) {
+        FileEntity fileEntity = fileRepository.findById(fileId)
+                .orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다."));
+
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        // 파일 삭제 권한 검증
+//        작성자 이거나 채널 관리자인 경우에만 삭제 가능
+//        todo  추후 채널 관리자인 경우 추가
+        if (!fileEntity.getCreator().equals(member) ) {
+            throw new IllegalArgumentException("파일을 삭제할 권한이 없습니다.");
+        }
+
+//        s3 파일 삭제 (완전 삭제)
+        String fileKey = fileEntity.getFileUrl().substring(fileEntity.getFileUrl().lastIndexOf('/') + 1);
+        s3Client.deleteObject(deleteObjectRequest -> deleteObjectRequest
+                .bucket(bucketName)
+                .key(fileKey)
+        );
+
+        fileRepository.delete(fileEntity);
     }
 }

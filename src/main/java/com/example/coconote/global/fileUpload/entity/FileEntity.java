@@ -1,6 +1,7 @@
 package com.example.coconote.global.fileUpload.entity;
 
 import com.example.coconote.api.drive.entity.Folder;
+import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -23,4 +24,8 @@ public class FileEntity extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "folder_id")
     private Folder folder;
+
+    @ManyToOne
+    @JoinColumn(name = "member_id")
+    private Member creator;
 }
