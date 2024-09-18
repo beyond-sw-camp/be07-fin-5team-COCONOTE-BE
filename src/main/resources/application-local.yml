@@ -2,6 +2,14 @@ server:
   port: 8080
 
 spring:
+  devtools:
+    livereload:
+      enabled: true
+    restart:
+      enabled: false
+  freemarker:
+    cache: false
+    suffix: .ftl
   config:
     activate:
       on-profile: local
