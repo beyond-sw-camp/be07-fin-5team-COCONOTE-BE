@@ -1,6 +1,7 @@
 package com.example.coconote.api.section.entity;
 
 import com.example.coconote.api.channel.entity.Channel;
+import com.example.coconote.api.section.dto.request.SectionUpdateReqDto;
 import com.example.coconote.api.section.dto.response.SectionListResDto;
 import com.example.coconote.api.workspace.entity.Workspace;
 import jakarta.persistence.*;
@@ -36,5 +37,9 @@ public class Section {
     public SectionListResDto fromEntity() {
         return SectionListResDto.builder()
                 .name(this.name).build();
+    }
+
+    public void updateEntity(SectionUpdateReqDto dto) {
+        this.name = dto.getName();
     }
 }

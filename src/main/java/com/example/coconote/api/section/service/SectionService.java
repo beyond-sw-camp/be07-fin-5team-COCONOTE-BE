@@ -1,6 +1,7 @@
 package com.example.coconote.api.section.service;
 
 import com.example.coconote.api.section.dto.request.SectionCreateReqDto;
+import com.example.coconote.api.section.dto.request.SectionUpdateReqDto;
 import com.example.coconote.api.section.dto.response.SectionListResDto;
 import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.section.repository.SectionRepository;
@@ -41,5 +42,11 @@ public class SectionService {
         }
         return dtos;
 
+    }
+
+    public Section sectionUpdate(Long id, SectionUpdateReqDto dto) {
+        Section section = sectionRepository.findById(id).orElseThrow(()->new EntityNotFoundException("section not found"));
+        section.updateEntity(dto);
+        return section;
     }
 }
