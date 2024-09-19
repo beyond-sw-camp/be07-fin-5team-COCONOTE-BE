@@ -15,7 +15,7 @@ spring:
     database: mysql
     generate-ddl: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show_sql: true
     open-in-view: false
 
@@ -30,3 +30,11 @@ springdoc:
     path: /swagger-ui.html
     display-request-duration: true
     groups-order: DESC
+
+
+aws:
+  accessKeyId: ${local.s3.key}
+  secretKey: ${local.s3.secret}
+  s3:
+    region: ${local.s3.region}
+    bucket: ${local.s3.bucket}
