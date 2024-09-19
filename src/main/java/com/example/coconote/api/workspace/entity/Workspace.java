@@ -1,6 +1,7 @@
 package com.example.coconote.api.workspace.entity;
 
 import com.example.coconote.api.section.entity.Section;
+import com.example.coconote.api.workspace.dto.request.WorkspaceUpdateReqDto;
 import com.example.coconote.api.workspace.dto.response.WorkspaceListResDto;
 import com.example.coconote.common.BaseEntity;
 import jakarta.persistence.*;
@@ -35,6 +36,11 @@ public class Workspace extends BaseEntity {
                 .name(this.name)
                 .info(this.info)
                 .build();
+    }
+
+    public void updateEntity(WorkspaceUpdateReqDto dto) {
+        this.name = dto.getName();
+        this.info = dto.getInfo();
     }
 
 }
