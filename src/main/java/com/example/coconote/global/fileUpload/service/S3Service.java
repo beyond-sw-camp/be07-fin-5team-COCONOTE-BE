@@ -9,7 +9,9 @@ import com.example.coconote.api.member.repository.MemberRepository;
 import com.example.coconote.global.fileUpload.dto.request.FileMetadataReqDto;
 import com.example.coconote.global.fileUpload.dto.request.FileSaveListDto;
 import com.example.coconote.global.fileUpload.dto.request.FileUploadRequest;
+import com.example.coconote.global.fileUpload.dto.request.MoveFileReqDto;
 import com.example.coconote.global.fileUpload.dto.response.FileMetadataResDto;
+import com.example.coconote.global.fileUpload.dto.response.MoveFileResDto;
 import com.example.coconote.global.fileUpload.entity.FileEntity;
 import com.example.coconote.global.fileUpload.repository.FileRepository;
 import lombok.RequiredArgsConstructor;
@@ -190,5 +192,33 @@ public class S3Service {
         );
 
         fileRepository.delete(fileEntity);
+    }
+
+    public MoveFileResDto moveFile(MoveFileReqDto moveFileReqDto, String email) {
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        FileEntity fileEntity = fileRepository.findById(moveFileReqDto.getFileId())
+                .orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다."));
+
+        Folder folder = folderRepository.findById(moveFileReqDto.getFolderId())
+                .orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
+
+        if (!folder.getChannel().getId().equals(fileEntity.getFolder().getChannel().getId())) {
+            throw new IllegalArgumentException("다른 채널에 있는 폴더로 이동할수 없습니다.");
+        }
+//        todo : 바꾸려는 유저가 채널에 속해있는지 확인
+
+
+        fileEntity.moveFolder(folder);
+
+        return MoveFileResDto.builder()
+                .fileId(fileEntity.getId())
+                .folderId(folder.getId())
+                .fileName(fileEntity.getFileName())
+//                todo : Email -> 파일 이동한 사람 이름으로 변경하기
+                .createMemberName(fileEntity.getCreator().getEmail())
+                .channelId(folder.getChannel().getId())
+                .build();
     }
 }

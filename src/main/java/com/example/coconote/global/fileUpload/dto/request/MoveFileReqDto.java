@@ -1,4 +1,4 @@
-package com.example.coconote.api.drive.dto.request;
+package com.example.coconote.global.fileUpload.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MoveFolderReqDto {
+public class MoveFileReqDto {
+    private Long fileId;
     private Long folderId;
-//    이동할 폴더의 id
-    private Long parentId;
 }

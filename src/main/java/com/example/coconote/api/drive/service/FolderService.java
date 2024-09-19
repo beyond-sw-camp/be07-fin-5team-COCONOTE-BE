@@ -53,10 +53,10 @@ public class FolderService {
 
 
     @Transactional
-    public MoveFolderResDto moveFolder(String folderId, String parentId, String email) {
+    public MoveFolderResDto moveFolder(Long folderId, Long parentId, String email) {
         Member member = memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
-        Folder folder = folderRepository.findById(Long.parseLong(folderId)).orElseThrow(() -> new IllegalArgumentException("폴더가 존재하지 않습니다."));
-        Folder parentFolder = folderRepository.findById(Long.parseLong(parentId)).orElseThrow(() -> new IllegalArgumentException("부모 폴더가 존재하지 않습니다."));
+        Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더가 존재하지 않습니다."));
+        Folder parentFolder = folderRepository.findById(parentId).orElseThrow(() -> new IllegalArgumentException("부모 폴더가 존재하지 않습니다."));
         if (!folder.getChannel().getId().equals(parentFolder.getChannel().getId())) {
             throw new IllegalArgumentException("폴더가 다른 채널에 있습니다.");
         }
