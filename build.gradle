@@ -41,6 +41,12 @@ dependencies {
 
 //    presigned url
     implementation 'software.amazon.awssdk:s3:2.21.0'
+
+    // STOMP
+    implementation 'org.webjars:stomp-websocket:2.3.4'
+
+    // SockJS
+    implementation 'org.webjars:sockjs-client:1.5.1'
 }
 
 tasks.named('test') {
