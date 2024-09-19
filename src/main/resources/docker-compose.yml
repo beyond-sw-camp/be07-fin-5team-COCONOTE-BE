@@ -1,0 +1,31 @@
+version: '2'
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - "2181:2181"
+  kafka:
+    image: wurstmeister/kafka:latest
+    ports:
+      - "9092:9092"
+    expose:
+      - "9093"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:9093,OUTSIDE://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_LISTENERS: INSIDE://0.0.0.0:9093,OUTSIDE://0.0.0.0:9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "9999:8080"  # Kafka UI가 9999 포트로 동작합니다
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local  # Kafka 클러스터 이름
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9093  # 내부 네트워크에서 Kafka 브로커와의 연결 정보
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181  # Zookeeper 정보
+    depends_on:
+      - kafka
+      - zookeeper

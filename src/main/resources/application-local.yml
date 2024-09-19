@@ -2,6 +2,15 @@ server:
   port: 8080
 
 spring:
+  #    kafka 설정 : 컨슈머 설정
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      #      group-id는, kafka의 그룹을 식별하는 id, 동일한 그룹 id를 가진 컨슈머은 메시지를 분담해서 consume.
+      #      kafka는 여러 컨슈머가 있을 때, 다중서버일 때 를 가정하고 사용한다
+      group-id : order-group
+      #      가장 처음으로 사용 가능한 메시지부터 읽기 시작
+      auto-offset-reset: earliest
   devtools:
     livereload:
       enabled: true

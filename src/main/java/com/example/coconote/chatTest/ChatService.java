@@ -1,53 +1,39 @@
-//package com.example.coconote.chatTest;
-//
-//import com.example.coconote.chatTest.dto.ChatRoom;
-//import com.fasterxml.jackson.databind.ObjectMapper;
-//import jakarta.annotation.PostConstruct;
-//import lombok.RequiredArgsConstructor;
-//import lombok.extern.slf4j.Slf4j;
-//import org.springframework.stereotype.Service;
-//import org.springframework.web.socket.TextMessage;
-//import org.springframework.web.socket.WebSocketSession;
-//
-//import java.io.IOException;
-//import java.util.*;
-//
-//@Slf4j
-//@RequiredArgsConstructor
-//@Service
-//public class ChatService {
-//
-//    private final ObjectMapper objectMapper;
-//    private Map<String, ChatRoom> chatRooms;
-//
-//    @PostConstruct
-//    private void init() {
-//        chatRooms = new LinkedHashMap<>();
-//    }
-//
-//    public List<ChatRoom> findAllRoom() {
-//        return new ArrayList<>(chatRooms.values());
-//    }
-//
-//    public ChatRoom findRoomById(String roomId) {
-//        return chatRooms.get(roomId);
-//    }
-//
-//    public ChatRoom createRoom(String name) {
-//        String randomId = UUID.randomUUID().toString();
-//        ChatRoom chatRoom = ChatRoom.builder()
-//                .roomId(randomId)
-//                .name(name)
-//                .build();
-//        chatRooms.put(randomId, chatRoom);
-//        return chatRoom;
-//    }
-//
-//    public <T> void sendMessage(WebSocketSession session, T message) {
-//        try {
-//            session.sendMessage(new TextMessage(objectMapper.writeValueAsString(message)));
-//        } catch (IOException e) {
-//            log.error(e.getMessage(), e);
-//        }
-//    }
-//}
+package com.example.coconote.chatTest;
+
+import com.example.coconote.chatTest.dto.ChatMessage;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
+import org.springframework.stereotype.Service;
+
+@Service
+public class ChatService {
+
+    private final SimpMessageSendingOperations messagingTemplate;
+
+    public ChatService(SimpMessageSendingOperations messagingTemplate) {
+        this.messagingTemplate = messagingTemplate;
+    }
+
+    @KafkaListener(topics = "product-update-topic", groupId = "order-group"
+            , containerFactory = "kafkaListenerContainerFactory")
+    public void consumerProductQuantity(String message){ // return 시, string 형식으로 message가 들어옴
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            System.out.println(message);
+            // ChatMessage 객채로 맵핑
+            ChatMessage roomMessage =  objectMapper.readValue(message,ChatMessage.class);
+            messagingTemplate.convertAndSend("/sub/chat/room/" + roomMessage.getRoomId(), roomMessage);
+
+//            ProductUpdateStockDto productUpdateStockDto =
+//                    objectMapper.readValue(message,ProductUpdateStockDto.class);
+//            this.productStockUpdate(productUpdateStockDto);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        } catch (Exception e){
+//            만약, 실패했을 때 코드 추가해야함
+        }
+        System.out.println(message);
+    }
+}
