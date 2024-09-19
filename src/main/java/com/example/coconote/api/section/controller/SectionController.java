@@ -60,4 +60,18 @@ public class SectionController {
         }
     }
 
+
+    @PatchMapping("/section/delete/{id}")
+    public ResponseEntity<Object> sectionDelete(@PathVariable Long id) {
+        try {
+            sectionService.sectionDelete(id);
+            CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "section is successfully deleted", null);
+            return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+        } catch(IllegalArgumentException e) {
+            e.printStackTrace();
+            CommonErrorDto commonErrorDto = new CommonErrorDto(HttpStatus.BAD_REQUEST, e.getMessage());
+            return new ResponseEntity<>(commonErrorDto, HttpStatus.BAD_REQUEST);
+        }
+    }
+
 }

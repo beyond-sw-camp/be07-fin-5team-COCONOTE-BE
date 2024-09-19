@@ -4,6 +4,8 @@ import com.example.coconote.api.channel.entity.Channel;
 import com.example.coconote.api.section.dto.request.SectionUpdateReqDto;
 import com.example.coconote.api.section.dto.response.SectionListResDto;
 import com.example.coconote.api.workspace.entity.Workspace;
+import com.example.coconote.common.BaseEntity;
+import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,7 +21,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Section {
+public class Section extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -42,4 +44,7 @@ public class Section {
     public void updateEntity(SectionUpdateReqDto dto) {
         this.name = dto.getName();
     }
+
+//    public void deleteEntity() { this.isDeleted = IsDeleted.Y; }
+
 }

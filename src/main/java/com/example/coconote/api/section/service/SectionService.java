@@ -8,8 +8,13 @@ import com.example.coconote.api.section.repository.SectionRepository;
 import com.example.coconote.api.workspace.dto.response.WorkspaceListResDto;
 import com.example.coconote.api.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.repository.WorkspaceRepository;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,5 +53,13 @@ public class SectionService {
         Section section = sectionRepository.findById(id).orElseThrow(()->new EntityNotFoundException("section not found"));
         section.updateEntity(dto);
         return section;
+    }
+
+
+    public void sectionDelete(Long id) {
+        Section section = sectionRepository.findById(id).orElseThrow(()->new EntityNotFoundException("section not found"));
+        Workspace workspace = workspaceRepository.findById(section.getWorkspace().getId()).orElse(null);
+//        section.deleteEntity();
+//        workspaceRepository.save(workspace);
     }
 }
