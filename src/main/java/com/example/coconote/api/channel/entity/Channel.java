@@ -1,6 +1,6 @@
-package com.example.coconote.api.section.entity;
+package com.example.coconote.api.channel.entity;
 
-import com.example.coconote.api.workspace.entity.Workspace;
+import com.example.coconote.api.section.entity.Section;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,14 +13,18 @@ import org.springframework.data.annotation.Id;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Section {
+public class Channel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
 
+    private String info;
+
+    private boolean isPublic;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "workspace_id")
-    private Workspace workspace;
+    @JoinColumn(name = "section_id")
+    private Section secton;
 }
