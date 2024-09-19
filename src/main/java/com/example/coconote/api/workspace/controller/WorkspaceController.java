@@ -1,6 +1,7 @@
 package com.example.coconote.api.workspace.controller;
 
 import com.example.coconote.api.workspace.dto.request.WorkspaceCreateReqDto;
+import com.example.coconote.api.workspace.dto.response.WorkspaceListResDto;
 import com.example.coconote.api.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.service.WorkspaceService;
 import com.example.coconote.common.CommonErrorDto;
@@ -8,10 +9,10 @@ import com.example.coconote.common.CommonResDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 public class WorkspaceController {
@@ -35,6 +36,19 @@ public class WorkspaceController {
             return new ResponseEntity<>(commonErrorDto, HttpStatus.BAD_REQUEST);
         }
     }
+
+
+    @GetMapping("/workspace/list")
+    public ResponseEntity<Object> workspaceRead() {
+        List<WorkspaceListResDto> dtos = workspaceService.workspaceList();
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "list is successfully found", dtos);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
+
+
+
+
 
 
 

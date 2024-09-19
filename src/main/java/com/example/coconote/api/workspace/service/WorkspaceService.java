@@ -1,11 +1,15 @@
 package com.example.coconote.api.workspace.service;
 
 import com.example.coconote.api.workspace.dto.request.WorkspaceCreateReqDto;
+import com.example.coconote.api.workspace.dto.response.WorkspaceListResDto;
 import com.example.coconote.api.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.repository.WorkspaceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class WorkspaceService {
@@ -30,4 +34,13 @@ public class WorkspaceService {
     }
 
 
+    public List<WorkspaceListResDto> workspaceList() {
+        List<Workspace> workspaces = workspaceRepository.findAll();
+        List<WorkspaceListResDto> dtos = new ArrayList<>();
+        for(Workspace w : workspaces) {
+            dtos.add(w.fromEntity());
+        }
+        return dtos;
+
+    }
 }
