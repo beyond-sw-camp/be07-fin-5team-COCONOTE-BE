@@ -14,10 +14,11 @@ public class WorkspaceCreateReqDto {
     private String name;
     private String info;
 
-    public Workspace toEntity() {
+    public Workspace toEntity(String imgUrl) {
         return Workspace.builder()
                 .name(this.name)
                 .info(this.info)
+                .logoImagePath(imgUrl)
                 .build();
     }
 }

@@ -1,13 +1,11 @@
 package com.example.coconote.api.workspace.service;
 
-import com.example.coconote.api.channel.entity.Channel;
-import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.workspace.dto.request.WorkspaceCreateReqDto;
 import com.example.coconote.api.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.repository.WorkspaceRepository;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class WorkspaceService {
@@ -18,10 +16,13 @@ public class WorkspaceService {
         this.workspaceRepository = workspaceRepository;
     }
 
-    public Workspace workspaceCreate(WorkspaceCreateReqDto dto) {
-        Workspace workspace = dto.toEntity();
-        workspaceRepository.save(workspace);
+    public Workspace workspaceCreate(WorkspaceCreateReqDto dto, MultipartFile imgFile) {
 
+        String imgUrl = "";
+        // 이미지파일 저장하고 String 이미지URL로 바꾸는 코드
+
+        Workspace workspace = dto.toEntity(imgUrl);
+        workspaceRepository.save(workspace);
         return workspace;
     }
 }

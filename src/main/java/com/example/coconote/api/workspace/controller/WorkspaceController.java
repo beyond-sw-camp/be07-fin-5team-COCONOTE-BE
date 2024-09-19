@@ -1,7 +1,5 @@
 package com.example.coconote.api.workspace.controller;
 
-import com.example.coconote.api.channel.dto.request.ChannelCreateReqDto;
-import com.example.coconote.api.channel.entity.Channel;
 import com.example.coconote.api.workspace.dto.request.WorkspaceCreateReqDto;
 import com.example.coconote.api.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.service.WorkspaceService;
@@ -11,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,7 +26,7 @@ public class WorkspaceController {
     public ResponseEntity<Object> workspaceCreate(@RequestPart(value = "data") WorkspaceCreateReqDto dto,
                                                   @RequestPart(value = "file") MultipartFile imgFile) {
         try {
-            Workspace workspace = workspaceService.workspaceCreate(dto);
+            Workspace workspace = workspaceService.workspaceCreate(dto, imgFile);
             CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "workspace is successfully created", workspace.getId());
             return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
         } catch(IllegalArgumentException e) {
@@ -38,6 +35,8 @@ public class WorkspaceController {
             return new ResponseEntity<>(commonErrorDto, HttpStatus.BAD_REQUEST);
         }
     }
+
+
 
 
 }
