@@ -48,4 +48,9 @@ public class ChannelService {
         channel.updateEntity(dto);
         return channel;
     }
+
+    public void channelDelete(Long id) {
+        Channel channel = channelRepository.findById(id).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+        channel.deleteEntity();
+    }
 }

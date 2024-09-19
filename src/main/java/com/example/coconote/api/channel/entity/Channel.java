@@ -4,6 +4,8 @@ import com.example.coconote.api.channel.dto.request.ChannelUpdateReqDto;
 import com.example.coconote.api.channel.dto.response.ChannelListResDto;
 import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.drive.entity.Folder;
+import com.example.coconote.common.BaseEntity;
+import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,7 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Builder
-public class Channel {
+public class Channel extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -47,5 +49,9 @@ public class Channel {
         this.name = dto.getName();
         this.info = dto.getInfo();
         this.isPublic = dto.isPublic();
+    }
+
+    public void deleteEntity() {
+//        this.getIsDeleted() = IsDeleted.Y;
     }
 }

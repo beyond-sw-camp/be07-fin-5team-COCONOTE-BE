@@ -59,7 +59,7 @@ public class WorkspaceController {
         }
     }
 
-    @PatchMapping("/workspace/delete/{id}") // 댓글 삭제
+    @PatchMapping("/workspace/delete/{id}")
     public ResponseEntity<Object> workspaceDelete(@PathVariable Long id) {
         try {
             workspaceService.workspaceDelete(id);

@@ -57,5 +57,17 @@ public class ChannelController {
         }
     }
 
+    @PatchMapping("/channel/delete/{id}") // 댓글 삭제
+    public ResponseEntity<Object> channelDelete(@PathVariable Long id) {
+        try {
+            channelService.channelDelete(id);
+            CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "channel is successfully deleted", null);
+            return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            CommonErrorDto commonErrorDto = new CommonErrorDto(HttpStatus.BAD_REQUEST, e.getMessage());
+            return new ResponseEntity<>(commonErrorDto, HttpStatus.BAD_REQUEST);
+        }
+    }
 
 }
