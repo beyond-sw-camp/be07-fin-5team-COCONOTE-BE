@@ -4,7 +4,6 @@ import com.example.coconote.common.CommonResDto;
 import com.example.coconote.global.fileUpload.dto.request.*;
 import com.example.coconote.global.fileUpload.dto.response.FileMetadataResDto;
 import com.example.coconote.global.fileUpload.dto.response.MoveFileResDto;
-import com.example.coconote.global.fileUpload.entity.FileEntity;
 import com.example.coconote.global.fileUpload.service.S3Service;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -55,5 +54,14 @@ public class FileController {
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "File moved successfully", null);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
+
+//    presigned url to download
+    @GetMapping("/{fileId}/download")
+    public ResponseEntity<?> getPresignedUrlToDownload (@PathVariable Long fileId,@RequestParam String email) {
+        String presignedUrl = s3Service.getPresignedUrlToDownload(fileId, email);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "Presigned URL generated successfully", presignedUrl);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
 
 }
