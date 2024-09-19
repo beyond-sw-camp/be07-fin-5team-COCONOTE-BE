@@ -1,5 +1,6 @@
 package com.example.coconote.api.channel.entity;
 
+import com.example.coconote.api.channel.dto.request.ChannelUpdateReqDto;
 import com.example.coconote.api.channel.dto.response.ChannelListResDto;
 import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.drive.entity.Folder;
@@ -40,5 +41,11 @@ public class Channel {
                 .name(this.name)
                 .info(this.info)
                 .build();
+    }
+
+    public void updateEntity(ChannelUpdateReqDto dto) {
+        this.name = dto.getName();
+        this.info = dto.getInfo();
+        this.isPublic = dto.isPublic();
     }
 }
