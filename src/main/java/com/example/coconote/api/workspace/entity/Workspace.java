@@ -19,7 +19,7 @@ public class Workspace extends BaseEntity {
 
     private String name;
 
-    private String wsInfo;
+    private String info;
 
     private String logoImagePath;
 }
