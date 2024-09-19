@@ -22,7 +22,12 @@ public class WorkspaceService {
         // 이미지파일 저장하고 String 이미지URL로 바꾸는 코드
 
         Workspace workspace = dto.toEntity(imgUrl);
+
+        // 기본섹션, 즐겨찾기 섹션 생성 코드
+
         workspaceRepository.save(workspace);
         return workspace;
     }
+
+
 }
