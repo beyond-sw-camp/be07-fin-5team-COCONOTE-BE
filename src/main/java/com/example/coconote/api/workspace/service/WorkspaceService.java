@@ -41,6 +41,5 @@ public class WorkspaceService {
             dtos.add(w.fromEntity());
         }
         return dtos;
-
     }
 }
