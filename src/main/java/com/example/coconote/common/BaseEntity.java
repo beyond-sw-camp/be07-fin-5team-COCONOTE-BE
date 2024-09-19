@@ -19,6 +19,6 @@ public abstract class BaseEntity {
     private LocalDateTime updatedTime;
 
     @Enumerated(EnumType.STRING)
-    private IsDeleted isDeleted = IsDeleted.N;
-    private LocalDateTime deletedTime;
+    protected IsDeleted isDeleted = IsDeleted.N;
+    protected LocalDateTime deletedTime;
 }// 삭제 필요하면 어노테이션 찾아서 하세여

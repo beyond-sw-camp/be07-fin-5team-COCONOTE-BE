@@ -47,5 +47,12 @@ public class FolderService {
         return FolderChangeNameResDto.fromEntity(folder);
     }
 
+    @Transactional
+    public void deleteFolder(Long folderId, String email) {
+        Folder folder = folderRepository.findById(folderId)
+                .orElseThrow(() -> new IllegalArgumentException("폴더가 존재하지 않습니다."));
+        folder.markAsDeleted(); // 실제 삭제 대신 소프트 삭제 처리
+    }
+
 
 }
