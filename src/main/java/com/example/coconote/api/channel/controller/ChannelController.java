@@ -1,6 +1,7 @@
 package com.example.coconote.api.channel.controller;
 
 import com.example.coconote.api.channel.dto.request.ChannelCreateReqDto;
+import com.example.coconote.api.channel.dto.response.ChannelListResDto;
 import com.example.coconote.api.channel.entity.Channel;
 import com.example.coconote.api.channel.service.ChannelService;
 import com.example.coconote.common.CommonErrorDto;
@@ -8,9 +9,12 @@ import com.example.coconote.common.CommonResDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 public class ChannelController {
@@ -33,6 +37,15 @@ public class ChannelController {
             return new ResponseEntity<>(commonErrorDto, HttpStatus.BAD_REQUEST);
         }
     }
+
+    @GetMapping("/channel/list")
+    public ResponseEntity<Object> workspaceRead() {
+        List<ChannelListResDto> dtos = channelService.channelList();
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "list is successfully found", dtos);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
+
 
 
 }

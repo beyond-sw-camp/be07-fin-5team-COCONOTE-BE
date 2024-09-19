@@ -40,6 +40,5 @@ public class SectionService {
             dtos.add(s.fromEntity());
         }
         return dtos;
-
     }
 }
