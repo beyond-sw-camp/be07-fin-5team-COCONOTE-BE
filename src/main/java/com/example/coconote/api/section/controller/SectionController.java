@@ -42,7 +42,7 @@ public class SectionController {
     }
 
     @GetMapping("/section/list")
-    public ResponseEntity<Object> workspaceRead() {
+    public ResponseEntity<Object> sectionRead() {
         List<SectionListResDto> dtos = sectionService.sectionList();
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "list is successfully found", dtos);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
