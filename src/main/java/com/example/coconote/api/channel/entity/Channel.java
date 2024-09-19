@@ -1,5 +1,6 @@
 package com.example.coconote.api.channel.entity;
 
+import com.example.coconote.api.channel.dto.response.ChannelListResDto;
 import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.drive.entity.Folder;
 import jakarta.persistence.*;
@@ -33,4 +34,11 @@ public class Channel {
     // 폴더들과의 관계 (일대다 관계)
     @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL)
     private List<Folder> folders;
+
+    public ChannelListResDto fromEntity() {
+        return ChannelListResDto.builder()
+                .name(this.name)
+                .info(this.info)
+                .build();
+    }
 }
