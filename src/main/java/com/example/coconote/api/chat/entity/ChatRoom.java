@@ -1,7 +1,7 @@
 package com.example.coconote.api.chat.entity;
 
 import com.example.coconote.api.chat.dto.ChatMessage;
-import com.example.coconote.api.chat.service.ChatService;
+//import com.example.coconote.api.chat.service.ChatService;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
