@@ -43,7 +43,6 @@ public class WorkspaceService {
             dtos.add(w.fromEntity());
         }
         return dtos;
-
     }
 
     public Workspace workspaceUpdate(Long id, WorkspaceUpdateReqDto dto) {

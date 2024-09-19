@@ -1,6 +1,7 @@
 package com.example.coconote.api.section.entity;
 
 import com.example.coconote.api.channel.entity.Channel;
+import com.example.coconote.api.section.dto.response.SectionListResDto;
 import com.example.coconote.api.workspace.entity.Workspace;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -32,4 +33,8 @@ public class Section {
     @Builder.Default
     private List<Channel> channels = new ArrayList<>();
 
+    public SectionListResDto fromEntity() {
+        return SectionListResDto.builder()
+                .name(this.name).build();
+    }
 }
