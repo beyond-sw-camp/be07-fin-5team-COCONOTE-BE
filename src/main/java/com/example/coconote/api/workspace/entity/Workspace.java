@@ -4,6 +4,7 @@ import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.workspace.dto.request.WorkspaceUpdateReqDto;
 import com.example.coconote.api.workspace.dto.response.WorkspaceListResDto;
 import com.example.coconote.common.BaseEntity;
+import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.Id;
@@ -43,4 +44,7 @@ public class Workspace extends BaseEntity {
         this.info = dto.getInfo();
     }
 
+    public void deleteEntity() {
+//        this.isDeleted = IsDeleted.Y;
+    }
 }

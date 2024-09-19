@@ -51,4 +51,10 @@ public class WorkspaceService {
         workspace.updateEntity(dto);
         return workspace;
     }
+
+    public void workspaceDelete(Long id) {
+
+        Workspace workspace = workspaceRepository.findById(id).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+        workspace.deleteEntity();
+    }
 }
