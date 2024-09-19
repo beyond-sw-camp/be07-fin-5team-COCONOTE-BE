@@ -22,7 +22,7 @@ public class ChannelController {
     }
 
     @PostMapping("/channel/create") // 채널 생성
-    public ResponseEntity<Object> commentCreate(@RequestBody ChannelCreateReqDto dto) {
+    public ResponseEntity<Object> channelCreate(@RequestBody ChannelCreateReqDto dto) {
         try {
             Channel channel = channelService.channelCreate(dto);
             CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "channel is successfully created", channel.getId());
