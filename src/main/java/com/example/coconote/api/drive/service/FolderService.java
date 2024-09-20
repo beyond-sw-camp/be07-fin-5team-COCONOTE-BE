@@ -8,6 +8,7 @@ import com.example.coconote.api.drive.entity.Folder;
 import com.example.coconote.api.drive.repository.FolderRepository;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.common.IsDeleted;
 import com.example.coconote.global.fileUpload.entity.FileEntity;
 import com.example.coconote.global.fileUpload.repository.FileRepository;
 import lombok.RequiredArgsConstructor;
@@ -86,8 +87,9 @@ public class FolderService {
     public FolderAllListResDto getAllFolderList(Long folderId, String email) {
         Member member = memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
         Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더가 존재하지 않습니다."));
-        List<Folder> folderList = folderRepository.findAllByParentFolder(folder);
-        List<FileEntity> fileEntityList = fileRepository.findAllByFolder(folder);
+        List<Folder> folderList = folderRepository.findAllByParentFolderAndIsDeleted(folder, IsDeleted.N);
+        List<FileEntity> fileEntityList = fileRepository.findAllByFolderAndIsDeleted(folder, IsDeleted.N);
+
 
         List<FolderListDto> folderListDto = FolderListDto.fromEntity(folderList);
         List<FileListDto> fileListDto = FileListDto.fromEntity(fileEntityList);
