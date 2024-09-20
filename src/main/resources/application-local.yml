@@ -18,6 +18,11 @@ spring:
       ddl-auto: update
     show_sql: true
     open-in-view: false
+  batch:
+    job:
+      enabled: false
+    jdbc:
+      initialize-schema: never
 
 springdoc:
   api-docs:
