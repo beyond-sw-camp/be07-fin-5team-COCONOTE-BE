@@ -1,5 +1,7 @@
 package com.example.coconote.api.channel.entity;
 
+import com.example.coconote.api.canvas.entity.Canvas;
+import com.example.coconote.api.channel.dto.response.ChannelResDto;
 import com.example.coconote.api.channel.dto.request.ChannelUpdateReqDto;
 import com.example.coconote.api.channel.dto.response.ChannelListResDto;
 import com.example.coconote.api.section.entity.Section;
@@ -40,6 +42,17 @@ public class Channel extends BaseEntity {
     @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL)
     private List<Folder> folders;
 
+    // 캔버스 관계
+    @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL)
+    private List<Canvas> canvas;
+
+    public ChannelResDto fromEntity() {
+        return ChannelResDto.builder()
+                .id(this.id)
+                .build();
+    }
+}
+
     public ChannelListResDto fromEntity() {
         return ChannelListResDto.builder()
                 .name(this.name)
@@ -58,3 +71,4 @@ public class Channel extends BaseEntity {
         this.deletedTime = LocalDateTime.now();
     }
 }
+
