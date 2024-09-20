@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChannelUpdateReqDto {
-    private String name;
-    private String info;
-    private boolean isPublic;
+    private String channelName;
+    private String channelInfo;
+    private Boolean isPublic;
 }

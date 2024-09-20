@@ -25,17 +25,21 @@ import java.util.List;
 public class Channel extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long channelId;
 
-    private String name;
+    private String channelName;
 
-    private String info;
+    private String channelInfo;
 
-    private boolean isPublic;
+    private Boolean isPublic;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "section_id")
     private Section section;
+
+//    @OneToMany(mappedBy = "channel", cascade = CascadeType.PERSIST)
+//    @Builder.Default
+//    private List<ChannelMember> channelMembers = new ArrayList<>();
 
     // 폴더들과의 관계 (일대다 관계)
     @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL)
@@ -45,23 +49,20 @@ public class Channel extends BaseEntity {
 //    @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL)
 //    private List<Canvas> canvas;
 
-    public ChannelResDto fromResEntity() {
-        return ChannelResDto.builder()
-                .id(this.id)
-                .build();
-    }
-
-    public ChannelListResDto fromEntity() {
+    public ChannelListResDto fromEntity(Section section) {
         return ChannelListResDto.builder()
-                .name(this.name)
-                .info(this.info)
+                .sectionId(section.getSectionId())
+                .channelId(this.channelId)
+                .channelName(this.channelName)
+                .channelInfo(this.channelInfo)
+                .isPublic(this.isPublic)
                 .build();
     }
 
     public void updateEntity(ChannelUpdateReqDto dto) {
-        this.name = dto.getName();
-        this.info = dto.getInfo();
-        this.isPublic = dto.isPublic();
+        this.channelName = dto.getChannelName();
+        this.channelInfo = dto.getChannelInfo();
+        this.isPublic = dto.getIsPublic();
     }
 
     public void deleteEntity() {

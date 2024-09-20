@@ -6,11 +6,11 @@ import com.example.coconote.api.workspace.dto.response.WorkspaceListResDto;
 import com.example.coconote.api.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.service.WorkspaceService;
 import com.example.coconote.common.CommonResDto;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -23,15 +23,15 @@ public class WorkspaceController {
         this.workspaceService = workspaceService;
     }
 
+    @Operation(summary= "워크스페이스 생성")
     @PostMapping("/workspace/create")
-    public ResponseEntity<Object> workspaceCreate(@RequestPart(value = "data") WorkspaceCreateReqDto dto,
-                                                  @RequestPart(value = "file") MultipartFile imgFile) {
-            Workspace workspace = workspaceService.workspaceCreate(dto, imgFile);
-            CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "workspace is successfully created", workspace.getId());
+    public ResponseEntity<Object> workspaceCreate(@RequestBody WorkspaceCreateReqDto dto) {
+            WorkspaceListResDto resDto = workspaceService.workspaceCreate(dto);
+            CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "workspace is successfully created", resDto);
             return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }
 
-
+    @Operation(summary= "워크스페이스 조회")
     @GetMapping("/workspace/list")
     public ResponseEntity<Object> workspaceRead() {
         List<WorkspaceListResDto> dtos = workspaceService.workspaceList();
@@ -39,14 +39,16 @@ public class WorkspaceController {
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
+    @Operation(summary= "워크스페이스 수정")
     @PatchMapping("/workspace/update/{id}")
     public ResponseEntity<Object> workspaceUpdate(@PathVariable Long id, @RequestBody WorkspaceUpdateReqDto dto) {
-        workspaceService.workspaceUpdate(id, dto);
-        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "workspace is successfully updated", null);
+        WorkspaceListResDto resDto = workspaceService.workspaceUpdate(id, dto);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "workspace is successfully updated", resDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
-    @PatchMapping("/workspace/delete/{id}")
+    @Operation(summary= "워크스페이스 삭제")
+    @DeleteMapping("/workspace/delete/{id}")
     public ResponseEntity<Object> workspaceDelete(@PathVariable Long id) {
         workspaceService.workspaceDelete(id);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "workspace is successfully deleted", null);

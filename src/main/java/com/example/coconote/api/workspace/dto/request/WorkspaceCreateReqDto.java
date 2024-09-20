@@ -12,13 +12,13 @@ import lombok.NoArgsConstructor;
 @Builder
 public class WorkspaceCreateReqDto {
     private String name;
-    private String info;
+    private String wsInfo;
 
     public Workspace toEntity(String imgUrl) {
         return Workspace.builder()
                 .name(this.name)
-                .info(this.info)
-                .logoImagePath(imgUrl)
+                .wsInfo(this.wsInfo)
+                .logo(imgUrl)
                 .build();
     }
 }

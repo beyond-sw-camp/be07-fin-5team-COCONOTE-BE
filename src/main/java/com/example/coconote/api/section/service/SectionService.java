@@ -10,11 +10,13 @@ import com.example.coconote.api.workspace.repository.WorkspaceRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Transactional
 public class SectionService {
 
     private final SectionRepository sectionRepository;
@@ -25,13 +27,15 @@ public class SectionService {
         this.workspaceRepository = workspaceRepository;
     }
 
-    public Section sectionCreate(SectionCreateReqDto dto) {
+    public SectionListResDto sectionCreate(SectionCreateReqDto dto) {
         Workspace workspace = workspaceRepository.findById(dto.getWorkspaceId()).orElseThrow(()-> new EntityNotFoundException("존재하지 않는 워크스페이스입니다."));
 
         Section section = dto.toEntity(workspace);
         sectionRepository.save(section);
 
-        return section;
+        SectionListResDto resDto = section.fromEntity();
+
+        return resDto;
     }
 
 
@@ -44,16 +48,17 @@ public class SectionService {
         return dtos;
     }
 
-    public Section sectionUpdate(Long id, SectionUpdateReqDto dto) {
+    public SectionListResDto sectionUpdate(Long id, SectionUpdateReqDto dto) {
         Section section = sectionRepository.findById(id).orElseThrow(()->new EntityNotFoundException("section not found"));
         section.updateEntity(dto);
-        return section;
+        SectionListResDto resDto = section.fromEntity();
+        return resDto;
     }
 
 
     public void sectionDelete(Long id) {
         Section section = sectionRepository.findById(id).orElseThrow(()->new EntityNotFoundException("section not found"));
-        Workspace workspace = workspaceRepository.findById(section.getWorkspace().getId()).orElse(null);
+        Workspace workspace = workspaceRepository.findById(section.getWorkspace().getWorkspaceId()).orElse(null);
         section.deleteEntity();
         workspaceRepository.save(workspace);
     }
