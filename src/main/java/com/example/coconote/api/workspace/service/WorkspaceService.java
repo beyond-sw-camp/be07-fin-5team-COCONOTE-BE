@@ -24,7 +24,7 @@ public class WorkspaceService {
         this.workspaceRepository = workspaceRepository;
     }
 
-    public Workspace workspaceCreate(WorkspaceCreateReqDto dto) {
+    public WorkspaceListResDto workspaceCreate(WorkspaceCreateReqDto dto) {
 
         String imgUrl = "";
         // 이미지파일 저장하고 String 이미지URL로 바꾸는 코드
@@ -43,7 +43,8 @@ public class WorkspaceService {
         workspace.getSections().add(sectionBookmark);
 
         workspaceRepository.save(workspace);
-        return workspace;
+        WorkspaceListResDto resDto = workspace.fromEntity();
+        return resDto;
     }
 
 
@@ -56,10 +57,11 @@ public class WorkspaceService {
         return dtos;
     }
 
-    public Workspace workspaceUpdate(Long id, WorkspaceUpdateReqDto dto) {
+    public WorkspaceListResDto workspaceUpdate(Long id, WorkspaceUpdateReqDto dto) {
         Workspace workspace = workspaceRepository.findById(id).orElseThrow(()->new EntityNotFoundException(" 찾을 수 없습니다."));
         workspace.updateEntity(dto);
-        return workspace;
+        WorkspaceListResDto resDto = workspace.fromEntity();
+        return resDto;
     }
 
     public void workspaceDelete(Long id) {

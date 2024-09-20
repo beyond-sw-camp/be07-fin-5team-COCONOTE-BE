@@ -27,13 +27,15 @@ public class SectionService {
         this.workspaceRepository = workspaceRepository;
     }
 
-    public Section sectionCreate(SectionCreateReqDto dto) {
+    public SectionListResDto sectionCreate(SectionCreateReqDto dto) {
         Workspace workspace = workspaceRepository.findById(dto.getWorkspaceId()).orElseThrow(()-> new EntityNotFoundException("존재하지 않는 워크스페이스입니다."));
 
         Section section = dto.toEntity(workspace);
         sectionRepository.save(section);
 
-        return section;
+        SectionListResDto resDto = section.fromEntity();
+
+        return resDto;
     }
 
 
@@ -46,10 +48,11 @@ public class SectionService {
         return dtos;
     }
 
-    public Section sectionUpdate(Long id, SectionUpdateReqDto dto) {
+    public SectionListResDto sectionUpdate(Long id, SectionUpdateReqDto dto) {
         Section section = sectionRepository.findById(id).orElseThrow(()->new EntityNotFoundException("section not found"));
         section.updateEntity(dto);
-        return section;
+        SectionListResDto resDto = section.fromEntity();
+        return resDto;
     }
 
 

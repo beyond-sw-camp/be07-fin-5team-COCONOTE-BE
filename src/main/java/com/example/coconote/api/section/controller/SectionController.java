@@ -26,8 +26,8 @@ public class SectionController {
     @Operation(summary= "섹션 생성")
     @PostMapping("/section/create")
     public ResponseEntity<Object> sectionCreate(@RequestBody SectionCreateReqDto dto) {
-        Section section = sectionService.sectionCreate(dto);
-        CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "section is successfully created", dto);
+        SectionListResDto resDto = sectionService.sectionCreate(dto);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "section is successfully created", resDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
 
     }
@@ -43,8 +43,8 @@ public class SectionController {
     @Operation(summary= "섹션 수정")
     @PatchMapping("/section/update/{id}")
     public ResponseEntity<Object> sectionUpdate(@PathVariable Long id, SectionUpdateReqDto dto) {
-        Section section = sectionService.sectionUpdate(id, dto);
-        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "section is successfully updated", dto);
+        SectionListResDto resDto = sectionService.sectionUpdate(id, dto);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "section is successfully updated", resDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 

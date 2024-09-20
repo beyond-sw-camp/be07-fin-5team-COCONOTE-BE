@@ -26,8 +26,8 @@ public class WorkspaceController {
     @Operation(summary= "워크스페이스 생성")
     @PostMapping("/workspace/create")
     public ResponseEntity<Object> workspaceCreate(@RequestBody WorkspaceCreateReqDto dto) {
-            Workspace workspace = workspaceService.workspaceCreate(dto);
-            CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "workspace is successfully created", dto);
+            WorkspaceListResDto resDto = workspaceService.workspaceCreate(dto);
+            CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "workspace is successfully created", resDto);
             return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }
 
@@ -42,8 +42,8 @@ public class WorkspaceController {
     @Operation(summary= "워크스페이스 수정")
     @PatchMapping("/workspace/update/{id}")
     public ResponseEntity<Object> workspaceUpdate(@PathVariable Long id, @RequestBody WorkspaceUpdateReqDto dto) {
-        workspaceService.workspaceUpdate(id, dto);
-        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "workspace is successfully updated", dto);
+        WorkspaceListResDto resDto = workspaceService.workspaceUpdate(id, dto);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "workspace is successfully updated", resDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
