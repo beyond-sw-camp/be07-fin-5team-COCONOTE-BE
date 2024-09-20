@@ -5,7 +5,6 @@ import com.example.coconote.api.section.dto.request.SectionUpdateReqDto;
 import com.example.coconote.api.section.dto.response.SectionListResDto;
 import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.section.repository.SectionRepository;
-import com.example.coconote.api.workspace.dto.response.WorkspaceListResDto;
 import com.example.coconote.api.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.repository.WorkspaceRepository;
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,7 +45,6 @@ public class SectionService {
             dtos.add(s.fromEntity());
         }
         return dtos;
-
     }
 
     public Section sectionUpdate(Long id, SectionUpdateReqDto dto) {

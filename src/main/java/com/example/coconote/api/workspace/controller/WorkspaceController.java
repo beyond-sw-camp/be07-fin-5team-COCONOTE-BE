@@ -1,6 +1,7 @@
 package com.example.coconote.api.workspace.controller;
 
 import com.example.coconote.api.workspace.dto.request.WorkspaceCreateReqDto;
+import com.example.coconote.api.workspace.dto.request.WorkspaceUpdateReqDto;
 import com.example.coconote.api.workspace.dto.response.WorkspaceListResDto;
 import com.example.coconote.api.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.service.WorkspaceService;
@@ -44,6 +45,35 @@ public class WorkspaceController {
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "list is successfully found", dtos);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
+
+    @PatchMapping("/workspace/update/{id}")
+    public ResponseEntity<Object> workspaceUpdate(@PathVariable Long id, @RequestBody WorkspaceUpdateReqDto dto) {
+        try {
+            workspaceService.workspaceUpdate(id, dto);
+            CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "workspace is successfully updated", null);
+            return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+        } catch(IllegalArgumentException e) {
+            e.printStackTrace();
+            CommonErrorDto commonErrorDto = new CommonErrorDto(HttpStatus.BAD_REQUEST, e.getMessage());
+            return new ResponseEntity<>(commonErrorDto, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PatchMapping("/workspace/delete/{id}")
+    public ResponseEntity<Object> workspaceDelete(@PathVariable Long id) {
+        try {
+            workspaceService.workspaceDelete(id);
+            CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "workspace is successfully deleted", null);
+            return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+        } catch(IllegalArgumentException e) {
+            e.printStackTrace();
+            CommonErrorDto commonErrorDto = new CommonErrorDto(HttpStatus.BAD_REQUEST, e.getMessage());
+            return new ResponseEntity<>(commonErrorDto, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+
+
 
 
 

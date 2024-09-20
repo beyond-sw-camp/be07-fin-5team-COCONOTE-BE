@@ -1,9 +1,11 @@
 package com.example.coconote.api.workspace.service;
 
 import com.example.coconote.api.workspace.dto.request.WorkspaceCreateReqDto;
+import com.example.coconote.api.workspace.dto.request.WorkspaceUpdateReqDto;
 import com.example.coconote.api.workspace.dto.response.WorkspaceListResDto;
 import com.example.coconote.api.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.repository.WorkspaceRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,5 +43,17 @@ public class WorkspaceService {
             dtos.add(w.fromEntity());
         }
         return dtos;
+    }
+
+    public Workspace workspaceUpdate(Long id, WorkspaceUpdateReqDto dto) {
+        Workspace workspace = workspaceRepository.findById(id).orElseThrow(()->new EntityNotFoundException(" 찾을 수 없습니다."));
+        workspace.updateEntity(dto);
+        return workspace;
+    }
+
+    public void workspaceDelete(Long id) {
+
+        Workspace workspace = workspaceRepository.findById(id).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+        workspace.deleteEntity();
     }
 }
