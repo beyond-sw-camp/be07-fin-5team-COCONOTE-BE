@@ -1,10 +1,7 @@
 package com.example.coconote.api.channelMember.controller;
 
-import com.example.coconote.api.channel.dto.request.ChannelCreateReqDto;
 import com.example.coconote.api.channel.dto.request.ChannelUpdateReqDto;
-import com.example.coconote.api.channel.dto.response.ChannelListResDto;
 import com.example.coconote.api.channelMember.dto.response.ChannelMemberListResDto;
-import com.example.coconote.api.channelMember.entity.ChannelMember;
 import com.example.coconote.api.channelMember.service.ChannelMemberService;
 import com.example.coconote.common.CommonResDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +22,7 @@ public class ChannelMemberController {
     @PostMapping("/channelMember/create/{channelId}") // 채널 가입
     public ResponseEntity<Object> channelMemberCreate(@PathVariable Long channelId) {
         ChannelMemberListResDto resDto = channelMemberService.channelMemberCreate(channelId);
-        CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "channelMember is successfully created", resDto);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "member is successfully created", resDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }
 
@@ -39,7 +36,7 @@ public class ChannelMemberController {
     @PatchMapping("/channelMember/role/{id}") // 채널 관리자 권한 부여/삭제
     public ResponseEntity<Object> channelUpdate(@PathVariable Long id, @RequestBody ChannelUpdateReqDto dto) {
         channelMemberService.channelMemberUpdate(id, dto);
-        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "channelMember is successfully updated", null);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "member is successfully updated", null);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
@@ -47,7 +44,7 @@ public class ChannelMemberController {
     @PatchMapping("/channelMember/bookmark/{id}")  // 채널 즐겨찾기
     public ResponseEntity<Object> channelUpdate(@PathVariable Long id, @RequestBody ChannelUpdateReqDto dto) {
         channelMemberService.channelMemberUpdate(id, dto);
-        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "channelMember is successfully updated", null);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "member is successfully updated", null);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
