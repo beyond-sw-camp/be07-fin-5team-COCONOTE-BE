@@ -2,6 +2,7 @@ package com.example.coconote.api.channel.entity;
 
 import com.example.coconote.api.channel.dto.request.ChannelUpdateReqDto;
 import com.example.coconote.api.channel.dto.response.ChannelListResDto;
+import com.example.coconote.api.channelMember.entity.ChannelMember;
 import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.drive.entity.Folder;
 import com.example.coconote.common.BaseEntity;
@@ -14,6 +15,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -35,6 +37,10 @@ public class Channel extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "section_id")
     private Section section;
+
+    @OneToMany(mappedBy = "channel", cascade = CascadeType.PERSIST)
+    @Builder.Default
+    private List<ChannelMember> channelMembers = new ArrayList<>();
 
     // 폴더들과의 관계 (일대다 관계)
     @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL)
