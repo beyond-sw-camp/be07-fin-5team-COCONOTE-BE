@@ -5,7 +5,6 @@ import com.example.coconote.api.workspace.dto.request.WorkspaceUpdateReqDto;
 import com.example.coconote.api.workspace.dto.response.WorkspaceListResDto;
 import com.example.coconote.api.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.service.WorkspaceService;
-import com.example.coconote.common.CommonErrorDto;
 import com.example.coconote.common.CommonResDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,15 +26,9 @@ public class WorkspaceController {
     @PostMapping("/workspace/create")
     public ResponseEntity<Object> workspaceCreate(@RequestPart(value = "data") WorkspaceCreateReqDto dto,
                                                   @RequestPart(value = "file") MultipartFile imgFile) {
-        try {
             Workspace workspace = workspaceService.workspaceCreate(dto, imgFile);
             CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "workspace is successfully created", workspace.getId());
             return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
-        } catch(IllegalArgumentException e) {
-            e.printStackTrace();
-            CommonErrorDto commonErrorDto = new CommonErrorDto(HttpStatus.BAD_REQUEST, e.getMessage());
-            return new ResponseEntity<>(commonErrorDto, HttpStatus.BAD_REQUEST);
-        }
     }
 
 
@@ -48,28 +41,16 @@ public class WorkspaceController {
 
     @PatchMapping("/workspace/update/{id}")
     public ResponseEntity<Object> workspaceUpdate(@PathVariable Long id, @RequestBody WorkspaceUpdateReqDto dto) {
-        try {
-            workspaceService.workspaceUpdate(id, dto);
-            CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "workspace is successfully updated", null);
-            return new ResponseEntity<>(commonResDto, HttpStatus.OK);
-        } catch(IllegalArgumentException e) {
-            e.printStackTrace();
-            CommonErrorDto commonErrorDto = new CommonErrorDto(HttpStatus.BAD_REQUEST, e.getMessage());
-            return new ResponseEntity<>(commonErrorDto, HttpStatus.BAD_REQUEST);
-        }
+        workspaceService.workspaceUpdate(id, dto);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "workspace is successfully updated", null);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
     @PatchMapping("/workspace/delete/{id}")
     public ResponseEntity<Object> workspaceDelete(@PathVariable Long id) {
-        try {
-            workspaceService.workspaceDelete(id);
-            CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "workspace is successfully deleted", null);
-            return new ResponseEntity<>(commonResDto, HttpStatus.OK);
-        } catch(IllegalArgumentException e) {
-            e.printStackTrace();
-            CommonErrorDto commonErrorDto = new CommonErrorDto(HttpStatus.BAD_REQUEST, e.getMessage());
-            return new ResponseEntity<>(commonErrorDto, HttpStatus.BAD_REQUEST);
-        }
+        workspaceService.workspaceDelete(id);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "workspace is successfully deleted", null);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
 

@@ -1,16 +1,11 @@
 package com.example.coconote.api.section.controller;
 
-import com.example.coconote.api.channel.dto.request.ChannelCreateReqDto;
-import com.example.coconote.api.channel.entity.Channel;
 import com.example.coconote.api.section.dto.request.SectionCreateReqDto;
 import com.example.coconote.api.section.dto.request.SectionUpdateReqDto;
 import com.example.coconote.api.section.dto.response.SectionListResDto;
 import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.section.service.SectionService;
-import com.example.coconote.api.workspace.dto.response.WorkspaceListResDto;
-import com.example.coconote.common.CommonErrorDto;
 import com.example.coconote.common.CommonResDto;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,15 +24,10 @@ public class SectionController {
 
     @PostMapping("/section/create") // 섹션 생성
     public ResponseEntity<Object> sectionCreate(@RequestBody SectionCreateReqDto dto) {
-        try {
-            Section section = sectionService.sectionCreate(dto);
-            CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "section is successfully created", section.getId());
-            return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
-        } catch(IllegalArgumentException e) {
-            e.printStackTrace();
-            CommonErrorDto commonErrorDto = new CommonErrorDto(HttpStatus.BAD_REQUEST, e.getMessage());
-            return new ResponseEntity<>(commonErrorDto, HttpStatus.BAD_REQUEST);
-        }
+        Section section = sectionService.sectionCreate(dto);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "section is successfully created", section.getId());
+        return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
+
     }
 
     @GetMapping("/section/list")
@@ -49,29 +39,17 @@ public class SectionController {
 
     @PatchMapping("/section/update/{id}")
     public ResponseEntity<Object> sectionUpdate(@PathVariable Long id, SectionUpdateReqDto dto) {
-        try {
-            sectionService.sectionUpdate(id, dto);
-            CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "section is successfully updated", null);
-            return new ResponseEntity<>(commonResDto, HttpStatus.OK);
-        } catch(IllegalArgumentException e) {
-            e.printStackTrace();
-            CommonErrorDto commonErrorDto = new CommonErrorDto(HttpStatus.BAD_REQUEST, e.getMessage());
-            return new ResponseEntity<>(commonErrorDto, HttpStatus.BAD_REQUEST);
-        }
+        sectionService.sectionUpdate(id, dto);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "section is successfully updated", null);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
 
     @PatchMapping("/section/delete/{id}")
     public ResponseEntity<Object> sectionDelete(@PathVariable Long id) {
-        try {
-            sectionService.sectionDelete(id);
-            CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "section is successfully deleted", null);
-            return new ResponseEntity<>(commonResDto, HttpStatus.OK);
-        } catch(IllegalArgumentException e) {
-            e.printStackTrace();
-            CommonErrorDto commonErrorDto = new CommonErrorDto(HttpStatus.BAD_REQUEST, e.getMessage());
-            return new ResponseEntity<>(commonErrorDto, HttpStatus.BAD_REQUEST);
-        }
+        sectionService.sectionDelete(id);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "section is successfully deleted", null);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
 }
