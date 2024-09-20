@@ -14,6 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ThreadResDto {
+    private Long id;
     private String image;
     private String memberName;
     private LocalDateTime createdTime;

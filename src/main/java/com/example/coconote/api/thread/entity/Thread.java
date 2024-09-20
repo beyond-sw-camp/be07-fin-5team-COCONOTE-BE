@@ -42,6 +42,7 @@ public class Thread extends BaseEntity {
     public ThreadResDto fromEntity() {
         List<TagResDto> tags = this.threadTags.stream().map(threadTag -> threadTag.fromEntity()).toList();
         return ThreadResDto.builder()
+                .id(this.id)
                 .memberName(this.member.getNickname())
                 .createdTime(this.getCreatedTime())
                 .content(this.content)
@@ -53,6 +54,7 @@ public class Thread extends BaseEntity {
     public ThreadResDto fromEntity(List<ThreadResDto> childThreadList) {
         List<TagResDto> tags = this.threadTags.stream().map(threadTag -> threadTag.fromEntity()).toList();
         return ThreadResDto.builder()
+                .id(this.id)
                 .memberName(this.member.getNickname())
                 .createdTime(this.getCreatedTime())
                 .content(this.content)
