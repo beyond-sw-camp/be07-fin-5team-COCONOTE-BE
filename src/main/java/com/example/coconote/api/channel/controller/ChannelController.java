@@ -26,15 +26,15 @@ public class ChannelController {
     @Operation(summary= "채널 생성")
     @PostMapping("/channel/create")
     public ResponseEntity<Object> channelCreate(@RequestBody ChannelCreateReqDto dto) {
-        Channel channel = channelService.channelCreate(dto);
-        CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "channel is successfully created", channel);
+        ChannelListResDto resDto = channelService.channelCreate(dto);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "channel is successfully created", resDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }
 
     @Operation(summary= "채널 조회")
-    @GetMapping("/channel/list")
-    public ResponseEntity<Object> channelRead() {
-        List<ChannelListResDto> dtos = channelService.channelList();
+    @GetMapping("/channel/list/{sectionId}")
+    public ResponseEntity<Object> channelRead(@PathVariable Long sectionId) {
+        List<ChannelListResDto> dtos = channelService.channelList(sectionId);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "list is successfully found", dtos);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }

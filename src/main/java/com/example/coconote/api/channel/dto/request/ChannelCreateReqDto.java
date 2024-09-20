@@ -15,7 +15,7 @@ public class ChannelCreateReqDto {
     private Long sectionId;
     private String channelName;
     private String channelInfo;
-    private boolean isPublic;
+    private Boolean isPublic;
 
     public Channel toEntity(Section section) {
         return Channel.builder()

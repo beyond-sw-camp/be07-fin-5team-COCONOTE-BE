@@ -10,7 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChannelListResDto {
+    private Long sectionId;
     private Long channelId;
-    private String name;
-    private String info;
+    private String channelName;
+    private String channelInfo;
+    private Boolean isPublic;
 }

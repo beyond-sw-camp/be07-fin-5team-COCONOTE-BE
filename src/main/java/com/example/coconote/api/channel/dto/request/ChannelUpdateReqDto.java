@@ -12,5 +12,5 @@ import lombok.NoArgsConstructor;
 public class ChannelUpdateReqDto {
     private String channelName;
     private String channelInfo;
-    private boolean isPublic;
+    private Boolean isPublic;
 }

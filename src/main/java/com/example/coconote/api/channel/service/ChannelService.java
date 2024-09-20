@@ -28,20 +28,26 @@ public class ChannelService {
     }
 
 
-    public Channel channelCreate(ChannelCreateReqDto dto) {
+    public ChannelListResDto channelCreate(ChannelCreateReqDto dto) {
         Section section = sectionRepository.findById(dto.getSectionId()).orElseThrow(()-> new EntityNotFoundException("존재하지 않는 섹션입니다."));
 
         Channel channel = dto.toEntity(section);
         channelRepository.save(channel);
 
-        return channel;
+        ChannelListResDto resDto = channel.fromEntity(section);
+
+        return resDto;
     }
 
-    public List<ChannelListResDto> channelList() {
+    public List<ChannelListResDto> channelList(Long sectionId) {
+
+        Section section = sectionRepository.findById(sectionId).orElseThrow(()->new EntityNotFoundException("없는 섹션입니다."));
         List<Channel> channels = channelRepository.findAll();
         List<ChannelListResDto> dtos = new ArrayList<>();
+
+
         for(Channel c : channels) {
-            dtos.add(c.fromEntity());
+            dtos.add(c.fromEntity(section));
         }
         return dtos;
     }

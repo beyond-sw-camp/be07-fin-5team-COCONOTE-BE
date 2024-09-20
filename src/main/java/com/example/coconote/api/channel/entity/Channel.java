@@ -13,7 +13,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -30,7 +29,7 @@ public class Channel extends BaseEntity {
 
     private String channelInfo;
 
-    private boolean isPublic;
+    private Boolean isPublic;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "section_id")
@@ -44,18 +43,20 @@ public class Channel extends BaseEntity {
     @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL)
     private List<Folder> folders;
 
-    public ChannelListResDto fromEntity() {
+    public ChannelListResDto fromEntity(Section section) {
         return ChannelListResDto.builder()
+                .sectionId(section.getSectionId())
                 .channelId(this.channelId)
-                .name(this.channelName)
-                .info(this.channelInfo)
+                .channelName(this.channelName)
+                .channelInfo(this.channelInfo)
+                .isPublic(this.isPublic)
                 .build();
     }
 
     public void updateEntity(ChannelUpdateReqDto dto) {
         this.channelName = dto.getChannelName();
         this.channelInfo = dto.getChannelInfo();
-        this.isPublic = dto.isPublic();
+        this.isPublic = dto.getIsPublic();
     }
 
     public void deleteEntity() {
