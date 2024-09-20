@@ -22,4 +22,8 @@ public class ThreadTag {
     @ManyToOne(fetch = FetchType.LAZY)
     private Tag tag;
 
+    public ThreadTag(Thread thread, Tag tag) {
+        this.thread = thread;
+        this.tag = tag;
+    }
 }
