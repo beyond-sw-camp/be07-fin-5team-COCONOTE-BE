@@ -1,16 +1,12 @@
-package com.example.coconote.api.chat.entity;
+package com.example.coconote.api.chatRoom.entity;
 
-import com.example.coconote.api.chat.dto.ChatMessage;
 //import com.example.coconote.api.chat.service.ChatService;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.web.socket.WebSocketSession;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+        import java.util.UUID;
 
 @Data
 @Builder

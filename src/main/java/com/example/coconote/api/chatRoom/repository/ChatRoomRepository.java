@@ -1,6 +1,6 @@
-package com.example.coconote.api.chat.repository;
+package com.example.coconote.api.chatRoom.repository;
 
-import com.example.coconote.api.chat.entity.ChatRoom;
+import com.example.coconote.api.chatRoom.entity.ChatRoom;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Repository;
 

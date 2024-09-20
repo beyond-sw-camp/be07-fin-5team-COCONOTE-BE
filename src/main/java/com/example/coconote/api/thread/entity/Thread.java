@@ -3,7 +3,7 @@ package com.example.coconote.api.thread.entity;
 import com.example.coconote.api.channel.entity.Channel;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.tag.dto.response.TagResDto;
-import com.example.coconote.api.thread.dto.response.ThreadListResDto;
+import com.example.coconote.api.thread.dto.response.ThreadResDto;
 import com.example.coconote.api.threadTag.entity.ThreadTag;
 import com.example.coconote.common.BaseEntity;
 import jakarta.persistence.*;
@@ -26,7 +26,7 @@ public class Thread extends BaseEntity {
     @Column(name="thread_id")
     private Long id;
     private String content;
-    @ElementCollection(fetch = FetchType.LAZY)
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<String> files;
     @ManyToOne(fetch = FetchType.LAZY)
     private Thread parent;
@@ -39,9 +39,9 @@ public class Thread extends BaseEntity {
     @OneToMany(mappedBy = "thread", cascade = CascadeType.ALL)
     private List<ThreadTag> threadTags = new ArrayList<>();
 
-    public ThreadListResDto fromEntity() {
+    public ThreadResDto fromEntity() {
         List<TagResDto> tags = this.threadTags.stream().map(threadTag -> threadTag.fromEntity()).toList();
-        return ThreadListResDto.builder()
+        return ThreadResDto.builder()
                 .memberName(this.member.getNickname())
                 .createdTime(this.getCreatedTime())
                 .content(this.content)
@@ -50,9 +50,9 @@ public class Thread extends BaseEntity {
                 .build();
     }
 
-    public ThreadListResDto fromEntity(List<ThreadListResDto> childThreadList) {
+    public ThreadResDto fromEntity(List<ThreadResDto> childThreadList) {
         List<TagResDto> tags = this.threadTags.stream().map(threadTag -> threadTag.fromEntity()).toList();
-        return ThreadListResDto.builder()
+        return ThreadResDto.builder()
                 .memberName(this.member.getNickname())
                 .createdTime(this.getCreatedTime())
                 .content(this.content)

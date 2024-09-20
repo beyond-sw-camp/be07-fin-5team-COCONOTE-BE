@@ -1,9 +1,8 @@
 package com.example.coconote.api.thread.controller;
 
 
-import com.example.coconote.api.drive.dto.response.FolderCreateResDto;
 import com.example.coconote.api.thread.dto.requset.ThreadCreateReqDto;
-import com.example.coconote.api.thread.dto.response.ThreadListResDto;
+import com.example.coconote.api.thread.dto.response.ThreadResDto;
 import com.example.coconote.api.thread.entity.Thread;
 import com.example.coconote.api.thread.service.ThreadService;
 import com.example.coconote.common.CommonResDto;
@@ -22,14 +21,14 @@ public class ThreadController {
 
     @PostMapping("create")
     public ResponseEntity<?> createThread(@RequestBody ThreadCreateReqDto dto) {
-        Thread thread = threadService.createThread(dto);
-        CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "쓰레드가 성공적으로 생성되었습니다.", thread.getId());
+        ThreadResDto threadResDto = threadService.createThread(dto);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "쓰레드가 성공적으로 생성되었습니다.", threadResDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }
 
     @GetMapping("list/{channelId}")
     public ResponseEntity<?> listThreads(@PathVariable Long channelId, Pageable pageable) {
-        Page<ThreadListResDto> ThreadListResDtos = threadService.threadList(channelId, pageable);
+        Page<ThreadResDto> ThreadListResDtos = threadService.threadList(channelId, pageable);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "쓰레드 목록이 성공적으로 반환되었습니다.", ThreadListResDtos);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }

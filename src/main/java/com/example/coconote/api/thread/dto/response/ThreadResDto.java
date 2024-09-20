@@ -1,7 +1,6 @@
 package com.example.coconote.api.thread.dto.response;
 
 import com.example.coconote.api.tag.dto.response.TagResDto;
-import com.example.coconote.api.tag.entity.Tag;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,13 +13,13 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ThreadListResDto {
+public class ThreadResDto {
     private String image;
     private String memberName;
     private LocalDateTime createdTime;
     private String content;
     private List<String> files;
-    private List<ThreadListResDto> childThreads;
+    private List<ThreadResDto> childThreads;
     //TODO: 태그 추가해줘야됨
     private List<TagResDto> tags;
 }

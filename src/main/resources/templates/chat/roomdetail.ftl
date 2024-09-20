@@ -70,7 +70,7 @@
                 this.message = '';
             },
             recvMessage: function(recv) {
-                this.messages.unshift({"type":recv.type,"sender":recv.type=='ENTER'?'[알림]':recv.sender,"message":recv.message})
+                this.messages.unshift({"type":recv.type, "sender":recv.type=='ENTER'?'[알림]':recv.sender, "message":recv.message})
             }
         }
     });

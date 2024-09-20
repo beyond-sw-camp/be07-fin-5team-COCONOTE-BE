@@ -1,7 +1,7 @@
-package com.example.coconote.api.chat.controller;
+package com.example.coconote.api.chatRoom.controller;
 
-import com.example.coconote.api.chat.entity.ChatRoom;
-import com.example.coconote.api.chat.repository.ChatRoomRepository;
+import com.example.coconote.api.chatRoom.entity.ChatRoom;
+import com.example.coconote.api.chatRoom.repository.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

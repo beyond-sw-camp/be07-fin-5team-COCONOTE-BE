@@ -1,6 +1,6 @@
-package com.example.coconote.api.chat.dto;
+package com.example.coconote.api.chatRoom.dto;
 
-import com.example.coconote.api.chat.entity.MessageType;
+import com.example.coconote.api.chatRoom.entity.MessageType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ChatMessage {
+public class ChatMessage2 {
     private MessageType type;
-    private String roomId;
-    private String sender;
+    private Long channelId;
+    private Long sender;
     private String message;
 }
