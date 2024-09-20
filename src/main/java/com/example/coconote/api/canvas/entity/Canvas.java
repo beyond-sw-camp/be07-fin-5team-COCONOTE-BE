@@ -6,11 +6,15 @@ import com.example.coconote.api.channel.entity.Channel;
 import com.example.coconote.api.drive.entity.Folder;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.common.BaseEntity;
+import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
@@ -32,8 +36,24 @@ public class Canvas extends BaseEntity {
     @JoinColumn(name = "parent_canvas_id")
     private Canvas parentCanvas;
 
+    @OneToMany(mappedBy = "parentCanvas", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Canvas> childCanvasList;
+
     @ManyToOne(fetch = FetchType.LAZY)
     private Channel channel;
+
+    // 소프트 삭제 메서드
+    public void markAsDeleted() {
+        this.isDeleted = IsDeleted.Y;
+        this.deletedTime = LocalDateTime.now();
+
+        // 재귀적으로 삭제 처리
+        if (childCanvasList != null) {
+            for (Canvas child : childCanvasList) {
+                child.markAsDeleted();
+            }
+        }
+    }
 
     public CanvasListResDto fromListEntity() {
         return CanvasListResDto.builder()

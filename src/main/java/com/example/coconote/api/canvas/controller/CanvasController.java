@@ -83,4 +83,15 @@ public class CanvasController {
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "Canvas가 성공적으로 조회되었습니다.", canvasDetResDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
+
+    @Operation(
+            summary = "Canvas 삭제하기",
+            description = "Canvas 삭제하기."
+    )
+    @DeleteMapping("/{canvasId}")
+    public ResponseEntity<?> deleteCanvas(@PathVariable Long canvasId, String email){
+        canvasService.deleteCanvas(canvasId, email);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "Canvas가 성공적으로 삭제되었습니다.", null);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
 }
