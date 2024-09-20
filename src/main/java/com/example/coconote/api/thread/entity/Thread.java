@@ -1,5 +1,6 @@
 package com.example.coconote.api.thread.entity;
 
+import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -18,10 +19,13 @@ public class Thread extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="thread_id")
-    private long id;
+    private Long id;
     private String content;
-    private String file;
+    @ElementCollection(fetch = FetchType.LAZY)
+    private List<String> files;
     @ManyToOne(fetch = FetchType.LAZY)
-    private Thread thread;
-
+    private Thread parent;
+    //TODO:추후 워크스페이스-유저로 변경
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Member member;
 }
