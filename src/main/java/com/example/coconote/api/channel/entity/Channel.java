@@ -1,11 +1,11 @@
 package com.example.coconote.api.channel.entity;
 
 import com.example.coconote.api.canvas.entity.Canvas;
-import com.example.coconote.api.channel.dto.response.ChannelResDto;
 import com.example.coconote.api.channel.dto.request.ChannelUpdateReqDto;
 import com.example.coconote.api.channel.dto.response.ChannelListResDto;
-import com.example.coconote.api.section.entity.Section;
+import com.example.coconote.api.channel.dto.response.ChannelResDto;
 import com.example.coconote.api.drive.entity.Folder;
+import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.common.BaseEntity;
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.*;
@@ -13,15 +13,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
 @Builder
 public class Channel extends BaseEntity {
     @Id
@@ -43,15 +42,14 @@ public class Channel extends BaseEntity {
     private List<Folder> folders;
 
     // 캔버스 관계
-    @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL)
-    private List<Canvas> canvas;
+//    @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL)
+//    private List<Canvas> canvas;
 
-    public ChannelResDto fromEntity() {
+    public ChannelResDto fromResEntity() {
         return ChannelResDto.builder()
                 .id(this.id)
                 .build();
     }
-}
 
     public ChannelListResDto fromEntity() {
         return ChannelListResDto.builder()

@@ -3,7 +3,6 @@ package com.example.coconote.api.canvas.entity;
 import com.example.coconote.api.canvas.dto.response.CanvasDetResDto;
 import com.example.coconote.api.canvas.dto.response.CanvasListResDto;
 import com.example.coconote.api.channel.entity.Channel;
-import com.example.coconote.api.drive.entity.Folder;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.common.BaseEntity;
 import com.example.coconote.common.IsDeleted;
@@ -67,7 +66,7 @@ public class Canvas extends BaseEntity {
                 .id(this.id)
                 .title(this.title)
                 .parentCanvas(this.getParentCanvas() != null ? this.getParentCanvas().fromListEntity() : null)
-                .channel(this.getChannel()!= null ? this.getChannel().fromEntity() : null)
+                .channel(this.getChannel()!= null ? this.getChannel().fromResEntity() : null)
 //               ⭐ 추후 블록 추가
                 .createdTime(this.getCreatedTime())
                 .updatedTime(this.getUpdatedTime())
