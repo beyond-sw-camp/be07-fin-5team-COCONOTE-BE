@@ -46,6 +46,7 @@ public class Channel extends BaseEntity {
 
     public ChannelListResDto fromEntity() {
         return ChannelListResDto.builder()
+                .channelId(this.channelId)
                 .name(this.channelName)
                 .info(this.channelInfo)
                 .build();

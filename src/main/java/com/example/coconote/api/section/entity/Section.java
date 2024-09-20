@@ -38,6 +38,7 @@ public class Section extends BaseEntity {
 
     public SectionListResDto fromEntity() {
         return SectionListResDto.builder()
+                .sectionId(this.sectionId)
                 .sectionName(this.sectionName).build();
     }
 

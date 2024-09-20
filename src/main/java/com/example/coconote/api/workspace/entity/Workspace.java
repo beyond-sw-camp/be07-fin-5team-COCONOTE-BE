@@ -35,6 +35,7 @@ public class Workspace extends BaseEntity {
 
     public WorkspaceListResDto fromEntity() {
         return WorkspaceListResDto.builder()
+                .workspaceId(this.workspaceId)
                 .name(this.name)
                 .wsInfo(this.wsInfo)
                 .build();
