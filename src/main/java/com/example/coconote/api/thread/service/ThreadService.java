@@ -33,7 +33,7 @@ public class ThreadService {
         return thread;
     }
 
-    public Page<ThreadListResDto> threadList(Pageable pageable) {
+    public Page<ThreadListResDto> threadList(Long channelId,Pageable pageable) {
         Page<Thread> threads = threadRepository.findAll(pageable);
 //        Page<ThreadListResDto> threadListResDtos = threads.map(thread -> {
 //            return thread.fromEntity();

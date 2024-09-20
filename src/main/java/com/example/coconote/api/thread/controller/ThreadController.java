@@ -29,7 +29,7 @@ public class ThreadController {
 
     @GetMapping("list/{channelId}")
     public ResponseEntity<?> listThreads(@PathVariable Long channelId, Pageable pageable) {
-        Page<ThreadListResDto> ThreadListResDtos = threadService.threadList(pageable);
+        Page<ThreadListResDto> ThreadListResDtos = threadService.threadList(channelId, pageable);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "쓰레드 목록이 성공적으로 반환되었습니다.", ThreadListResDtos);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
