@@ -43,4 +43,10 @@ public class TagController {
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "태그 이름 변경 성공.", tag.getId());
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
+
+    @DeleteMapping("delete/{tagId}")
+    public ResponseEntity<?> deleteTag(@PathVariable Long tagId) {
+        tagService.deleteTag(tagId);
+        return new ResponseEntity<>("태그 삭제 성공", HttpStatus.OK);
+    }
 }

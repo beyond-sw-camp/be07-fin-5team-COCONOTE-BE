@@ -3,11 +3,14 @@ package com.example.coconote.api.tag.entity;
 import com.example.coconote.api.channel.entity.Channel;
 import com.example.coconote.api.tag.dto.response.TagListResDto;
 import com.example.coconote.common.BaseEntity;
+import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -36,5 +39,10 @@ public class Tag extends BaseEntity {
     public Tag updateName(String updateTagName) {
         this.name = updateTagName;
         return this;
+    }
+
+    public void deleteTag() {
+        this.isDeleted = IsDeleted.Y;
+        this.deletedTime = LocalDateTime.now();
     }
 }

@@ -42,4 +42,9 @@ public class TagService {
         tag.updateName(dto.getUpdateTagName());
         return tag;
     }
+
+    public void deleteTag(Long tagId) {
+        Tag tag = tagRepository.findById(tagId).orElseThrow(()->new EntityNotFoundException("Tag not found"));
+        tag.deleteTag();
+    }
 }
