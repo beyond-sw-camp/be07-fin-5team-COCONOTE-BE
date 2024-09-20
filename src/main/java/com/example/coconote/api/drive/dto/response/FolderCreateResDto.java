@@ -21,7 +21,7 @@ public class FolderCreateResDto {
         return FolderCreateResDto.builder()
                 .folderId(folder.getId())
                 .folderName(folder.getFolderName())
-                .channelId(folder.getChannel().getChannelId())
+                .channelId(folder.getChannel().getId())
                 .parentFolderId(folder.getParentFolder() == null ? null : folder.getParentFolder().getId())
                 .build();
     }

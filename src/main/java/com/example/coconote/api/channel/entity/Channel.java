@@ -25,7 +25,7 @@ import java.util.List;
 public class Channel extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long channelId;
+    private Long Id;
 
     private String channelName;
 
@@ -52,10 +52,21 @@ public class Channel extends BaseEntity {
     public ChannelListResDto fromEntity(Section section) {
         return ChannelListResDto.builder()
                 .sectionId(section.getSectionId())
-                .channelId(this.channelId)
+                .channelId(this.Id)
                 .channelName(this.channelName)
                 .channelInfo(this.channelInfo)
                 .isPublic(this.isPublic)
+                .build();
+    }
+    public ChannelResDto fromEntity() {
+        return ChannelResDto.builder()
+                .id(this.Id)
+                .build();
+    }
+
+    public ChannelResDto toResDto() {
+        return ChannelResDto.builder()
+                .id(this.Id)
                 .build();
     }
 

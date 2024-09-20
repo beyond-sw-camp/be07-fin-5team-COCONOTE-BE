@@ -38,8 +38,9 @@ public class CanvasService {
         if (createCanvasReqDto.getParentCanvasId() != null) {
             parentCanvas = canvasRepository.findById(createCanvasReqDto.getParentCanvasId())
                     .orElseThrow(() -> new IllegalArgumentException("부모 캔버스가 존재하지 않습니다."));
+            // 부모 캔버스가 현재 채널에 속해 있는지 확인
             if (!parentCanvas.getChannel().getId().equals(channel.getId())) {
-                throw new IllegalArgumentException("부모 캔버스가 다른 채널에 있습니다.");
+                throw new IllegalArgumentException("부모 캔버스가 현재 채널에 속해 있지 않습니다.");
             }
         }
 
