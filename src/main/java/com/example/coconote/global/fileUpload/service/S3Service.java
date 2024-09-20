@@ -20,10 +20,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 
+import java.net.URI;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -220,5 +223,35 @@ public class S3Service {
                 .createMemberName(fileEntity.getCreator().getEmail())
                 .channelId(folder.getChannel().getId())
                 .build();
+    }
+
+
+    public String getPresignedUrlToDownload(Long fileId, String email) {
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        FileEntity fileEntity = fileRepository.findById(fileId)
+                .orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다."));
+
+        if (!fileEntity.getCreator().equals(member)) {
+            throw new IllegalArgumentException("파일을 다운로드할 권한이 없습니다.");
+        }
+        PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(b -> b.getObjectRequest(GetObjectRequest.builder()
+                .bucket(bucketName)
+                .key(fileEntity.getFileUrl().substring(fileEntity.getFileUrl().lastIndexOf('/') + 1))
+                .build())
+                .signatureDuration(Duration.ofMinutes(1)));
+
+        // Presigned URL 생성
+        return presignedRequest.url().toString();
+//        // Presigned URL 생성
+//        try {
+//            URI presignedUrl = s3Presigner.presignGetObject(b -> b.getObjectRequest(getObjectRequest)
+//                            .signatureDuration(Duration.ofMinutes(1)))
+//                    .url().toURI();
+//            return presignedUrl.toString(); // 클라이언트에 반환
+//        }catch (Exception e){
+//            throw new IllegalArgumentException("Presigned URL 생성에 실패했습니다.");
+//        }
     }
 }

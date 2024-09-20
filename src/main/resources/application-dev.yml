@@ -30,3 +30,11 @@ springdoc:
     path: /swagger-ui.html
     display-request-duration: true
     groups-order: DESC
+
+
+aws:
+  access_key_id: ${local.s3.key}
+  secret_key: ${local.s3.secret}
+  s3:
+    region: ${local.s3.region}
+    bucket: ${local.s3.bucket}
