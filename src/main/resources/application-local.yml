@@ -18,6 +18,32 @@ spring:
       ddl-auto: create
     show_sql: true
     open-in-view: false
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${local.google.client-id}
+            client-secret: ${local.google.client-secret}
+            scope: profile, email
+            redirect-uri: "http://localhost:8080/login/oauth2/code/google"
+          kakao:
+            client-id: ${local.kakao.client-id}
+            client-secret: ${local.kakao.client-secret}
+            scope: profile_nickname, account_email
+            authorization-grant-type: authorization_code
+            redirect-uri: "http://localhost:8080/login/oauth2/code/kakao"
+            client-name: Kakao
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
 
 springdoc:
   api-docs:
