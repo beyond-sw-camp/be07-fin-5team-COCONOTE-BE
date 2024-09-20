@@ -1,5 +1,6 @@
 package com.example.coconote.api.workspace.entity;
 
+import com.example.coconote.api.channel.entity.Channel;
 import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.workspace.dto.request.WorkspaceUpdateReqDto;
 import com.example.coconote.api.workspace.dto.response.WorkspaceListResDto;
@@ -9,6 +10,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,6 +47,12 @@ public class Workspace extends BaseEntity {
     }
 
     public void deleteEntity() {
-//        this.isDeleted = IsDeleted.Y;
+        this.isDeleted = IsDeleted.Y;
+        this.deletedTime = LocalDateTime.now();
+        if(this.sections != null) {
+            for (Section s : this.sections) {
+                s.deleteEntity();
+            }
+        }
     }
 }
