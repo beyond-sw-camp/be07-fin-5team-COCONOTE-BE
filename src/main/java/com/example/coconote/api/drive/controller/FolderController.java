@@ -1,15 +1,23 @@
 package com.example.coconote.api.drive.controller;
 
 import com.example.coconote.api.drive.dto.request.CreateFolderReqDto;
+import com.example.coconote.api.drive.dto.request.MoveFolderReqDto;
+import com.example.coconote.api.drive.dto.response.FolderAllListResDto;
 import com.example.coconote.api.drive.dto.response.FolderChangeNameResDto;
 import com.example.coconote.api.drive.dto.response.FolderCreateResDto;
+import com.example.coconote.api.drive.dto.response.MoveFolderResDto;
 import com.example.coconote.api.drive.service.FolderService;
 import com.example.coconote.common.CommonResDto;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/drive/folder")
@@ -34,6 +42,28 @@ public class FolderController {
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "폴더 이름이 성공적으로 수정되었습니다.", null);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
 
+    }
+
+    @PatchMapping("/move")
+    public ResponseEntity<?> moveFolder(@RequestBody MoveFolderReqDto moveFolderReqDto, String email){
+        MoveFolderResDto response = folderService.moveFolder(moveFolderReqDto.getFolderId(),moveFolderReqDto.getParentId(), email);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "폴더가 성공적으로 이동되었습니다.", response);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{folderId}")
+    public ResponseEntity<?> deleteFolder(@PathVariable Long folderId, String email){
+        folderService.deleteFolder(folderId, email);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "폴더가 성공적으로 삭제되었습니다.", null);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
+//    해당 폴더에 속한 폴더 및 파일 조회
+    @GetMapping("/{folderId}")
+    public ResponseEntity<?> getFolder(@PathVariable Long folderId, String email){
+        FolderAllListResDto response = folderService.getAllFolderList(folderId, email);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "폴더 조회 성공", response);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
 

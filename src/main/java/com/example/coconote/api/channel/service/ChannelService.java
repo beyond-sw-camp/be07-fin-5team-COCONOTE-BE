@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +22,7 @@ public class ChannelService {
 
     private final ChannelRepository channelRepository;
     private final SectionRepository sectionRepository;
+
     @Autowired
     public ChannelService(ChannelRepository channelRepository, SectionRepository sectionRepository) {
         this.channelRepository = channelRepository;
