@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class WorkspaceListResDto {
+    private Long workspaceId;
     private String name;
     private String wsInfo;
 }

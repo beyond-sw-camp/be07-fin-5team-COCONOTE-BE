@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SectionListResDto {
+    private Long sectionId;
     private String sectionName;
 }
