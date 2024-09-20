@@ -1,5 +1,6 @@
 package com.example.coconote.api.workspace.service;
 
+import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.workspace.dto.request.WorkspaceCreateReqDto;
 import com.example.coconote.api.workspace.dto.request.WorkspaceUpdateReqDto;
 import com.example.coconote.api.workspace.dto.response.WorkspaceListResDto;
@@ -29,7 +30,16 @@ public class WorkspaceService {
 
         Workspace workspace = dto.toEntity(imgUrl);
 
-        // 기본섹션, 즐겨찾기 섹션 생성 코드
+        Section sectionDefault = Section.builder()
+                .name("기본")
+                .workspace(workspace)
+                .build();
+        Section sectionBookmark = Section.builder()
+                .name("즐겨찾기")
+                .workspace(workspace)
+                .build();
+        workspace.getSections().add(sectionDefault);
+        workspace.getSections().add(sectionBookmark);
 
         workspaceRepository.save(workspace);
         return workspace;
