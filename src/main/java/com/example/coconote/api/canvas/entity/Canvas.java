@@ -46,8 +46,8 @@ public class Canvas extends BaseEntity {
         return CanvasDetResDto.builder()
                 .id(this.id)
                 .title(this.title)
-                .parentCanvas(this.getParentCanvas())
-                .channel(this.getChannel())
+                .parentCanvas(this.getParentCanvas() != null ? this.getParentCanvas().fromListEntity() : null)
+                .channel(this.getChannel()!= null ? this.getChannel().fromEntity() : null)
 //               ⭐ 추후 블록 추가
                 .createdTime(this.getCreatedTime())
                 .updatedTime(this.getUpdatedTime())

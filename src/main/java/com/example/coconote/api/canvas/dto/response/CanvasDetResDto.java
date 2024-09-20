@@ -1,6 +1,7 @@
 package com.example.coconote.api.canvas.dto.response;
 
 import com.example.coconote.api.canvas.entity.Canvas;
+import com.example.coconote.api.channel.dto.response.ChannelResDto;
 import com.example.coconote.api.channel.entity.Channel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,8 +18,8 @@ public class CanvasDetResDto {
     private Long id;
     private String title;
 
-    private Canvas parentCanvas;
-    private Channel channel;
+    private CanvasListResDto parentCanvas;
+    private ChannelResDto channel;
 
 //    ⭐ 추후 블록 내용 추가
 

@@ -11,11 +11,13 @@ import com.example.coconote.api.channel.repository.ChannelRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(readOnly = true)
 public class CanvasService {
     private final CanvasRepository canvasRepository;
     private final ChannelRepository channelRepository;
@@ -49,9 +51,19 @@ public class CanvasService {
         return CreateCanvasResDto.fromEntity(canvas);
     }
 
-    public Page<CanvasListResDto> getCanvasListInChannel(Long channelId, String email, Pageable pageable){
+    public Page<CanvasListResDto> getCanvasListInChannel(Long channelId, String email, Pageable pageable, Integer depth){
         Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new IllegalArgumentException("채널이 존재하지 않습니다."));
+
         Page<Canvas> canvasList = canvasRepository.findByChannelIdAndParentCanvasId(pageable, channelId, null);
+
+
+//        List<CanvasListResDto> childCanvas = null;
+//        if(depth > 0){
+//            for (int i = 0; i<depth; i++){
+//                Canvas paerntCanvas = null;
+//            }
+//        }
+
         Page<CanvasListResDto> canvasListResDtos = canvasList.map(a -> a.fromListEntity());
         return canvasListResDtos;
     }
@@ -70,20 +82,25 @@ public class CanvasService {
 //    현 캔버스와 형제 캔버스
     public List<CanvasListResDto> getChildCanvasListFromParentCanvas(Long canvasId, String email){
         Canvas canvas = canvasRepository.findById(canvasId).orElseThrow(() -> new IllegalArgumentException("캔버스가 존재하지 않습니다."));
-        Canvas parentCanvas = canvasRepository.findById(canvas.getParentCanvas().getId()).orElseThrow(() -> new IllegalArgumentException("부모 캔버스가 존재하지 않습니다."));
+        Canvas parentCanvas = null;
+        if(canvas.getParentCanvas() != null){
+            parentCanvas = canvasRepository.findById(canvas.getParentCanvas().getId()).orElse(null);
+        }
 
-        List<Canvas> siblingCanvasList = canvasRepository.findByParentCanvasId(parentCanvas.getId());
+        List<Canvas> siblingCanvasList = canvasRepository.findByParentCanvasIdAndChannelId(parentCanvas!=null ? parentCanvas.getId() : null, canvas.getChannel().getId());
         List<CanvasListResDto> siblingCanvasListDto = !siblingCanvasList.isEmpty() ?
                 siblingCanvasList.stream().map(a->a.fromListEntity()).toList()
                 : null;
 
+
         return siblingCanvasListDto;
     }
 
+    @Transactional
     public CanvasDetResDto getCanvasDetail(Long canvasId, String email){
         Canvas canvas = canvasRepository.findById(canvasId).orElseThrow(() -> new IllegalArgumentException("캔버스가 존재하지 않습니다."));
         CanvasDetResDto canvasDetResDto = canvas.fromDetEntity();
-        return null;
+        return canvasDetResDto;
     }
 
 }

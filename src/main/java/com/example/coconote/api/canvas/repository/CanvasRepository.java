@@ -12,4 +12,6 @@ import java.util.List;
 public interface CanvasRepository extends JpaRepository<Canvas,Long> {
     Page<Canvas> findByChannelIdAndParentCanvasId(Pageable pageable, Long channelId, Long parentCanvasId);
     List<Canvas> findByParentCanvasId(Long parentCanvasId);
+    List<Canvas> findByParentCanvasIdAndChannelId(Long parentCanvasId, Long channelId);
+
 }
