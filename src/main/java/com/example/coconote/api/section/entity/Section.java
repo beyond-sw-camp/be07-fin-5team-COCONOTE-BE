@@ -49,5 +49,10 @@ public class Section extends BaseEntity {
     public void deleteEntity() {
         this.isDeleted = IsDeleted.Y;
         this.deletedTime = LocalDateTime.now();
+        if(this.channels != null) {
+            for (Channel c : this.channels) {
+                c.deleteEntity();
+            }
+        }
     }
 }
