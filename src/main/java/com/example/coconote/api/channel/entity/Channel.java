@@ -12,6 +12,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -52,6 +54,7 @@ public class Channel extends BaseEntity {
     }
 
     public void deleteEntity() {
-//        this.getIsDeleted() = IsDeleted.Y;
+        this.isDeleted = IsDeleted.Y;
+        this.deletedTime = LocalDateTime.now();
     }
 }

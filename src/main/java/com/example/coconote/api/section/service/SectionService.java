@@ -4,7 +4,6 @@ import com.example.coconote.api.section.dto.request.SectionCreateReqDto;
 import com.example.coconote.api.section.dto.response.SectionListResDto;
 import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.section.repository.SectionRepository;
-import com.example.coconote.api.workspace.dto.response.WorkspaceListResDto;
 import com.example.coconote.api.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.repository.WorkspaceRepository;
 import jakarta.persistence.EntityNotFoundException;
