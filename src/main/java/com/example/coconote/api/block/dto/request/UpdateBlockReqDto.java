@@ -9,10 +9,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CreateBlockReqDto {
-    private Long canvasId;
+public class UpdateBlockReqDto {
+    private Long blockId;
     private Long prevBlockId;
     private Long parentBlockId;
-
     private String contents;
 }

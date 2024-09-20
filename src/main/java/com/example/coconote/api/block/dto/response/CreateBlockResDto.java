@@ -23,7 +23,7 @@ public class CreateBlockResDto {
         return CreateBlockResDto.builder()
                 .blockId(block.getId())
                 .canvasId(block.getCanvas().getId())
-                .nextBlockId(block.getNextBlock() == null ? null : block.getNextBlock().getId())
+                .nextBlockId(block.getPrevBlock() == null ? null : block.getPrevBlock().getId())
                 .parentBlockId(block.getParentBlock() == null ? null : block.getParentBlock().getId())
                 .contents(block.getContents())
                 .build();

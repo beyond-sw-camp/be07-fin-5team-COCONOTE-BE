@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Objects;
+
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -25,10 +27,31 @@ public class Block extends BaseEntity {
     private String contents;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "next_block_id")
-    private Block nextBlock; // 순서를 알기 위한, 동레벨의 다음 블록
+    @JoinColumn(name = "prev_block_id")
+//    순서를 알기 위한, 동레벨의 이전 블록
+//    이전 블록이 없다면, 최상위 블록!
+    private Block prevBlock;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_block_id")
     private Block parentBlock;
+
+    public void changePrevBlock(Block block) {
+        this.prevBlock = block;
+    }
+
+    public void updateAllInfo(Block prevBlock, Block parentBlock, String contents) {
+        if(this.prevBlock != null && !Objects.equals(this.prevBlock.getId(), prevBlock.getId())){
+            this.prevBlock = prevBlock;
+        }
+
+        if(this.parentBlock != null && !Objects.equals(this.parentBlock.getId(), parentBlock.getId())){
+            this.parentBlock = parentBlock;
+        }
+
+        if(!Objects.equals(this.contents, contents)){
+            this.contents = contents;
+        }
+    }
+
 }
