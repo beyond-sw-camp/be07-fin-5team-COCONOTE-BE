@@ -3,6 +3,7 @@ package com.example.coconote.api.tag.service;
 import com.example.coconote.api.channel.entity.Channel;
 import com.example.coconote.api.channel.repository.ChannelRepository;
 import com.example.coconote.api.tag.dto.request.TagCreateReqDto;
+import com.example.coconote.api.tag.dto.request.TagUpdateReqDto;
 import com.example.coconote.api.tag.dto.response.TagListResDto;
 import com.example.coconote.api.tag.entity.Tag;
 import com.example.coconote.api.tag.repository.TagRepository;
@@ -34,5 +35,11 @@ public class TagService {
         List<Tag> tags = tagRepository.findAllByChannel(channel);
         List<TagListResDto> tagListResDtos = tags.stream().map(tag -> tag.fromEntity()).toList();
         return tagListResDtos;
+    }
+
+    public Tag updateTag(TagUpdateReqDto dto) {
+        Tag tag = tagRepository.findById(dto.getTagId()).orElseThrow(()->new EntityNotFoundException("Tag not found"));
+        tag.updateName(dto.getUpdateTagName());
+        return tag;
     }
 }

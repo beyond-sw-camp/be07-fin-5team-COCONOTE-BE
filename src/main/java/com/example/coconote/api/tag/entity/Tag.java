@@ -32,4 +32,9 @@ public class Tag extends BaseEntity {
                 .name(this.name)
                 .color(this.color).build();
     }
+
+    public Tag updateName(String updateTagName) {
+        this.name = updateTagName;
+        return this;
+    }
 }

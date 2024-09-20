@@ -2,6 +2,7 @@ package com.example.coconote.api.tag.controller;
 
 
 import com.example.coconote.api.tag.dto.request.TagCreateReqDto;
+import com.example.coconote.api.tag.dto.request.TagUpdateReqDto;
 import com.example.coconote.api.tag.dto.response.TagListResDto;
 import com.example.coconote.api.tag.entity.Tag;
 import com.example.coconote.api.tag.service.TagService;
@@ -33,6 +34,13 @@ public class TagController {
     public ResponseEntity<?> listTags(@PathVariable Long channelId) {
         List<TagListResDto> tagListResDtos = tagService.tagList(channelId);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "태그 목록 반환 성공.", tagListResDtos);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
+    @PostMapping("update")
+    public ResponseEntity<?> updateTag(@RequestBody TagUpdateReqDto dto){
+        Tag tag = tagService.updateTag(dto);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "태그 이름 변경 성공.", tag.getId());
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 }
