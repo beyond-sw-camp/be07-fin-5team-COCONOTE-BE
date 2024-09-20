@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CanvasResDto {
+public class CanvasListResDto {
     private Long id;
     private String title;
 }
