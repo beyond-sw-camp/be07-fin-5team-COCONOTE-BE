@@ -9,10 +9,12 @@ import com.example.coconote.api.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.repository.WorkspaceRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class SectionService {
 
     private final SectionRepository sectionRepository;
