@@ -3,12 +3,9 @@ package com.example.coconote.api.tag.controller;
 
 import com.example.coconote.api.tag.dto.request.TagCreateReqDto;
 import com.example.coconote.api.tag.dto.request.TagUpdateReqDto;
-import com.example.coconote.api.tag.dto.response.TagListResDto;
+import com.example.coconote.api.tag.dto.response.TagResDto;
 import com.example.coconote.api.tag.entity.Tag;
 import com.example.coconote.api.tag.service.TagService;
-import com.example.coconote.api.thread.dto.requset.ThreadCreateReqDto;
-import com.example.coconote.api.thread.entity.Thread;
-import com.example.coconote.api.thread.service.ThreadService;
 import com.example.coconote.common.CommonResDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -32,8 +29,8 @@ public class TagController {
 
     @GetMapping("list/{channelId}")
     public ResponseEntity<?> listTags(@PathVariable Long channelId) {
-        List<TagListResDto> tagListResDtos = tagService.tagList(channelId);
-        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "태그 목록 반환 성공.", tagListResDtos);
+        List<TagResDto> tagResDtos = tagService.tagList(channelId);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "태그 목록 반환 성공.", tagResDtos);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 

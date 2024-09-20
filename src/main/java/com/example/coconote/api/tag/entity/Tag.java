@@ -1,7 +1,7 @@
 package com.example.coconote.api.tag.entity;
 
 import com.example.coconote.api.channel.entity.Channel;
-import com.example.coconote.api.tag.dto.response.TagListResDto;
+import com.example.coconote.api.tag.dto.response.TagResDto;
 import com.example.coconote.common.BaseEntity;
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.*;
@@ -29,8 +29,8 @@ public class Tag extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private Channel channel;
 
-    public TagListResDto fromEntity() {
-        return TagListResDto.builder()
+    public TagResDto fromEntity() {
+        return TagResDto.builder()
                 .id(this.id)
                 .name(this.name)
                 .color(this.color).build();

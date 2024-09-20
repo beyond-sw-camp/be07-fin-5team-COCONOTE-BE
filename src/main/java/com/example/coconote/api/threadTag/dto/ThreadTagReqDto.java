@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ThreadTagAddReqDto {
+public class ThreadTagReqDto {
     private Long threadId;
     private Long tagId;
 }

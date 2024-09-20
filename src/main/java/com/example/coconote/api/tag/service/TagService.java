@@ -4,7 +4,7 @@ import com.example.coconote.api.channel.entity.Channel;
 import com.example.coconote.api.channel.repository.ChannelRepository;
 import com.example.coconote.api.tag.dto.request.TagCreateReqDto;
 import com.example.coconote.api.tag.dto.request.TagUpdateReqDto;
-import com.example.coconote.api.tag.dto.response.TagListResDto;
+import com.example.coconote.api.tag.dto.response.TagResDto;
 import com.example.coconote.api.tag.entity.Tag;
 import com.example.coconote.api.tag.repository.TagRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -12,9 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -30,11 +28,11 @@ public class TagService {
         return tag;
     }
 
-    public List<TagListResDto> tagList(Long channelId) {
+    public List<TagResDto> tagList(Long channelId) {
         Channel channel = channelRepository.findById(channelId).orElseThrow(()->new EntityNotFoundException("Channel not found"));
         List<Tag> tags = tagRepository.findAllByChannel(channel);
-        List<TagListResDto> tagListResDtos = tags.stream().map(tag -> tag.fromEntity()).toList();
-        return tagListResDtos;
+        List<TagResDto> tagResDtos = tags.stream().map(tag -> tag.fromEntity()).toList();
+        return tagResDtos;
     }
 
     public Tag updateTag(TagUpdateReqDto dto) {
