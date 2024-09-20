@@ -1,6 +1,9 @@
 package com.example.coconote.api.tag.controller;
 
 
+import com.example.coconote.api.tag.dto.request.TagCreateReqDto;
+import com.example.coconote.api.tag.entity.Tag;
+import com.example.coconote.api.tag.service.TagService;
 import com.example.coconote.api.thread.dto.requset.ThreadCreateReqDto;
 import com.example.coconote.api.thread.entity.Thread;
 import com.example.coconote.api.thread.service.ThreadService;
@@ -17,12 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("api/v1/tag")
 @RequiredArgsConstructor
 public class TagController {
-    private final ThreadService threadService;
+    private final TagService tagService;
 
     @PostMapping("create")
-    public ResponseEntity<?> createTag(@RequestBody ThreadCreateReqDto dto) {
-        Thread thread = threadService.createThread(dto);
-        CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "태그가 성공적으로 생성되었습니다.", thread.getId());
+    public ResponseEntity<?> createTag(@RequestBody TagCreateReqDto dto) {
+        Tag tag = tagService.createTag(dto);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "태그가 성공적으로 생성되었습니다.", tag.getId());
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }
 }
