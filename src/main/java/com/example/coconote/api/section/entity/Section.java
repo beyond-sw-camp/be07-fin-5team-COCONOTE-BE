@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,6 +46,8 @@ public class Section extends BaseEntity {
         this.name = dto.getName();
     }
 
-//    public void deleteEntity() { this.isDeleted = IsDeleted.Y; }
-
+    public void deleteEntity() {
+        this.isDeleted = IsDeleted.Y;
+        this.deletedTime = LocalDateTime.now();
+    }
 }

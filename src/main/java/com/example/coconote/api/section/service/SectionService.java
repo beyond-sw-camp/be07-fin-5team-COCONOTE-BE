@@ -59,7 +59,7 @@ public class SectionService {
     public void sectionDelete(Long id) {
         Section section = sectionRepository.findById(id).orElseThrow(()->new EntityNotFoundException("section not found"));
         Workspace workspace = workspaceRepository.findById(section.getWorkspace().getId()).orElse(null);
-//        section.deleteEntity();
-//        workspaceRepository.save(workspace);
+        section.deleteEntity();
+        workspaceRepository.save(workspace);
     }
 }
