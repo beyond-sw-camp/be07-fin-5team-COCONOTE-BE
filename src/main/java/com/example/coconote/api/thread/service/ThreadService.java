@@ -35,7 +35,9 @@ public class ThreadService {
 
     public Page<ThreadListResDto> threadList(Pageable pageable) {
         Page<Thread> threads = threadRepository.findAll(pageable);
-//        Page<ThreadListResDto> threadListResDtos = threads.map(thread -> )
+//        Page<ThreadListResDto> threadListResDtos = threads.map(thread -> {
+//            return thread.fromEntity();
+//        });
         return null;
     }
 }

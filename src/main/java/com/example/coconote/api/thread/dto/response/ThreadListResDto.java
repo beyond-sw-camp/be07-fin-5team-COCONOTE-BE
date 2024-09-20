@@ -19,4 +19,5 @@ public class ThreadListResDto {
     private String content;
     private String files;
     private List<ThreadListResDto> childThreads;
+    //TODO: 태그 추가해줘야됨
 }
