@@ -28,4 +28,8 @@ public class FileEntity extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "member_id")
     private Member creator;
+
+    public void moveFolder(Folder folder) {
+        this.folder = folder;
+    }
 }
