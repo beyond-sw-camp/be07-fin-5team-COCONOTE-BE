@@ -1,5 +1,6 @@
 package com.example.coconote.api.tag.entity;
 
+import com.example.coconote.api.channel.entity.Channel;
 import com.example.coconote.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -21,4 +22,6 @@ public class Tag extends BaseEntity {
     private String name;
     @Column(name="tag_color")
     private String color;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Channel channel;
 }

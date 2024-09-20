@@ -1,5 +1,6 @@
 package com.example.coconote.api.thread.entity;
 
+import com.example.coconote.api.channel.entity.Channel;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.common.BaseEntity;
 import jakarta.persistence.*;
@@ -28,4 +29,6 @@ public class Thread extends BaseEntity {
     //TODO:추후 워크스페이스-유저로 변경
     @ManyToOne(fetch = FetchType.LAZY)
     private Member member;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Channel channel;
 }
