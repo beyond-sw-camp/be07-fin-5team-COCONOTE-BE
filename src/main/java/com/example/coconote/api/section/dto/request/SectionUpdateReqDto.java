@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SectionUpdateReqDto {
-    private String name;
+    private String sectionName;
 }

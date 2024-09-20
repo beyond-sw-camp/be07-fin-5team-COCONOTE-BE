@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class WorkspaceListResDto {
     private String name;
-    private String info;
+    private String wsInfo;
 }

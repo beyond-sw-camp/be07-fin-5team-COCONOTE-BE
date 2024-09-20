@@ -27,7 +27,7 @@ public class FolderService {
         if (createFolderReqDto.getParentFolderId() != null) {
             parentFolder = folderRepository.findById(createFolderReqDto.getParentFolderId())
                     .orElseThrow(() -> new IllegalArgumentException("부모 폴더가 존재하지 않습니다."));
-            if (!parentFolder.getChannel().getId().equals(channel.getId())) {
+            if (!parentFolder.getChannel().getChannelId().equals(channel.getChannelId())) {
                 throw new IllegalArgumentException("부모 폴더가 다른 채널에 있습니다.");
             }
         }

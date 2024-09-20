@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class WorkspaceUpdateReqDto {
     private String name;
-    private String info;
+    private String wsInfo;
 }

@@ -9,10 +9,14 @@ import com.example.coconote.api.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.repository.WorkspaceRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
+@Transactional
 public class SectionService {
 
     private final SectionRepository sectionRepository;
@@ -51,7 +55,7 @@ public class SectionService {
 
     public void sectionDelete(Long id) {
         Section section = sectionRepository.findById(id).orElseThrow(()->new EntityNotFoundException("section not found"));
-        Workspace workspace = workspaceRepository.findById(section.getWorkspace().getId()).orElse(null);
+        Workspace workspace = workspaceRepository.findById(section.getWorkspace().getWorkspaceId()).orElse(null);
         section.deleteEntity();
         workspaceRepository.save(workspace);
     }

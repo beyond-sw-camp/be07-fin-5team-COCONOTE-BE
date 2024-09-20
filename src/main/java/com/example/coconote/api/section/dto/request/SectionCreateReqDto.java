@@ -14,12 +14,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SectionCreateReqDto {
     private Long workspaceId;
-    private String name;
+    private String sectionName;
 
     public Section toEntity(Workspace workspace) {
         return Section.builder()
                 .workspace(workspace)
-                .name(this.name)
+                .sectionName(this.sectionName)
                 .build();
     }
 

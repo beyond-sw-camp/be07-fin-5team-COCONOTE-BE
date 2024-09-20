@@ -13,15 +13,15 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ChannelCreateReqDto {
     private Long sectionId;
-    private String name;
-    private String info;
+    private String channelName;
+    private String channelInfo;
     private boolean isPublic;
 
     public Channel toEntity(Section section) {
         return Channel.builder()
                 .section(section)
-                .name(this.name)
-                .info(this.info)
+                .channelName(this.channelName)
+                .channelInfo(this.channelInfo)
                 .isPublic(this.isPublic)
                 .build();
     }

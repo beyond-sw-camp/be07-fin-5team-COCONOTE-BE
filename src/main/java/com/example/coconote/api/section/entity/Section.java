@@ -11,7 +11,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -25,9 +24,9 @@ import java.util.List;
 public class Section extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long sectionId;
 
-    private String name;
+    private String sectionName;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "workspace_id")
@@ -39,11 +38,11 @@ public class Section extends BaseEntity {
 
     public SectionListResDto fromEntity() {
         return SectionListResDto.builder()
-                .name(this.name).build();
+                .sectionName(this.sectionName).build();
     }
 
     public void updateEntity(SectionUpdateReqDto dto) {
-        this.name = dto.getName();
+        this.sectionName = dto.getSectionName();
     }
 
     public void deleteEntity() {

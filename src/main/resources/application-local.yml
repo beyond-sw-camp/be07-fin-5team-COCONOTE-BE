@@ -15,7 +15,7 @@ spring:
     database: mysql
     generate-ddl: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show_sql: true
     open-in-view: false
 
@@ -33,8 +33,8 @@ springdoc:
 
 
 aws:
-  accessKeyId: ${local.s3.key}
-  secretKey: ${local.s3.secret}
+  access_key_id: ${local.s3.key}
+  secret_key: ${local.s3.secret}
   s3:
     region: ${local.s3.region}
     bucket: ${local.s3.bucket}

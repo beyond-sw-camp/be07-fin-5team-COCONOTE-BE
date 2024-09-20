@@ -7,13 +7,16 @@ import com.example.coconote.api.channel.entity.Channel;
 import com.example.coconote.api.channel.repository.ChannelRepository;
 import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.section.repository.SectionRepository;
-import com.example.coconote.api.workspace.entity.Workspace;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
+@Transactional
 public class ChannelService {
 
     private final ChannelRepository channelRepository;

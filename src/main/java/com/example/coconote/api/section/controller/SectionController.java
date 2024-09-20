@@ -6,6 +6,7 @@ import com.example.coconote.api.section.dto.response.SectionListResDto;
 import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.section.service.SectionService;
 import com.example.coconote.common.CommonResDto;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,14 +23,16 @@ public class SectionController {
         this.sectionService = sectionService;
     }
 
-    @PostMapping("/section/create") // 섹션 생성
+    @Operation(summary= "섹션 생성")
+    @PostMapping("/section/create")
     public ResponseEntity<Object> sectionCreate(@RequestBody SectionCreateReqDto dto) {
         Section section = sectionService.sectionCreate(dto);
-        CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "section is successfully created", section.getId());
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "section is successfully created", dto);
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
 
     }
 
+    @Operation(summary= "섹션 조회")
     @GetMapping("/section/list")
     public ResponseEntity<Object> sectionRead() {
         List<SectionListResDto> dtos = sectionService.sectionList();
@@ -37,15 +40,16 @@ public class SectionController {
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
+    @Operation(summary= "섹션 수정")
     @PatchMapping("/section/update/{id}")
     public ResponseEntity<Object> sectionUpdate(@PathVariable Long id, SectionUpdateReqDto dto) {
-        sectionService.sectionUpdate(id, dto);
-        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "section is successfully updated", null);
+        Section section = sectionService.sectionUpdate(id, dto);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "section is successfully updated", dto);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
-
-    @PatchMapping("/section/delete/{id}")
+    @Operation(summary= "섹션 삭제")
+    @DeleteMapping("/section/delete/{id}")
     public ResponseEntity<Object> sectionDelete(@PathVariable Long id) {
         sectionService.sectionDelete(id);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "section is successfully deleted", null);

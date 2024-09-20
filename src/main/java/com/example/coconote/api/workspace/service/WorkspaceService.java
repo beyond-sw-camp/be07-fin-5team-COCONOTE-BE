@@ -9,12 +9,13 @@ import com.example.coconote.api.workspace.repository.WorkspaceRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Transactional
 public class WorkspaceService {
 
     private final WorkspaceRepository workspaceRepository;
@@ -23,7 +24,7 @@ public class WorkspaceService {
         this.workspaceRepository = workspaceRepository;
     }
 
-    public Workspace workspaceCreate(WorkspaceCreateReqDto dto, MultipartFile imgFile) {
+    public Workspace workspaceCreate(WorkspaceCreateReqDto dto) {
 
         String imgUrl = "";
         // 이미지파일 저장하고 String 이미지URL로 바꾸는 코드
@@ -31,11 +32,11 @@ public class WorkspaceService {
         Workspace workspace = dto.toEntity(imgUrl);
 
         Section sectionDefault = Section.builder()
-                .name("기본")
+                .sectionName("기본")
                 .workspace(workspace)
                 .build();
         Section sectionBookmark = Section.builder()
-                .name("즐겨찾기")
+                .sectionName("즐겨찾기")
                 .workspace(workspace)
                 .build();
         workspace.getSections().add(sectionDefault);

@@ -8,7 +8,6 @@ import com.example.coconote.common.BaseEntity;
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.Id;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -22,13 +21,13 @@ import java.util.List;
 public class Workspace extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long workspaceId;
 
     private String name;
 
-    private String info;
+    private String wsInfo;
 
-    private String logoImagePath;
+    private String logo;
 
     @OneToMany(mappedBy = "workspace", cascade = CascadeType.PERSIST)
     @Builder.Default
@@ -37,13 +36,13 @@ public class Workspace extends BaseEntity {
     public WorkspaceListResDto fromEntity() {
         return WorkspaceListResDto.builder()
                 .name(this.name)
-                .info(this.info)
+                .wsInfo(this.wsInfo)
                 .build();
     }
 
     public void updateEntity(WorkspaceUpdateReqDto dto) {
         this.name = dto.getName();
-        this.info = dto.getInfo();
+        this.wsInfo = dto.getWsInfo();
     }
 
     public void deleteEntity() {
