@@ -11,6 +11,6 @@ import java.util.List;
 
 @Repository
 public interface ThreadRepository extends JpaRepository<Thread, Long> {
-    Page<Thread> findAllByChannel(Channel channel, Pageable pageable);
+    Page<Thread> findAllByChannelAndParentIsNull(Channel channel, Pageable pageable);
     List<Thread> findAllByParent(Thread thread);
 }
