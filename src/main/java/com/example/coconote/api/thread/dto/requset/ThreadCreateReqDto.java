@@ -1,6 +1,7 @@
 package com.example.coconote.api.thread.dto.requset;
 
 import com.example.coconote.api.channel.entity.Channel;
+import com.example.coconote.api.chatRoom.entity.MessageType;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.thread.entity.Thread;
 import lombok.AllArgsConstructor;
@@ -16,7 +17,8 @@ import java.util.List;
 @NoArgsConstructor
 public class ThreadCreateReqDto {
     //TODO: jwt토큰이 완성되면 memberId 필요없어짐 삭제
-    private Long memberId;
+    private MessageType type;
+    private Long senderId;
     private String content;
     private List<String> files;
     private Long parentId;
