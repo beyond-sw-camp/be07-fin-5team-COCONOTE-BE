@@ -144,8 +144,9 @@ public class S3Service {
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
         } else {
-            // 폴더가 없을 경우 첫 번째 폴더 사용
+            // 폴더가 없을 경우 두 번째 폴더 사용(자동 업로드 폴더) 없을 경우 에러
             folder = channel.getFolders().stream()
+                    .filter(f -> f.getParentFolder() != null)
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
         }
