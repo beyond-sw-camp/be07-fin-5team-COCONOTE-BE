@@ -7,15 +7,12 @@ import com.example.coconote.api.thread.dto.response.ThreadResDto;
 import com.example.coconote.api.threadTag.entity.ThreadTag;
 import com.example.coconote.common.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -32,6 +29,7 @@ public class Thread extends BaseEntity {
     private Thread parent;
     //TODO:추후 워크스페이스-유저로 변경
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
     private Member member;
     @ManyToOne(fetch = FetchType.LAZY)
     private Channel channel;
@@ -61,6 +59,16 @@ public class Thread extends BaseEntity {
                 .files(this.files)
                 .childThreads(childThreadList)
                 .tags(tags)
+                .build();
+    }
+
+    public ThreadResDto toDto() {
+        return ThreadResDto.builder()
+                .id(this.id)
+                .memberName(this.member.getNickname())
+                .createdTime(this.getCreatedTime())
+                .content(this.content)
+                .files(this.files)
                 .build();
     }
 }
