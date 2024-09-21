@@ -42,6 +42,19 @@ dependencies {
 //    presigned url
     implementation 'software.amazon.awssdk:s3:2.21.0'
 
+    // STOMP
+    implementation 'org.webjars:stomp-websocket:2.3.4'
+
+    // SockJS
+    implementation 'org.webjars:sockjs-client:1.5.1'
+
+    // 임시 의존성
+    implementation 'org.springframework.boot:spring-boot-starter-freemarker'
+    implementation 'org.springframework.boot:spring-boot-devtools'
+    implementation 'org.webjars.bower:bootstrap:4.3.1'
+    implementation 'org.webjars.bower:vue:2.5.16'
+    implementation 'org.webjars.bower:axios:0.17.1'
+
 //    로그인
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     implementation 'org.springframework.boot:spring-boot-starter-security'
