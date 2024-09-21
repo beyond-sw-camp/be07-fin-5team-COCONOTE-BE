@@ -2,14 +2,6 @@ server:
   port: 8080
 
 spring:
-  devtools:
-    livereload:
-      enabled: true
-    restart:
-      enabled: false
-  freemarker:
-    cache: false
-    suffix: .ftl
   config:
     activate:
       on-profile: local
@@ -23,7 +15,7 @@ spring:
     database: mysql
     generate-ddl: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show_sql: true
     open-in-view: false
   security:
