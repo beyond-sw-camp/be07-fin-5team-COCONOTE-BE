@@ -5,13 +5,20 @@ import com.example.coconote.api.channel.dto.request.ChannelUpdateReqDto;
 import com.example.coconote.api.channel.dto.response.ChannelListResDto;
 import com.example.coconote.api.channel.entity.Channel;
 import com.example.coconote.api.channel.repository.ChannelRepository;
+import com.example.coconote.api.drive.dto.response.FileListDto;
+import com.example.coconote.api.drive.dto.response.FolderAllListResDto;
+import com.example.coconote.api.drive.dto.response.FolderListDto;
 import com.example.coconote.api.drive.entity.Folder;
 import com.example.coconote.api.drive.repository.FolderRepository;
+import com.example.coconote.api.member.entity.Member;
+import com.example.coconote.api.member.repository.MemberRepository;
 import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.section.repository.SectionRepository;
+import com.example.coconote.common.IsDeleted;
+import com.example.coconote.global.fileUpload.entity.FileEntity;
+import com.example.coconote.global.fileUpload.repository.FileRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +34,8 @@ public class ChannelService {
     private final ChannelRepository channelRepository;
     private final SectionRepository sectionRepository;
     private final FolderRepository folderRepository;
-
+    private final MemberRepository memberRepository;
+    private final FileRepository fileRepository;
 
     @Transactional
     public ChannelListResDto channelCreate(ChannelCreateReqDto dto) {
@@ -77,5 +85,26 @@ public class ChannelService {
     public void channelDelete(Long id) {
         Channel channel = channelRepository.findById(id).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
         channel.deleteEntity();
+    }
+
+    public FolderAllListResDto channelDrive(Long channelId, String email) {
+        Member member = memberRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+        Channel channel = channelRepository.findById(channelId).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+//        루트 폴더 찾기
+        Folder rootFolder = folderRepository.findByChannelAndParentFolderIsNull(channel).orElseThrow(() -> new EntityNotFoundException("찾을 수 없습니다."));
+
+        List<Folder> folderList = folderRepository.findAllByParentFolderAndIsDeleted(rootFolder, IsDeleted.N);
+        List<FileEntity> fileEntityList = fileRepository.findAllByFolderAndIsDeleted(rootFolder, IsDeleted.N);
+
+
+        List<FolderListDto> folderListDto = FolderListDto.fromEntity(folderList);
+        List<FileListDto> fileListDto = FileListDto.fromEntity(fileEntityList);
+
+        return FolderAllListResDto.builder()
+                .nowFolderId(rootFolder.getId())
+                .nowFolderName(rootFolder.getFolderName())
+                .folderListDto(folderListDto)
+                .fileListDto(fileListDto)
+                .build();
     }
 }
