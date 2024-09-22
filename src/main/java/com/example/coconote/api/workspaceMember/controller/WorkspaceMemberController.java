@@ -1,9 +1,7 @@
 package com.example.coconote.api.workspaceMember.controller;
 
-import com.example.coconote.api.workspace.dto.request.WorkspaceUpdateReqDto;
-import com.example.coconote.api.workspace.dto.response.WorkspaceListResDto;
-import com.example.coconote.api.workspace.service.WorkspaceService;
 import com.example.coconote.api.workspaceMember.dto.request.WorkspaceMemberCreateReqDto;
+import com.example.coconote.api.workspaceMember.dto.request.WorkspaceMemberUpdateReqDto;
 import com.example.coconote.api.workspaceMember.dto.response.WorkspaceMemberResDto;
 import com.example.coconote.api.workspaceMember.service.WorkspaceMemberService;
 import com.example.coconote.common.CommonResDto;
@@ -42,10 +40,19 @@ public class WorkspaceMemberController {
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
-    @Operation(summary= "웤스 회원 관리자 권한 부여/삭제")
+    @Operation(summary= "웤스 회원 정보 수정")
     @PatchMapping("/workspacemember/update/{id}")
-    public ResponseEntity<Object> workspaceMemberUpdate(@PathVariable Long id, @RequestBody WorkspaceUpdateReqDto dto) {
+    public ResponseEntity<Object> workspaceMemberUpdate(@PathVariable Long id, WorkspaceMemberUpdateReqDto dto) {
         WorkspaceMemberResDto resDto = workspaceMemberService.workspaceMemberUpdate(id, dto);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "member is successfully updated", resDto);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
+
+    @Operation(summary= "웤스 회원 관리자 권한 부여/삭제")
+    @PatchMapping("/workspacemember/changerole/{id}")
+    public ResponseEntity<Object> workspaceMemberChangeRole(@PathVariable Long id) {
+        WorkspaceMemberResDto resDto = workspaceMemberService.workspaceMemberChangeRole(id);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "member is successfully updated", resDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }

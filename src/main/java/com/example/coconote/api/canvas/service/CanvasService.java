@@ -38,7 +38,7 @@ public class CanvasService {
         if (createCanvasReqDto.getParentCanvasId() != null) {
             parentCanvas = canvasRepository.findById(createCanvasReqDto.getParentCanvasId())
                     .orElseThrow(() -> new IllegalArgumentException("부모 캔버스가 존재하지 않습니다."));
-            if (!parentCanvas.getChannel().getId().equals(channel.getId())) {
+            if (!parentCanvas.getChannel().getChannelId().equals(channel.getChannelId())) {
                 throw new IllegalArgumentException("부모 캔버스가 다른 채널에 있습니다.");
             }
         }
@@ -90,7 +90,7 @@ public class CanvasService {
         }
 
         List<Canvas> siblingCanvasList = canvasRepository.findByParentCanvasIdAndChannelIdAndIsDeleted(parentCanvas!=null ? parentCanvas.getId() : null,
-                canvas.getChannel().getId(), IsDeleted.N);
+                canvas.getChannel().getChannelId(), IsDeleted.N);
         List<CanvasListResDto> siblingCanvasListDto = !siblingCanvasList.isEmpty() ?
                 siblingCanvasList.stream().map(a->a.fromListEntity()).toList()
                 : null;

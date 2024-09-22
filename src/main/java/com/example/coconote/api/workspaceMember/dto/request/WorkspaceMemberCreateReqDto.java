@@ -1,8 +1,10 @@
 package com.example.coconote.api.workspaceMember.dto.request;
 
+import com.example.coconote.api.member.entity.Member;
+import com.example.coconote.api.workspace.entity.Workspace;
+import com.example.coconote.api.workspaceMember.entity.WorkspaceMember;
 import com.example.coconote.api.workspaceMember.entity.WsRole;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,4 +24,13 @@ public class WorkspaceMemberCreateReqDto {
     private String profileImage;
     private WsRole wsRole;
 
+    public WorkspaceMember toEntity(Workspace workspace, Member member) {
+        return WorkspaceMember.builder()
+                .memberName(this.memberName)
+                .nickname(this.nickname)
+                .field(this.field)
+                .position(this.position)
+                .profileImage(this.profileImage)
+                .build();
+    }
 }
