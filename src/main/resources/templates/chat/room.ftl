@@ -43,10 +43,14 @@
         data: {
             room_name : '',
             chatrooms: [
+                {
+                    "roomId":1,
+                    "name":"test"
+                }
             ]
         },
         created() {
-            this.findAllRoom();
+            // this.findAllRoom();
         },
         methods: {
             findAllRoom: function() {
@@ -71,12 +75,14 @@
                 }
             },
             enterRoom: function(roomId) {
-                var sender = prompt('대화명을 입력해 주세요.');
-                if(sender != "") {
-                    localStorage.setItem('wschat.sender',sender);
-                    localStorage.setItem('wschat.roomId',roomId);
-                    location.href="/chat/room/enter/"+roomId;
-                }
+                localStorage.setItem('wschat.roomId',roomId);
+                // var sender = prompt('대화명을 입력해 주세요.');
+                // if(sender != "") {
+                //     localStorage.setItem('wschat.sender',sender);
+                //     localStorage.setItem('wschat.roomId',roomId);
+                //     location.href="/chat/room/enter/"+roomId;
+                // }
+                location.href="/chat/room/enter/"+roomId;
             }
         }
     });

@@ -30,7 +30,7 @@
     </div>
     <ul class="list-group">
         <li class="list-group-item" v-for="message in messages">
-            {{message.sender}} - {{message.message}}</a>
+            {{message.id}} - {{message.image}} - {{message.sender}} - {{message.createdTime}} - {{message.message}}</a>
         </li>
     </ul>
     <div></div>
@@ -51,26 +51,26 @@
         el: '#app',
         data: {
             roomId: '',
-            room: {},
-            sender: '',
+            room: { "name":"sehotest" },
+            sender: 1,
             message: '',
             messages: []
         },
         created() {
             this.roomId = localStorage.getItem('wschat.roomId');
-            this.sender = localStorage.getItem('wschat.sender');
-            this.findRoom();
+            // this.sender = localStorage.getItem('wschat.sender');
+            // this.findRoom();
         },
         methods: {
             findRoom: function() {
                 axios.get('/chat/room/'+this.roomId).then(response => { this.room = response.data; });
             },
             sendMessage: function() {
-                ws.send("/pub/chat/message", {}, JSON.stringify({type:'TALK', roomId:this.roomId, sender:this.sender, message:this.message}));
+                ws.send("/pub/chat/message", {}, JSON.stringify({type:'TALK', channelId:this.roomId, senderId:this.sender, content:this.message}));
                 this.message = '';
             },
             recvMessage: function(recv) {
-                this.messages.unshift({"type":recv.type, "sender":recv.type=='ENTER'?'[알림]':recv.sender, "message":recv.message})
+                this.messages.unshift({"id":recv.id, "sender":recv.memberName, "message":recv.content, "image":recv.image, "createdTime":recv.createdTime})
             }
         }
     });
@@ -82,7 +82,7 @@
                 var recv = JSON.parse(message.body);
                 vm.recvMessage(recv);
             });
-            ws.send("/pub/chat/message", {}, JSON.stringify({type:'ENTER', roomId:vm.$data.roomId, sender:vm.$data.sender}));
+            ws.send("/pub/chat/message", {}, JSON.stringify({type:'ENTER', channelId:vm.$data.roomId, senderId:vm.$data.sender}));
         }, function(error) {
             if(reconnect++ <= 5) {
                 setTimeout(function() {
