@@ -62,13 +62,13 @@ public class ChannelMemberController {
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
-//
-//    @PatchMapping("/channelMember/delete/{id}") // 채널 강퇴
-//    public ResponseEntity<Object> channelDelete(@PathVariable Long id) {
-//        channelMemberService.channelMemberDelete(id);
-//        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "channelMember is successfully deleted", null);
-//        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
-//    }
+    @Operation(summary= "채널 회원 강퇴/탈퇴")
+    @DeleteMapping("/channelMember/delete/{id}") // 채널 강퇴
+    public ResponseEntity<Object> channelMemberDelete(@PathVariable Long id) {
+        channelMemberService.channelMemberDelete(id);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "channelMember is successfully deleted", null);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
 }
 
 

@@ -3,15 +3,15 @@ package com.example.coconote.api.channel.channelMember.entity;
 import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channelMember.dto.response.ChannelMemberListResDto;
 import com.example.coconote.api.channelMember.entity.ChannelRole;
-import com.example.coconote.api.workspace.workspaceMember.entity.WsRole;
 import com.example.coconote.common.BaseEntity;
+import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
 @Getter
 @Entity
@@ -60,5 +60,10 @@ public class ChannelMember extends BaseEntity {
             this.isBookmark = true;
             return true;
         }
+    }
+
+    public void deleteEntity() {
+        this.isDeleted = IsDeleted.Y;
+        this.deletedTime = LocalDateTime.now();
     }
 }

@@ -59,10 +59,8 @@ public class ChannelMemberService {
         return channelMember.bookmarkMyChannel();
     }
 
-
-//
-//    public void channelMemberDelete(Long id) {
-//        ChannelMember channelMember = channelMemberRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("찾을 수 없습니다."));
-//        channelMember.deleteEntity();
-//    }
+    public void channelMemberDelete(Long id) {
+        ChannelMember channelMember = channelMemberRepository.findById(id).orElseThrow(()->new EntityNotFoundException("존재하지 않는 회원입니다."));
+        channelMember.deleteEntity();
+    }
 }
