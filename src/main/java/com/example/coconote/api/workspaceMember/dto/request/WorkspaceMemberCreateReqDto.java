@@ -22,10 +22,11 @@ public class WorkspaceMemberCreateReqDto {
     private String field;
     private String position;
     private String profileImage;
-    private WsRole wsRole;
 
     public WorkspaceMember toEntity(Workspace workspace, Member member) {
         return WorkspaceMember.builder()
+                .workspace(workspace)
+                .member(member)
                 .memberName(this.memberName)
                 .nickname(this.nickname)
                 .field(this.field)

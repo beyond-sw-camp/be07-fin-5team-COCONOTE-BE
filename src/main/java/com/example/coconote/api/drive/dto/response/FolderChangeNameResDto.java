@@ -20,7 +20,7 @@ public class FolderChangeNameResDto {
         return FolderChangeNameResDto.builder()
                 .folderId(folder.getId())
                 .folderName(folder.getFolderName())
-                .channelId(folder.getChannel().getId())
+                .channelId(folder.getChannel().getChannelId())
                 .parentFolderId(folder.getParentFolder() == null ? null : folder.getParentFolder().getId())
                 .build();
     }
