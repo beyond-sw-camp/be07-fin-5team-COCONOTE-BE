@@ -1,5 +1,6 @@
 package com.example.coconote.api.drive.repository;
 
+import com.example.coconote.api.channel.entity.Channel;
 import com.example.coconote.api.drive.entity.Folder;
 import com.example.coconote.common.IsDeleted;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface FolderRepository extends JpaRepository<Folder, Long> {
@@ -20,4 +22,8 @@ public interface FolderRepository extends JpaRepository<Folder, Long> {
     @Transactional
     @Query("UPDATE Folder f SET f.isDeleted = :deleted, f.deletedTime = :deletedTime WHERE f.parentFolder = :parentFolder")
     void softDeleteChildFolders(IsDeleted deleted, LocalDateTime deletedTime, Folder parentFolder);
+
+
+    Optional<Folder> findByChannelAndParentFolderIsNull(Channel channel);
+
 }
