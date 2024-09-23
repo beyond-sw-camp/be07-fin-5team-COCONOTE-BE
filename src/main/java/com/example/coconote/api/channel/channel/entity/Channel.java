@@ -3,6 +3,7 @@ package com.example.coconote.api.channel.channel.entity;
 import com.example.coconote.api.channel.channel.dto.request.ChannelUpdateReqDto;
 import com.example.coconote.api.channel.channel.dto.response.ChannelListResDto;
 import com.example.coconote.api.channel.channel.dto.response.ChannelResDto;
+import com.example.coconote.api.channel.channelMember.entity.ChannelMember;
 import com.example.coconote.api.drive.entity.Folder;
 import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.common.BaseEntity;
@@ -14,6 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -36,9 +38,9 @@ public class Channel extends BaseEntity {
     @JoinColumn(name = "section_id")
     private Section section;
 
-//    @OneToMany(mappedBy = "channel", cascade = CascadeType.PERSIST)
-//    @Builder.Default
-//    private List<ChannelMember> channelMembers = new ArrayList<>();
+    @OneToMany(mappedBy = "channel", cascade = CascadeType.PERSIST)
+    @Builder.Default
+    private List<ChannelMember> channelMembers = new ArrayList<>();
 
     // 폴더들과의 관계 (일대다 관계)
     @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL)
@@ -78,6 +80,11 @@ public class Channel extends BaseEntity {
     public void deleteEntity() {
         this.isDeleted = IsDeleted.Y;
         this.deletedTime = LocalDateTime.now();
+        if(this.channelMembers != null) {
+            for(ChannelMember c : this.channelMembers) {
+                c.deleteEntity();
+            }
+        }
     }
 }
 

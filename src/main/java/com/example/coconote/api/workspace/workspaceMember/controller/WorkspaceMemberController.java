@@ -25,7 +25,7 @@ public class WorkspaceMemberController {
 
 
     @Operation(summary= "웤스 회원 가입")
-    @PostMapping("/workspacemember/{workspaceId}/create")
+    @PostMapping("/workspacemember/create")
     public ResponseEntity<Object> workspaceMemberCreate(@RequestBody WorkspaceMemberCreateReqDto dto) {
         WorkspaceMemberResDto resDto = workspaceMemberService.workspaceMemberCreate(dto);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "member is successfully created", resDto);
@@ -33,9 +33,9 @@ public class WorkspaceMemberController {
     }
 
     @Operation(summary= "웤스 회원 목록 조회")
-    @GetMapping("/workspacemember/list")
-    public ResponseEntity<Object> workspaceMemberRead() {
-        List<WorkspaceMemberResDto> dtos = workspaceMemberService.workspaceMemberList();
+    @GetMapping("/workspacemember/list/{workspaceId}/")
+    public ResponseEntity<Object> workspaceMemberRead(@PathVariable Long workspaceId) {
+        List<WorkspaceMemberResDto> dtos = workspaceMemberService.workspaceMemberList(workspaceId);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "list is successfully found", dtos);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }

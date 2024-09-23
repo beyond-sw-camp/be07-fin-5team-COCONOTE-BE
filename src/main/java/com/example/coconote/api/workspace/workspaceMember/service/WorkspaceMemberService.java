@@ -9,6 +9,7 @@ import com.example.coconote.api.workspace.workspaceMember.dto.response.Workspace
 import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
 import com.example.coconote.api.workspace.workspaceMember.dto.request.WorkspaceMemberUpdateReqDto;
+import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,8 +41,9 @@ public class WorkspaceMemberService {
         return resDto;
     }
 
-    public List<WorkspaceMemberResDto> workspaceMemberList() {
-        List<WorkspaceMember> workspaceMembers = workspaceMemberRepository.findAll();
+    public List<WorkspaceMemberResDto> workspaceMemberList(Long workspaceId) {
+        Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(()-> new EntityNotFoundException());
+        List<WorkspaceMember> workspaceMembers = workspaceMemberRepository.findByWorkspaceAndIsDeleted(workspace, IsDeleted.N);
         List<WorkspaceMemberResDto> dtos = new ArrayList<>();
         for(WorkspaceMember w : workspaceMembers) {
             dtos.add(w.fromEntity());

@@ -3,6 +3,7 @@ package com.example.coconote.api.workspace.workspace.entity;
 import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.workspace.workspace.dto.request.WorkspaceUpdateReqDto;
 import com.example.coconote.api.workspace.workspace.dto.response.WorkspaceListResDto;
+import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import com.example.coconote.common.BaseEntity;
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.*;
@@ -32,6 +33,10 @@ public class Workspace extends BaseEntity {
     @Builder.Default
     private List<Section> sections = new ArrayList<>();
 
+    @OneToMany(mappedBy = "workspace", cascade = CascadeType.PERSIST)
+    @Builder.Default
+    private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
+
     public WorkspaceListResDto fromEntity() {
         return WorkspaceListResDto.builder()
                 .workspaceId(this.workspaceId)
@@ -51,6 +56,11 @@ public class Workspace extends BaseEntity {
         if(this.sections != null) {
             for (Section s : this.sections) {
                 s.deleteEntity();
+            }
+        }
+        if(this.workspaceMembers != null) {
+            for (WorkspaceMember w : this.workspaceMembers) {
+                w.deleteEntity();
             }
         }
     }
