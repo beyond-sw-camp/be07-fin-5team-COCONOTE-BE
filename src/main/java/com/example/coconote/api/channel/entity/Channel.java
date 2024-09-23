@@ -58,6 +58,17 @@ public class Channel extends BaseEntity {
                 .isPublic(this.isPublic)
                 .build();
     }
+    public ChannelResDto fromEntity() {
+        return ChannelResDto.builder()
+                .id(this.channelId)
+                .build();
+    }
+
+    public ChannelResDto toResDto() {
+        return ChannelResDto.builder()
+                .id(this.channelId)
+                .build();
+    }
 
     public void updateEntity(ChannelUpdateReqDto dto) {
         this.channelName = dto.getChannelName();

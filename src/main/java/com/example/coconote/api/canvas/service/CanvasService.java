@@ -30,6 +30,7 @@ public class CanvasService {
         this.channelRepository = channelRepository;
     }
 
+    @Transactional
     public CreateCanvasResDto createCanvas(CreateCanvasReqDto createCanvasReqDto, String email){
         Channel channel = channelRepository.findById(createCanvasReqDto.getChannelId()).orElseThrow(() -> new IllegalArgumentException("채널이 존재하지 않습니다."));
 
@@ -38,8 +39,10 @@ public class CanvasService {
         if (createCanvasReqDto.getParentCanvasId() != null) {
             parentCanvas = canvasRepository.findById(createCanvasReqDto.getParentCanvasId())
                     .orElseThrow(() -> new IllegalArgumentException("부모 캔버스가 존재하지 않습니다."));
+
+            // 부모 캔버스가 현재 채널에 속해 있는지 확인
             if (!parentCanvas.getChannel().getChannelId().equals(channel.getChannelId())) {
-                throw new IllegalArgumentException("부모 캔버스가 다른 채널에 있습니다.");
+                throw new IllegalArgumentException("부모 캔버스가 현재 채널에 속해 있지 않습니다.");
             }
         }
 
@@ -112,4 +115,16 @@ public class CanvasService {
                 .orElseThrow(() -> new IllegalArgumentException("캔버스가 존재하지 않습니다."));
         canvas.markAsDeleted(); // 실제 삭제 대신 소프트 삭제 처리
     }
+
+
+//    ========== 기능 불러와서 쓰기~
+
+    public Canvas findByIdAndIsDeletedReturnRequired(Long canvasId){
+        return canvasRepository.findById(canvasId).orElseThrow(() -> new IllegalArgumentException("캔버스가 존재하지 않습니다."));
+    }
+
+    public Canvas findByIdAndIsDeletedReturnOrElseNull(Long canvasId){
+        return canvasRepository.findById(canvasId).orElse(null);
+    }
+
 }
