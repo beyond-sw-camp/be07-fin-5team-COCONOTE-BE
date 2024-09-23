@@ -28,7 +28,7 @@ public class Folder extends BaseEntity {
     @JoinColumn(name = "parent_folder_id")
     private Folder parentFolder;
 
-    @OneToMany(mappedBy = "parentFolder", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "parentFolder", cascade = CascadeType.ALL )
     private List<Folder> childFolders;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -42,13 +42,6 @@ public class Folder extends BaseEntity {
     public void markAsDeleted() {
         this.isDeleted = IsDeleted.Y;
         this.deletedTime = LocalDateTime.now();
-
-        // 자식 폴더들도 재귀적으로 삭제 처리
-        if (childFolders != null) {
-            for (Folder child : childFolders) {
-                child.markAsDeleted();
-            }
-        }
     }
 
     public void moveParentFolder(Folder parentFolder) {

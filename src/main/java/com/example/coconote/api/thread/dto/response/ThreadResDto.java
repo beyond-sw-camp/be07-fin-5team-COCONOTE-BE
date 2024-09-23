@@ -17,7 +17,7 @@ public class ThreadResDto {
     private Long id;
     private String image;
     private String memberName;
-    private LocalDateTime createdTime;
+    private String createdTime;
     private String content;
     private List<String> files;
     private List<ThreadResDto> childThreads;

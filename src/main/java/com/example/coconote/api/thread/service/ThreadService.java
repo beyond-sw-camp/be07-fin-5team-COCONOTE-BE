@@ -30,8 +30,11 @@ public class ThreadService {
 
     public ThreadResDto createThread(ThreadCreateReqDto dto) {
         //TODO: jwt토큰이 완성되면 memberId 는 불러오면됨
-        Member member = memberRepository.findById(dto.getMemberId()).orElseThrow(()-> new EntityNotFoundException("해당멤버가 없습니다."));
-        Thread parentThread = threadRepository.findById(dto.getParentId()).orElse(null);
+        Member member = memberRepository.findById(dto.getSenderId()).orElseThrow(()-> new EntityNotFoundException("해당멤버가 없습니다."));
+        Thread parentThread = null;
+        if(dto.getParentId() != null){
+            parentThread = threadRepository.findById(dto.getParentId()).orElse(null);
+        }
         Channel channel = channelRepository.findById(dto.getChannelId()).orElseThrow(()->new EntityNotFoundException("해당 채널이 없습니다."));
         Thread thread = threadRepository.save(dto.toEntity(member,parentThread, channel));
         return thread.fromEntity();
@@ -40,11 +43,11 @@ public class ThreadService {
     public Page<ThreadResDto> threadList(Long channelId, Pageable pageable) {
         Channel channel = channelRepository.findById(channelId).orElseThrow(()->new EntityNotFoundException("channel not found"));
         Page<Thread> threads = threadRepository.findAllByChannelAndParentIsNull(channel,pageable);
-        Page<ThreadResDto> threadListResDtos = threads.map(thread -> {
+        Page<ThreadResDto> threadResDtos = threads.map(thread -> {
             List<Thread> childThreads = threadRepository.findAllByParent(thread);
             List<ThreadResDto> childThreadResDtos = childThreads.stream().map(Thread::fromEntity).toList();
             return thread.fromEntity(childThreadResDtos);
         });
-        return threadListResDtos;
+        return threadResDtos;
     }
 }

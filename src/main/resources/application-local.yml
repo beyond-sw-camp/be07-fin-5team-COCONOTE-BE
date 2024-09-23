@@ -26,6 +26,7 @@ spring:
       ddl-auto: update
     show_sql: true
     open-in-view: false
+
   mail:
     host: ${MAIL_HOST}
     port: ${MAIL_PORT}
@@ -42,6 +43,13 @@ spring:
           timeout: 5000
           writetimeout: 5000
     auth-code-expiration-millis: 300000
+
+  batch:
+    job:
+      enabled: false
+    jdbc:
+      initialize-schema: never
+
   security:
     oauth2:
       client:

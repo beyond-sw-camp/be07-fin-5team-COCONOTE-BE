@@ -5,6 +5,7 @@ import com.example.coconote.api.channel.channel.dto.request.ChannelUpdateReqDto;
 import com.example.coconote.api.channel.channel.dto.response.ChannelListResDto;
 import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channel.service.ChannelService;
+import com.example.coconote.api.drive.dto.response.FolderAllListResDto;
 import com.example.coconote.common.CommonResDto;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api/v1")
 public class ChannelController {
 
     private final ChannelService channelService;
@@ -52,6 +54,14 @@ public class ChannelController {
     public ResponseEntity<Object> channelDelete(@PathVariable Long id) {
         channelService.channelDelete(id);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "channel is successfully deleted", null);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
+    @Operation(summary= "채널 에 속한 드라이브로 이동")
+    @GetMapping("/channel/{id}/drive")
+    public ResponseEntity<Object> channelDrive(@PathVariable Long id, String email) {
+        FolderAllListResDto resDto = channelService.channelDrive(id, email);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "channel is successfully moved to drive", resDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 }

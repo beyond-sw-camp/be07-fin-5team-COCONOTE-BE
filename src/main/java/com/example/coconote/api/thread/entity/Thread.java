@@ -7,15 +7,12 @@ import com.example.coconote.api.thread.dto.response.ThreadResDto;
 import com.example.coconote.api.threadTag.entity.ThreadTag;
 import com.example.coconote.common.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -44,7 +41,7 @@ public class Thread extends BaseEntity {
         return ThreadResDto.builder()
                 .id(this.id)
                 .memberName(this.member.getNickname())
-                .createdTime(this.getCreatedTime())
+                .createdTime(this.getCreatedTime().toString())
                 .content(this.content)
                 .files(this.files)
                 .tags(tags)
@@ -56,7 +53,7 @@ public class Thread extends BaseEntity {
         return ThreadResDto.builder()
                 .id(this.id)
                 .memberName(this.member.getNickname())
-                .createdTime(this.getCreatedTime())
+                .createdTime(this.getCreatedTime().toString())
                 .content(this.content)
                 .files(this.files)
                 .childThreads(childThreadList)
