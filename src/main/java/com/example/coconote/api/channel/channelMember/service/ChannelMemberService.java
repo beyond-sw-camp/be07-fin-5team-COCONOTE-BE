@@ -49,19 +49,17 @@ public class ChannelMemberService {
         return resDtos;
     }
 
-    public ChannelMemberListResDto channelMemberChangeRole(Long id) {
+    public Boolean channelMemberChangeRole(Long id) {
         ChannelMember channelMember = channelMemberRepository.findById(id).orElseThrow(()->new EntityNotFoundException("존재하지 않는 회원입니다."));
-        channelMember.changeRole();
-        ChannelMemberListResDto dto = channelMember.fromEntity();
-        return dto;
+        return channelMember.changeRole();
     }
 
-//
-//    public ChannelMember channelMemberUpdate(Long id, ChannelMemberUpdateReqDto dto) {
-//        ChannelMember channelMember = channelMemberRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(" 찾을 수 없습니다."));
-//        channelMember.updateEntity(dto);
-//        return channelMember;
-//    }
+    public Boolean channelBookmark(Long id) {
+        ChannelMember channelMember = channelMemberRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(" 찾을 수 없습니다."));
+        return channelMember.bookmarkMyChannel();
+    }
+
+
 //
 //    public void channelMemberDelete(Long id) {
 //        ChannelMember channelMember = channelMemberRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("찾을 수 없습니다."));

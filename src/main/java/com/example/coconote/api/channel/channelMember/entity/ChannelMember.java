@@ -42,11 +42,23 @@ public class ChannelMember extends BaseEntity {
     }
 
 
-    public void changeRole() {
+    public boolean changeRole() { // 권한이 상승(?)했으면 true 반환
         if(this.channelRole.equals(com.example.coconote.api.channelMember.entity.ChannelRole.USER)) {
             this.channelRole = ChannelRole.MANAGER;
+            return true;
         }else {
             this.channelRole = ChannelRole.USER;
+            return false;
+        }
+    }
+
+    public boolean bookmarkMyChannel() { // 추가됐으면 true return
+        if(this.isBookmark) {
+            this.isBookmark = false;
+            return false;
+        }else {
+            this.isBookmark = true;
+            return true;
         }
     }
 }

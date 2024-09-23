@@ -39,19 +39,29 @@ public class ChannelMemberController {
     @Operation(summary= "채널 관리자 권한 부여/박탈")
     @PatchMapping("/channelMember/role/{id}") // 채널 관리자 권한 부여/삭제
     public ResponseEntity<Object> channelMemberChangeRole(@PathVariable Long id) {
-        ChannelMemberListResDto resDto = channelMemberService.channelMemberChangeRole(id);
-        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "role is successfully changed", resDto);
+        CommonResDto commonResDto;
+        Boolean value = channelMemberService.channelMemberChangeRole(id);
+        if(value) {
+            commonResDto = new CommonResDto(HttpStatus.OK, "role is successfully changed to manager", value);
+        }else{
+            commonResDto = new CommonResDto(HttpStatus.OK, "role is successfully changed to user", value);
+        }
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
+    @Operation(summary= "채널 즐겨찾기 추가/해제")
+    @PatchMapping("/channelMember/bookmark/{id}")  // 채널 즐겨찾기
+    public ResponseEntity<Object> channelBookmark(@PathVariable Long id) {
+        CommonResDto commonResDto;
+        Boolean value = channelMemberService.channelBookmark(id);
+        if(value) {
+            commonResDto = new CommonResDto(HttpStatus.OK, "bookmark is successfully added", value);
+        }else{
+            commonResDto = new CommonResDto(HttpStatus.OK, "bookmark is successfully deleted", value);
+        }
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
 
-//    @PatchMapping("/channelMember/bookmark/{id}")  // 채널 즐겨찾기
-//    public ResponseEntity<Object> channelUpdate(@PathVariable Long id, @RequestBody ChannelUpdateReqDto dto) {
-//        channelMemberService.channelMemberUpdate(id, dto);
-//        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "bookmark is successfully added", null);
-//        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
-//    }
-//
 //
 //    @PatchMapping("/channelMember/delete/{id}") // 채널 강퇴
 //    public ResponseEntity<Object> channelDelete(@PathVariable Long id) {
