@@ -2,6 +2,8 @@ package com.example.coconote.api.channel.channelMember.entity;
 
 import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channelMember.dto.response.ChannelMemberListResDto;
+import com.example.coconote.api.channelMember.entity.ChannelRole;
+import com.example.coconote.api.workspace.workspaceMember.entity.WsRole;
 import com.example.coconote.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -37,5 +39,14 @@ public class ChannelMember extends BaseEntity {
                 .id(this.id)
                 .channelRole(this.channelRole)
                 .build();
+    }
+
+
+    public void changeRole() {
+        if(this.channelRole.equals(com.example.coconote.api.channelMember.entity.ChannelRole.USER)) {
+            this.channelRole = ChannelRole.MANAGER;
+        }else {
+            this.channelRole = ChannelRole.USER;
+        }
     }
 }
