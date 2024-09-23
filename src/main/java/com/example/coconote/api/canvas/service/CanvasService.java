@@ -56,7 +56,7 @@ public class CanvasService {
     public Page<CanvasListResDto> getCanvasListInChannel(Long channelId, String email, Pageable pageable, Integer depth){
         Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new IllegalArgumentException("채널이 존재하지 않습니다."));
 
-        Page<Canvas> canvasList = canvasRepository.findByChannelIdAndParentCanvasIdAndIsDeleted(pageable, channelId, null, IsDeleted.N);
+        Page<Canvas> canvasList = canvasRepository.findByChannelAndParentCanvasIdAndIsDeleted(pageable, channel, null, IsDeleted.N);
 
 
 //        List<CanvasListResDto> childCanvas = null;
@@ -89,8 +89,8 @@ public class CanvasService {
             parentCanvas = canvasRepository.findByIdAndIsDeleted(canvas.getParentCanvas().getId(), IsDeleted.N).orElse(null);
         }
 
-        List<Canvas> siblingCanvasList = canvasRepository.findByParentCanvasIdAndChannelIdAndIsDeleted(parentCanvas!=null ? parentCanvas.getId() : null,
-                canvas.getChannel().getChannelId(), IsDeleted.N);
+        List<Canvas> siblingCanvasList = canvasRepository.findByParentCanvasIdAndChannelAndIsDeleted(parentCanvas!=null ? parentCanvas.getId() : null,
+                canvas.getChannel(), IsDeleted.N);
         List<CanvasListResDto> siblingCanvasListDto = !siblingCanvasList.isEmpty() ?
                 siblingCanvasList.stream().map(a->a.fromListEntity()).toList()
                 : null;
