@@ -1,5 +1,6 @@
 package com.example.coconote.api.block.entity;
 
+import com.example.coconote.api.block.dto.response.BlockListResDto;
 import com.example.coconote.api.canvas.entity.Canvas;
 import com.example.coconote.common.BaseEntity;
 import jakarta.persistence.*;
@@ -54,4 +55,10 @@ public class Block extends BaseEntity {
         }
     }
 
+    public BlockListResDto fromEntity() {
+        return BlockListResDto.builder()
+                .id(this.id)
+                .content(this.contents)
+                .build();
+    }
 }
