@@ -1,6 +1,9 @@
 package com.example.coconote.api.workspace.workspace.service;
 
+import com.example.coconote.api.channel.channel.repository.ChannelRepository;
+import com.example.coconote.api.section.dto.response.SectionListResDto;
 import com.example.coconote.api.section.entity.Section;
+import com.example.coconote.api.section.repository.SectionRepository;
 import com.example.coconote.api.workspace.workspace.dto.request.WorkspaceCreateReqDto;
 import com.example.coconote.api.workspace.workspace.dto.request.WorkspaceUpdateReqDto;
 import com.example.coconote.api.workspace.workspace.dto.response.WorkspaceListResDto;
@@ -20,9 +23,12 @@ import java.util.List;
 public class WorkspaceService {
 
     private final WorkspaceRepository workspaceRepository;
+    private final SectionRepository sectionRepository;
+
     @Autowired
-    public WorkspaceService(WorkspaceRepository workspaceRepository) {
+    public WorkspaceService(WorkspaceRepository workspaceRepository, SectionRepository sectionRepository) {
         this.workspaceRepository = workspaceRepository;
+        this.sectionRepository = sectionRepository;
     }
 
     public WorkspaceListResDto workspaceCreate(WorkspaceCreateReqDto dto) {
@@ -58,6 +64,18 @@ public class WorkspaceService {
         return dtos;
     }
 
+    public List<SectionListResDto> workspaceRead(Long workspaceId) {
+        Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+
+        List<Section> sections = sectionRepository.findByWorkspaceAndIsDeleted(workspace, IsDeleted.N);
+        List<SectionListResDto> sDtos = new ArrayList<>();
+        for(Section s : sections) {
+            sDtos.add(s.fromEntity());
+        }
+
+        return sDtos;
+    }
+
     public WorkspaceListResDto workspaceUpdate(Long id, WorkspaceUpdateReqDto dto) {
         Workspace workspace = workspaceRepository.findById(id).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
         workspace.updateEntity(dto);
@@ -69,4 +87,5 @@ public class WorkspaceService {
         Workspace workspace = workspaceRepository.findById(id).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
         workspace.deleteEntity();
     }
+
 }

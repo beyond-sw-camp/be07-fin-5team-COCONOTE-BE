@@ -1,5 +1,6 @@
 package com.example.coconote.api.workspace.workspace.controller;
 
+import com.example.coconote.api.section.dto.response.SectionListResDto;
 import com.example.coconote.api.workspace.workspace.dto.request.WorkspaceCreateReqDto;
 import com.example.coconote.api.workspace.workspace.dto.request.WorkspaceUpdateReqDto;
 import com.example.coconote.api.workspace.workspace.dto.response.WorkspaceListResDto;
@@ -32,9 +33,17 @@ public class WorkspaceController {
 
     @Operation(summary= "워크스페이스 목록 조회")
     @GetMapping("/workspace/list")
-    public ResponseEntity<Object> workspaceRead() {
+    public ResponseEntity<Object> workspaceList() {
         List<WorkspaceListResDto> dtos = workspaceService.workspaceList();
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "list is successfully found", dtos);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
+    @Operation(summary= "워크스페이스내 모든 섹션 및 채널 조회")
+    @GetMapping("/workspace/list/{workspaceId}")
+    public ResponseEntity<Object> workspaceRead(@PathVariable Long workspaceId) {
+        List<SectionListResDto> dtos = workspaceService.workspaceRead(workspaceId);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "workspace is successfully found", dtos);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 

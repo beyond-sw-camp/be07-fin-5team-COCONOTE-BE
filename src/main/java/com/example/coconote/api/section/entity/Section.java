@@ -1,5 +1,6 @@
 package com.example.coconote.api.section.entity;
 
+import com.example.coconote.api.channel.channel.dto.response.ChannelResDto;
 import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.section.dto.request.SectionUpdateReqDto;
 import com.example.coconote.api.section.dto.response.SectionListResDto;
@@ -13,6 +14,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,9 +39,21 @@ public class Section extends BaseEntity {
     private List<Channel> channels = new ArrayList<>();
 
     public SectionListResDto fromEntity() {
+        List<ChannelResDto> cDtos = new ArrayList<>();
+        if(this.channels != null) {
+            for(Channel c : this.channels) {
+                if(c.getIsDeleted().equals(IsDeleted.Y)) {
+                    continue;
+                }
+                cDtos.add(c.fromEntity());
+            }
+        }
+
         return SectionListResDto.builder()
                 .sectionId(this.sectionId)
-                .sectionName(this.sectionName).build();
+                .sectionName(this.sectionName)
+                .channelResDtoList(cDtos)
+                .build();
     }
 
     public void updateEntity(SectionUpdateReqDto dto) {
