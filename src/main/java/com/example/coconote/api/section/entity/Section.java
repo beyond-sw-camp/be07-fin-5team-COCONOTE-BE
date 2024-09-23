@@ -1,9 +1,9 @@
 package com.example.coconote.api.section.entity;
 
-import com.example.coconote.api.channel.entity.Channel;
+import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.section.dto.request.SectionUpdateReqDto;
 import com.example.coconote.api.section.dto.response.SectionListResDto;
-import com.example.coconote.api.workspace.entity.Workspace;
+import com.example.coconote.api.workspace.workspace.entity.Workspace;
 import com.example.coconote.common.BaseEntity;
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.*;

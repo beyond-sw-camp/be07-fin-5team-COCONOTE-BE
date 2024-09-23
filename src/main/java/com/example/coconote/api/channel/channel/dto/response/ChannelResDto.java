@@ -1,0 +1,14 @@
+package com.example.coconote.api.channel.channel.dto.response;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class ChannelResDto {
+    private Long id;
+}

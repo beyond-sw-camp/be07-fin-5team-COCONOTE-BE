@@ -1,8 +1,6 @@
 package com.example.coconote.api.canvas.dto.response;
 
-import com.example.coconote.api.canvas.entity.Canvas;
-import com.example.coconote.api.channel.dto.response.ChannelResDto;
-import com.example.coconote.api.channel.entity.Channel;
+import com.example.coconote.api.channel.channel.dto.response.ChannelResDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

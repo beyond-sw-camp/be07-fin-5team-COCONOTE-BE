@@ -1,7 +1,7 @@
 package com.example.coconote.api.drive.service;
 
-import com.example.coconote.api.channel.entity.Channel;
-import com.example.coconote.api.channel.repository.ChannelRepository;
+import com.example.coconote.api.channel.channel.entity.Channel;
+import com.example.coconote.api.channel.channel.repository.ChannelRepository;
 import com.example.coconote.api.drive.dto.request.CreateFolderReqDto;
 import com.example.coconote.api.drive.dto.response.*;
 import com.example.coconote.api.drive.entity.Folder;
@@ -12,8 +12,6 @@ import com.example.coconote.common.IsDeleted;
 import com.example.coconote.global.fileUpload.entity.FileEntity;
 import com.example.coconote.global.fileUpload.repository.FileRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

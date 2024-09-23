@@ -6,9 +6,8 @@ import com.example.coconote.api.canvas.dto.response.CanvasListResDto;
 import com.example.coconote.api.canvas.dto.response.CreateCanvasResDto;
 import com.example.coconote.api.canvas.entity.Canvas;
 import com.example.coconote.api.canvas.repository.CanvasRepository;
-import com.example.coconote.api.channel.entity.Channel;
-import com.example.coconote.api.channel.repository.ChannelRepository;
-import com.example.coconote.api.drive.entity.Folder;
+import com.example.coconote.api.channel.channel.entity.Channel;
+import com.example.coconote.api.channel.channel.repository.ChannelRepository;
 import com.example.coconote.common.IsDeleted;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
