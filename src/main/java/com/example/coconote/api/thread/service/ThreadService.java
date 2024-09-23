@@ -50,4 +50,11 @@ public class ThreadService {
         });
         return threadResDtos;
     }
+
+    @Transactional
+    public void deleteThread(Long threadId) {
+        Thread thread = threadRepository.findById(threadId).orElseThrow(()->new EntityNotFoundException("thread not found"));
+//        isDeleted를 true로 바꾸는 것으로 대체
+        thread.markAsDeleted();
+    }
 }
