@@ -17,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -61,7 +62,11 @@ public class FolderService {
     public void deleteFolder(Long folderId, String email) {
         Folder folder = folderRepository.findById(folderId)
                 .orElseThrow(() -> new IllegalArgumentException("폴더가 존재하지 않습니다."));
-        folder.markAsDeleted(); // 실제 삭제 대신 소프트 삭제 처리
+//        todo  바꾸려는 유저가 채널에 속해있는지 확인
+//        자식 폴더들도 재귀적으로 삭제 처리
+        folderRepository.softDeleteChildFolders(IsDeleted.Y, LocalDateTime.now(), folder);
+        fileRepository.softDeleteFilesInFolder(IsDeleted.Y, LocalDateTime.now(), folder);
+        folder.markAsDeleted(); // 실제 삭제 대신 소프트 삭제 처리 자신 삭제
     }
 
 

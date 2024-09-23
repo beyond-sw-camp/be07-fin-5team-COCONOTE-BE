@@ -187,14 +187,24 @@ public class S3Service {
             throw new IllegalArgumentException("파일을 삭제할 권한이 없습니다.");
         }
 
-//        s3 파일 삭제 (완전 삭제)
-        String fileKey = fileEntity.getFileUrl().substring(fileEntity.getFileUrl().lastIndexOf('/') + 1);
-        s3Client.deleteObject(deleteObjectRequest -> deleteObjectRequest
-                .bucket(bucketName)
-                .key(fileKey)
-        );
+        fileEntity.markAsDeleted();
 
+
+    }
+
+    @Transactional
+    public void hardDeleteFileS3(Long fileId ) {
+        FileEntity fileEntity = fileRepository.findById(fileId)
+                .orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다."));
+        try {
+            // S3에서 파일 삭제
+            s3Client.deleteObject(b -> b.bucket(bucketName).key(fileEntity.getFileUrl().substring(fileEntity.getFileUrl().lastIndexOf('/') + 1)));
+            log.info("S3에서 파일 삭제 완료: {}", fileEntity.getFileName());
+        } catch (Exception e) {
+            throw new RuntimeException("S3에서 파일 삭제 중 오류 발생: " + e.getMessage());
+        }
         fileRepository.delete(fileEntity);
+        log.info("파일 삭제 완료: {}", fileEntity.getFileName());
     }
 
     public MoveFileResDto moveFile(MoveFileReqDto moveFileReqDto, String email) {
