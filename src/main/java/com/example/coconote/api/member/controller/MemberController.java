@@ -1,19 +1,17 @@
 package com.example.coconote.api.member.controller;
 
-import com.example.coconote.api.thread.service.ThreadService;
+import com.example.coconote.security.entity.CustomPrincipal;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("api/v1/member")
+@RequestMapping("/api/v1/member")
 @RequiredArgsConstructor
 public class MemberController {
-    private final ThreadService threadService;
 
-    @PostMapping("create")
-    public String create() {
-        return "create";
+    @GetMapping("/me")
+    public String getMemberInfo(@AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        return "Logged in user: " + customPrincipal.getEmail() + ", Member ID: " + customPrincipal.getMemberId() + ", Member Nickname: " + customPrincipal.getNickname();
     }
 }

@@ -1,5 +1,6 @@
 package com.example.coconote.security.config;
 
+import com.example.coconote.api.member.repository.MemberRepository;
 import com.example.coconote.security.filter.JwtAuthenticationFilter;
 import com.example.coconote.security.service.TokenOAuth2UserService;
 import com.example.coconote.security.token.JwtTokenProvider;
@@ -17,6 +18,7 @@ public class TokenSecurityConfig {
 
     private final TokenOAuth2UserService tokenOAuth2UserService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final MemberRepository memberRepository;
 
     @Bean
     // 스프링 시큐리티는 이 **SecurityFilterChain**을 통해 필터를 실행하고, 모든 요청에 대해 인증과 인가 규칙을 적용합니다.
@@ -53,7 +55,7 @@ public class TokenSecurityConfig {
                 // JWT 토큰이 유효하다면 폼 로그인을 거치지 않고 바로 인증을 완료할 수 있습니다.
                 // JWT 토큰이 유효하다면, 스프링 시큐리티는 JWT 토큰을 기반으로 사용자를 인증하고, **UsernamePasswordAuthenticationFilter**를 거치지 않고 요청을 처리합니다.
                 // JWT 인증 필터는 요청의 Authorization 헤더에 있는 JWT 토큰을 검증합니다.
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, memberRepository), UsernamePasswordAuthenticationFilter.class
                 );
 
         // HttpSecurity 객체를 사용해 보안 설정을 완료하고, 그 설정을 기반으로 SecurityFilterChain 객체를 생성하여 반환하는 역할
