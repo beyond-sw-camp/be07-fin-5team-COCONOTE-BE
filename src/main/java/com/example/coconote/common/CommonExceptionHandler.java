@@ -1,12 +1,10 @@
 package com.example.coconote.common;
 
-
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-
 
 // @ControllerAdvice : 모든 컨트롤러에 적용되는 예외처리 클래스
 @ControllerAdvice
@@ -24,5 +22,4 @@ public class CommonExceptionHandler {
         CommonErrorDto commonErrorDto = new CommonErrorDto(HttpStatus.BAD_REQUEST, e.getMessage());
         return new ResponseEntity<>(commonErrorDto, HttpStatus.BAD_REQUEST);
     }
-
 }

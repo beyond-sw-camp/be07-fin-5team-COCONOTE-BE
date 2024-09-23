@@ -1,5 +1,6 @@
 //package com.example.coconote.api.channelMember.dto.response;
 //
+//import com.example.coconote.api.channelMember.entity.ChannelRole;
 //import lombok.AllArgsConstructor;
 //import lombok.Builder;
 //import lombok.Data;
@@ -10,5 +11,6 @@
 //@NoArgsConstructor
 //@AllArgsConstructor
 //public class ChannelMemberListResDto {
-//    private String name;
+//    private Long id;
+//    private ChannelRole channelRole;
 //}

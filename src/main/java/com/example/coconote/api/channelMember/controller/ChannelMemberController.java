@@ -1,10 +1,7 @@
 //package com.example.coconote.api.channelMember.controller;
 //
-//import com.example.coconote.api.channel.dto.request.ChannelCreateReqDto;
 //import com.example.coconote.api.channel.dto.request.ChannelUpdateReqDto;
-//import com.example.coconote.api.channel.dto.response.ChannelListResDto;
 //import com.example.coconote.api.channelMember.dto.response.ChannelMemberListResDto;
-//import com.example.coconote.api.channelMember.entity.ChannelMember;
 //import com.example.coconote.api.channelMember.service.ChannelMemberService;
 //import com.example.coconote.common.CommonResDto;
 //import org.springframework.beans.factory.annotation.Autowired;
@@ -24,11 +21,11 @@
 //
 //    @PostMapping("/channelMember/create/{channelId}") // 채널 가입
 //    public ResponseEntity<Object> channelMemberCreate(@PathVariable Long channelId) {
-//        ChannelMember channelMember = channelMemberService.channelMemberCreate(channelId);
-//        CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "channelMember is successfully created", channelMember.getId());
+//        ChannelMemberListResDto resDto = channelMemberService.channelMemberCreate(channelId);
+//        CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "member is successfully created", resDto);
 //        return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
 //    }
-
+//
 //    @GetMapping("/channelMember/list/{channelId}") // 채널 유저 목록 조회
 //    public ResponseEntity<Object> channelMemberRead(@PathVariable Long channelId) {
 //        List<ChannelMemberListResDto> dtos = channelMemberService.channelMemberList(channelId);
@@ -36,23 +33,20 @@
 //        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
 //    }
 //
-//    @PatchMapping("/channelMember/role/{id}") // 채널 관리자
+//    @PatchMapping("/channelMember/role/{id}") // 채널 관리자 권한 부여/삭제
 //    public ResponseEntity<Object> channelUpdate(@PathVariable Long id, @RequestBody ChannelUpdateReqDto dto) {
 //        channelMemberService.channelMemberUpdate(id, dto);
-//        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "channelMember is successfully updated", null);
+//        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "member is successfully updated", null);
 //        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
 //    }
 //
 //
-//    @PatchMapping("/channelMember/bookmark/{id}") // 채널 관리자 권한 부여/삭제
+//    @PatchMapping("/channelMember/bookmark/{id}")  // 채널 즐겨찾기
 //    public ResponseEntity<Object> channelUpdate(@PathVariable Long id, @RequestBody ChannelUpdateReqDto dto) {
 //        channelMemberService.channelMemberUpdate(id, dto);
-//        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "channelMember is successfully updated", null);
+//        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "member is successfully updated", null);
 //        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
 //    }
-//
-//
-//    // 채널 즐겨찾기
 //
 //
 //    @PatchMapping("/channelMember/delete/{id}") // 채널 강퇴

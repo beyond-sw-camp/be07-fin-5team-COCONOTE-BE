@@ -26,6 +26,30 @@ spring:
       ddl-auto: update
     show_sql: true
     open-in-view: false
+
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+    auth-code-expiration-millis: 300000
+
+  batch:
+    job:
+      enabled: false
+    jdbc:
+      initialize-schema: never
+
   security:
     oauth2:
       client:
@@ -57,6 +81,7 @@ spring:
     consumer:
       group-id: websocket-group
       auto-offset-reset: earliest
+
 springdoc:
   api-docs:
     groups:
@@ -76,3 +101,6 @@ aws:
   s3:
     region: ${local.s3.region}
     bucket: ${local.s3.bucket}
+
+jwt:
+  secret: ${local.jwt.secret}

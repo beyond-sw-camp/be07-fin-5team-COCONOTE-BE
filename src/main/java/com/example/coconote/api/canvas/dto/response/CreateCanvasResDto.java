@@ -22,7 +22,7 @@ public class CreateCanvasResDto {
                 .canvasId(canvas.getId())
                 .title(canvas.getTitle())
                 .parentCanvasId(canvas.getParentCanvas() == null ? null : canvas.getParentCanvas().getId())
-                .channelId(canvas.getChannel() == null ? null : canvas.getChannel().getId())
+                .channelId(canvas.getChannel() == null ? null : canvas.getChannel().getChannelId())
                 .build();
     }
 }

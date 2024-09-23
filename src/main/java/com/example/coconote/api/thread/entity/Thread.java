@@ -6,9 +6,11 @@ import com.example.coconote.api.tag.dto.response.TagResDto;
 import com.example.coconote.api.thread.dto.response.ThreadResDto;
 import com.example.coconote.api.threadTag.entity.ThreadTag;
 import com.example.coconote.common.BaseEntity;
+import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,5 +61,11 @@ public class Thread extends BaseEntity {
                 .childThreads(childThreadList)
                 .tags(tags)
                 .build();
+    }
+
+    // 소프트 삭제 메서드
+    public void markAsDeleted() {
+        this.isDeleted = IsDeleted.Y;
+        this.deletedTime = LocalDateTime.now();
     }
 }

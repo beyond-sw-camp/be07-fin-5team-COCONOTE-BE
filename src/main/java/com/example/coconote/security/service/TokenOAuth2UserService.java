@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
-
 @Service
 @RequiredArgsConstructor
 public class TokenOAuth2UserService extends DefaultOAuth2UserService {
@@ -41,7 +40,7 @@ public class TokenOAuth2UserService extends DefaultOAuth2UserService {
             throw new IllegalArgumentException("지원하지 않는 로그인 제공자입니다.");
         }
 
-        // 이메일로 DB에서 회원 확인
+        // 이메일로 DB 에서 회원 확인
         Member member = memberRepository.findByEmail(email)
                 .orElseGet(() -> {
                     // 가입된 회원이 없을 경우 새로 생성
@@ -50,7 +49,6 @@ public class TokenOAuth2UserService extends DefaultOAuth2UserService {
                     newMember.setNickname(name);
                     return memberRepository.save(newMember);
                 });
-
         return oAuth2User;
     }
 }

@@ -3,11 +3,14 @@ package com.example.coconote.global.fileUpload.entity;
 import com.example.coconote.api.drive.entity.Folder;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.common.BaseEntity;
+import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -31,5 +34,10 @@ public class FileEntity extends BaseEntity {
 
     public void moveFolder(Folder folder) {
         this.folder = folder;
+    }
+
+    public void markAsDeleted() {
+        this.isDeleted = IsDeleted.Y;
+        this.deletedTime = LocalDateTime.now();
     }
 }
