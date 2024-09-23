@@ -40,8 +40,9 @@ public class SectionService {
     }
 
 
-    public List<SectionListResDto> sectionList() {
-        List<Section> sections = sectionRepository.findByIsDeleted(IsDeleted.N);
+    public List<SectionListResDto> sectionList(Long workspaceId) {
+        Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(()-> new EntityNotFoundException("워크스페이스를 찾을 수 없습니다."));
+        List<Section> sections = sectionRepository.findByWorkspaceAndIsDeleted(workspace, IsDeleted.N);
         List<SectionListResDto> dtos = new ArrayList<>();
         for(Section s : sections) {
             dtos.add(s.fromEntity());

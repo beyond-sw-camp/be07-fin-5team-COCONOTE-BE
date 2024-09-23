@@ -30,7 +30,7 @@ public class WorkspaceController {
             return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }
 
-    @Operation(summary= "워크스페이스 조회")
+    @Operation(summary= "워크스페이스 목록 조회")
     @GetMapping("/workspace/list")
     public ResponseEntity<Object> workspaceRead() {
         List<WorkspaceListResDto> dtos = workspaceService.workspaceList();

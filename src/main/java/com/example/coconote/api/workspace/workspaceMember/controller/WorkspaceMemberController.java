@@ -52,8 +52,13 @@ public class WorkspaceMemberController {
     @Operation(summary= "웤스 회원 관리자 권한 부여/삭제")
     @PatchMapping("/workspacemember/changerole/{id}")
     public ResponseEntity<Object> workspaceMemberChangeRole(@PathVariable Long id) {
-        WorkspaceMemberResDto resDto = workspaceMemberService.workspaceMemberChangeRole(id);
-        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "member is successfully updated", resDto);
+        CommonResDto commonResDto;
+        Boolean value = workspaceMemberService.workspaceMemberChangeRole(id);
+        if(value) {
+            commonResDto = new CommonResDto(HttpStatus.OK, "role is successfully changed to sManager", value);
+        }else{
+            commonResDto = new CommonResDto(HttpStatus.OK, "role is successfully changed to user", value);
+        }
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 

@@ -59,11 +59,9 @@ public class WorkspaceMemberService {
     }
 
 
-    public WorkspaceMemberResDto workspaceMemberChangeRole(Long id) {
+    public Boolean workspaceMemberChangeRole(Long id) {
         WorkspaceMember workspaceMember = workspaceMemberRepository.findById(id).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
-        workspaceMember.changeRole();
-        WorkspaceMemberResDto restDto = workspaceMember.fromEntity();
-        return restDto;
+        return workspaceMember.changeRole();
     }
 
     public void workspaceMemberDelete(Long id) {

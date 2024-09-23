@@ -33,9 +33,9 @@ public class SectionController {
     }
 
     @Operation(summary= "섹션 조회")
-    @GetMapping("/section/list")
-    public ResponseEntity<Object> sectionRead() {
-        List<SectionListResDto> dtos = sectionService.sectionList();
+    @GetMapping("/section/list/{workspaceId}")
+    public ResponseEntity<Object> sectionRead(@PathVariable Long workspaceId) {
+        List<SectionListResDto> dtos = sectionService.sectionList(workspaceId);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "list is successfully found", dtos);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }

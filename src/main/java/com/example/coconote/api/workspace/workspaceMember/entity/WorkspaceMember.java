@@ -1,6 +1,8 @@
 package com.example.coconote.api.workspace.workspaceMember.entity;
 
+import com.example.coconote.api.channel.channelMember.entity.ChannelMember;
 import com.example.coconote.api.member.entity.Member;
+import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.workspace.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.workspaceMember.dto.request.WorkspaceMemberUpdateReqDto;
 import com.example.coconote.api.workspace.workspaceMember.dto.response.WorkspaceMemberResDto;
@@ -13,6 +15,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Builder
@@ -31,6 +35,10 @@ public class WorkspaceMember extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
+
+    @OneToMany(mappedBy = "workspaceMember", cascade = CascadeType.PERSIST)
+    @Builder.Default
+    private List<ChannelMember> channelMembers = new ArrayList<>();
 
     private String memberName;
 
@@ -71,16 +79,23 @@ public class WorkspaceMember extends BaseEntity {
         this.profileImage = dto.getProfileImage();
     }
 
-    public void changeRole() {
+    public boolean changeRole() { // 권한 상승(?)하면 true
         if(this.wsRole.equals(WsRole.USER)) {
             this.wsRole = WsRole.SMANAGER;
+            return true;
         }else {
             this.wsRole = WsRole.USER;
+            return false;
         }
     }
 
     public void deleteEntity() {
         this.isDeleted = IsDeleted.Y;
         this.deletedTime = LocalDateTime.now();
+        if(this.channelMembers != null) {
+            for (ChannelMember c : this.channelMembers) {
+                c.deleteEntity();
+            }
+        }
     }
 }

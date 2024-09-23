@@ -1,6 +1,6 @@
 package com.example.coconote.api.channel.channelMember.controller;
 
-import com.example.coconote.api.channel.channel.dto.request.ChannelUpdateReqDto;
+import com.example.coconote.api.channel.channelMember.dto.request.ChannelMemberCreateReqDto;
 import com.example.coconote.api.channel.channelMember.dto.response.ChannelMemberListResDto;
 import com.example.coconote.api.channel.channelMember.service.ChannelMemberService;
 import com.example.coconote.common.CommonResDto;
@@ -22,8 +22,8 @@ public class ChannelMemberController {
 
     @Operation(summary= "채널 회원 생성(초대/가입)")
     @PostMapping("/channelMember/create/{channelId}") // 채널 가입
-    public ResponseEntity<Object> channelMemberCreate(@PathVariable Long channelId) {
-        ChannelMemberListResDto resDto = channelMemberService.channelMemberCreate(channelId);
+    public ResponseEntity<Object> channelMemberCreate(@RequestBody ChannelMemberCreateReqDto dto) {
+        ChannelMemberListResDto resDto = channelMemberService.channelMemberCreate(dto);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "member is successfully created", resDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }

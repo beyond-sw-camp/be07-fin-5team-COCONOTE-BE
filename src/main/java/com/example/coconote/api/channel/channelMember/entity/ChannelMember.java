@@ -3,6 +3,7 @@ package com.example.coconote.api.channel.channelMember.entity;
 import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channelMember.dto.response.ChannelMemberListResDto;
 import com.example.coconote.api.channelMember.entity.ChannelRole;
+import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import com.example.coconote.common.BaseEntity;
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.*;
@@ -24,6 +25,10 @@ public class ChannelMember extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "workspace_member_id")
+    private WorkspaceMember workspaceMember;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "channel_id")
     private Channel channel;
 
@@ -38,6 +43,7 @@ public class ChannelMember extends BaseEntity {
         return ChannelMemberListResDto.builder()
                 .id(this.id)
                 .channelRole(this.channelRole)
+                .memberInfo(this.workspaceMember.fromEntity())
                 .build();
     }
 

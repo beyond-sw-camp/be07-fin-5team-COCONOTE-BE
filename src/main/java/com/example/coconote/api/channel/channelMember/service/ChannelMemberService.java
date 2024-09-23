@@ -2,9 +2,12 @@ package com.example.coconote.api.channel.channelMember.service;
 
 import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;
+import com.example.coconote.api.channel.channelMember.dto.request.ChannelMemberCreateReqDto;
 import com.example.coconote.api.channel.channelMember.dto.response.ChannelMemberListResDto;
 import com.example.coconote.api.channel.channelMember.entity.ChannelMember;
 import com.example.coconote.api.channel.channelMember.repository.ChannelMemberRepository;
+import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
+import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,18 +22,21 @@ import java.util.List;
 public class ChannelMemberService {
 
     private final ChannelMemberRepository channelMemberRepository;
+    private final WorkspaceMemberRepository workspaceMemberRepository;
     private final ChannelRepository channelRepository;
 
     @Autowired
-    public ChannelMemberService(ChannelMemberRepository channelMemberRepository, ChannelRepository channelRepository) {
+    public ChannelMemberService(ChannelMemberRepository channelMemberRepository, WorkspaceMemberRepository workspaceMemberRepository, ChannelRepository channelRepository) {
         this.channelMemberRepository = channelMemberRepository;
+        this.workspaceMemberRepository = workspaceMemberRepository;
         this.channelRepository = channelRepository;
     }
 
-    public ChannelMemberListResDto channelMemberCreate(Long channelId) {
-        Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new EntityNotFoundException("채널이 존재하지 않습니다."));
-        ChannelMember channelMember = ChannelMember
-                .builder()
+    public ChannelMemberListResDto channelMemberCreate(ChannelMemberCreateReqDto dto) {
+        Channel channel = channelRepository.findById(dto.getChannelId()).orElseThrow(() -> new EntityNotFoundException("채널이 존재하지 않습니다."));
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findById(dto.getWorkspaceMemberId()).orElseThrow(()-> new EntityNotFoundException("존재하지 않는 회원입니다."));
+        ChannelMember channelMember = ChannelMember.builder()
+                .workspaceMember(workspaceMember)
                 .channel(channel)
                 .build();
         channelMemberRepository.save(channelMember);
