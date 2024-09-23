@@ -23,7 +23,7 @@ public class KafkaThreadConfig {
     private String bootstrapServers;
     // Producer Configuration
     @Bean
-    public ProducerFactory<String, ThreadCreateReqDto> producerFactory() {
+    public ProducerFactory<String, ThreadCreateReqDto> producerThreadFactory() {
         Map<String, Object> configs = new HashMap<>();
         configs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -31,12 +31,12 @@ public class KafkaThreadConfig {
         return new DefaultKafkaProducerFactory<>(configs);
     }
     @Bean
-    public KafkaTemplate<String, ThreadCreateReqDto> kafkaTemplate() {
-        return new KafkaTemplate<>(producerFactory());
+    public KafkaTemplate<String, ThreadCreateReqDto> kafkaThreadTemplate() {
+        return new KafkaTemplate<>(producerThreadFactory());
     }
     // Consumer Configuration
     @Bean
-    public ConsumerFactory<String, ThreadCreateReqDto> consumerFactory() {
+    public ConsumerFactory<String, ThreadCreateReqDto> consumerThreadFactory() {
         return new DefaultKafkaConsumerFactory<>(
                 consumerConfigurations(),
                 new StringDeserializer(),
@@ -54,9 +54,9 @@ public class KafkaThreadConfig {
         return configurations;
     }
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, ThreadCreateReqDto> kafkaListenerContainerFactory() {
+    public ConcurrentKafkaListenerContainerFactory<String, ThreadCreateReqDto> kafkaThreadListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, ThreadCreateReqDto> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(consumerFactory());
+        factory.setConsumerFactory(consumerThreadFactory());
         return factory;
     }
 }

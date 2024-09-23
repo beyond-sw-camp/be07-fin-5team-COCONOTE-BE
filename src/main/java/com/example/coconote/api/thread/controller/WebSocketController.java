@@ -20,7 +20,7 @@ public class WebSocketController {
 
     private final SimpMessageSendingOperations messagingTemplate;
     private final ThreadService threadService;
-    private final KafkaTemplate<String, ThreadCreateReqDto> kafkaTemplate;
+    private final KafkaTemplate<String, ThreadCreateReqDto> kafkaThreadTemplate;
 
     @MessageMapping("/chat/message")
     public void message(ThreadCreateReqDto message) {
@@ -29,7 +29,7 @@ public class WebSocketController {
 
 //        ThreadResDto threadResDto = threadService.createThread(message);
 
-        kafkaTemplate.send("chat_topic", message.getChannelId().toString(), message);
+        kafkaThreadTemplate.send("chat_topic", message.getChannelId().toString(), message);
 //        messagingTemplate.convertAndSend("/sub/chat/room/" + message.getChannelId(), threadResDto);
     }
 
