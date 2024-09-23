@@ -23,5 +23,7 @@ public interface FolderRepository extends JpaRepository<Folder, Long> {
     @Query("UPDATE Folder f SET f.isDeleted = :deleted, f.deletedTime = :deletedTime WHERE f.parentFolder = :parentFolder")
     void softDeleteChildFolders(IsDeleted deleted, LocalDateTime deletedTime, Folder parentFolder);
 
+
     Optional<Folder> findByChannelAndParentFolderIsNull(Channel channel);
+
 }
