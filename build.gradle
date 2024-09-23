@@ -46,6 +46,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+//    batch
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+
+
     // STOMP
     implementation 'org.webjars:stomp-websocket:2.3.4'
 
