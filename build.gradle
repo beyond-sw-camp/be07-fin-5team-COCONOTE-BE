@@ -48,6 +48,9 @@ dependencies {
     // SockJS
     implementation 'org.webjars:sockjs-client:1.5.1'
 
+    // kafka
+    implementation 'org.springframework.kafka:spring-kafka'
+
     // 임시 의존성
     implementation 'org.springframework.boot:spring-boot-starter-freemarker'
     implementation 'org.springframework.boot:spring-boot-devtools'
