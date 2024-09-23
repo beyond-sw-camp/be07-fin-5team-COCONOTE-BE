@@ -3,8 +3,6 @@ package com.example.coconote.api.channel.channelMember.controller;
 import com.example.coconote.api.channel.channel.dto.request.ChannelUpdateReqDto;
 import com.example.coconote.api.channel.channelMember.dto.response.ChannelMemberListResDto;
 import com.example.coconote.api.channel.channelMember.service.ChannelMemberService;
-import com.example.coconote.api.channelMember.dto.response.ChannelMemberListResDto;
-import com.example.coconote.api.channelMember.service.ChannelMemberService;
 import com.example.coconote.common.CommonResDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

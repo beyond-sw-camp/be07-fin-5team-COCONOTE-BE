@@ -33,8 +33,9 @@ public class ChannelMemberService {
                 .channel(channel)
                 .build();
         channelMemberRepository.save(channelMember);
+        ChannelMemberListResDto resDto = channelMember.fromEntity();
 
-        return channelMember;
+        return resDto;
     }
 
     public List<ChannelMemberListResDto> channelMemberList(Long channelId) {
@@ -43,10 +44,10 @@ public class ChannelMemberService {
         List<ChannelMemberListResDto> resDtos = new ArrayList<>();
 
         for (ChannelMember c : channelMembers) {
-            c.fromEntity();
+            resDtos.add(c.fromEntity());
         }
 
-        return dtos;
+        return resDtos;
     }
 
 
