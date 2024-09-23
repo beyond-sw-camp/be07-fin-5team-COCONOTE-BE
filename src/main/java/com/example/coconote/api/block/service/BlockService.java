@@ -80,6 +80,15 @@ public class BlockService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 Prev Block이 존재하지 않습니다."))
                 : null;
 
+        //        prev block 존재 및 이전에 해당 prev block을 갖고있는 block 주소 업데이트
+        if(prevBlock != null){
+            Block originalPrevBlockHolder = blockRepository.findByPrevBlockId(prevBlock.getId())
+                    .orElse(null);
+            if(originalPrevBlockHolder != null){
+                originalPrevBlockHolder.changePrevBlock(block);
+            }
+        }
+
         Block parentBlock = updateBlockReqDto.getParentBlockId() != null
                 ? blockRepository.findById(updateBlockReqDto.getParentBlockId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 Parent Block이 존재하지 않습니다."))
