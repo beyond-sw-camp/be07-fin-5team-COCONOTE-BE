@@ -46,19 +46,9 @@ public class ChannelMemberService {
         for (ChannelMember c : channelMembers) {
             resDtos.add(c.fromEntity());
         }
-
         return resDtos;
     }
 
-
-    public List<ChannelMemberListResDto> channelMemberList() {
-        List<ChannelMember> channelMembers = channelMemberRepository.findAll();
-        List<ChannelMemberListResDto> dtos = new ArrayList<>();
-        for (ChannelMember c : channelMembers) {
-            dtos.add(c.fromEntity());
-        }
-        return dtos;
-    }
 
     public ChannelMember channelMemberUpdate(Long id, ChannelMemberUpdateReqDto dto) {
         ChannelMember channelMember = channelMemberRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(" 찾을 수 없습니다."));
