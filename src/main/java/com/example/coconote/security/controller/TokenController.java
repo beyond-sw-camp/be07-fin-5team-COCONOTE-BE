@@ -24,8 +24,7 @@ public class TokenController {
     private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping("/token")
-    public ResponseEntity<String> generateToken(
-            @AuthenticationPrincipal OAuth2User oAuth2User) {
+    public ResponseEntity<String> generateToken( @AuthenticationPrincipal OAuth2User oAuth2User) {
 
         // SecurityContext에서 Authentication 객체 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -51,7 +50,6 @@ public class TokenController {
 
         // OAuth2 로그인 성공 후 사용자의 이메일을 가져옴
         if (email == null) {
-            System.out.println("이메일을 가져오지 못했습니다.");
             return ResponseEntity.badRequest().body("Failed to retrieve user information.");
         }
 
@@ -72,10 +70,8 @@ public class TokenController {
 
         // HTTP 바디에서 리프레시 토큰 추출
         String refreshToken = requestBody.get("refreshToken");
-        System.out.println("refreshToken = " + refreshToken);
 
         if (refreshToken == null) {
-            System.out.println("refreshToken is null");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("refresh token is null");
         } else if (!jwtTokenProvider.validateToken(refreshToken)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired refresh token");
@@ -83,9 +79,6 @@ public class TokenController {
 
         // 리프레시 토큰이 유효하다면 새로운 액세스 토큰 발급
         String newAccessToken = jwtTokenProvider.generateAccessToken(jwtTokenProvider.getEmailFromToken(refreshToken));
-
-        // test code
-        System.out.println("newAccessToken = " + newAccessToken);
 
         // 새로 발급된 액세스 토큰을 클라이언트에게 반환
         return ResponseEntity.ok(newAccessToken);

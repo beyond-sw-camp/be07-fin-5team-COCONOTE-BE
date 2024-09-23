@@ -1,5 +1,8 @@
 package com.example.coconote.security.filter;
 
+import com.example.coconote.api.member.entity.Member;
+import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.security.entity.CustomPrincipal;
 import com.example.coconote.security.token.JwtAuthenticationToken;
 import com.example.coconote.security.token.JwtTokenProvider;
 import jakarta.servlet.FilterChain;
@@ -17,6 +20,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final MemberRepository memberRepository;  // 사용자 정보를 가져오기 위한 레포지토리 추가
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
@@ -36,8 +40,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // 스프링 시큐리티는 인증된 사용자 정보를 Authentication 객체를 통해 관리하기 때문에, Authentication 객체로 만들어야 합니다.
                 // 사용자 정보를 단순히 문자열로 저장하는 것이 아니라, 스프링 시큐리티에서 요구하는 형식에 맞게 Authentication 객체로 래핑
                 // JwtAuthenticationToken 클래스는 스프링 시큐리티에서 제공하는 **UsernamePasswordAuthenticationToken**을 상속하여 JWT 인증 처리를 위한 커스텀 객체
-                JwtAuthenticationToken authentication = new JwtAuthenticationToken(email);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+//                JwtAuthenticationToken authentication = new JwtAuthenticationToken(email);
+//                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                // 이메일로 DB에서 사용자 정보 조회
+                Member member = memberRepository.findByEmail(email).orElse(null);
+                if (member != null) {
+                    // CustomPrincipal 객체로 사용자 정보를 SecurityContextHolder에 저장
+                    CustomPrincipal customPrincipal = new CustomPrincipal(email, member.getId(), member.getNickname());
+                    JwtAuthenticationToken authentication = new JwtAuthenticationToken(customPrincipal); // 권한 설정은 나중에 추가
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
             }
         }
         // 필터 체인 계속 진행
