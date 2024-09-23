@@ -7,6 +7,7 @@ import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.section.repository.SectionRepository;
 import com.example.coconote.api.workspace.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.workspace.repository.WorkspaceRepository;
+import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,7 +41,7 @@ public class SectionService {
 
 
     public List<SectionListResDto> sectionList() {
-        List<Section> sections = sectionRepository.findAll();
+        List<Section> sections = sectionRepository.findByIsDeleted(IsDeleted.N);
         List<SectionListResDto> dtos = new ArrayList<>();
         for(Section s : sections) {
             dtos.add(s.fromEntity());

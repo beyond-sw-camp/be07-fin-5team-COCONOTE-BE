@@ -5,6 +5,7 @@ import com.example.coconote.api.channel.channel.repository.ChannelRepository;
 import com.example.coconote.api.channel.channelMember.dto.response.ChannelMemberListResDto;
 import com.example.coconote.api.channel.channelMember.entity.ChannelMember;
 import com.example.coconote.api.channel.channelMember.repository.ChannelMemberRepository;
+import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,7 +41,7 @@ public class ChannelMemberService {
 
     public List<ChannelMemberListResDto> channelMemberList(Long channelId) {
         Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new EntityNotFoundException("채널이 존재하지 않습니다."));
-        List<ChannelMember> channelMembers = channelMemberRepository.findByChannel(channel);
+        List<ChannelMember> channelMembers = channelMemberRepository.findByChannelAndIsDeleted(channel, IsDeleted.N);
         List<ChannelMemberListResDto> resDtos = new ArrayList<>();
 
         for (ChannelMember c : channelMembers) {

@@ -7,6 +7,7 @@ import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;
 import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.section.repository.SectionRepository;
+import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,7 +45,7 @@ public class ChannelService {
     public List<ChannelListResDto> channelList(Long sectionId) {
 
         Section section = sectionRepository.findById(sectionId).orElseThrow(()->new EntityNotFoundException("없는 섹션입니다."));
-        List<Channel> channels = channelRepository.findAll();
+        List<Channel> channels = channelRepository.findByIsDeleted(IsDeleted.N);
         List<ChannelListResDto> dtos = new ArrayList<>();
 
 
