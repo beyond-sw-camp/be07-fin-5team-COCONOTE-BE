@@ -48,6 +48,12 @@ dependencies {
     // SockJS
     implementation 'org.webjars:sockjs-client:1.5.1'
 
+    // kafka
+    implementation 'org.springframework.kafka:spring-kafka'
+
+//    view
+    implementation 'org.webjars.bower:bootstrap:4.3.1'
+
 //    로그인
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     implementation 'org.springframework.boot:spring-boot-starter-security'

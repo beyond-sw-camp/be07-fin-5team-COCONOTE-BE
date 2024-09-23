@@ -1,5 +1,6 @@
 package com.example.coconote.api.canvas.service;
 
+import com.example.coconote.api.canvas.dto.request.ChatMessage;
 import com.example.coconote.api.canvas.dto.request.CreateCanvasReqDto;
 import com.example.coconote.api.canvas.dto.response.CanvasDetResDto;
 import com.example.coconote.api.canvas.dto.response.CanvasListResDto;
@@ -10,12 +11,20 @@ import com.example.coconote.api.channel.entity.Channel;
 import com.example.coconote.api.channel.repository.ChannelRepository;
 import com.example.coconote.api.drive.entity.Folder;
 import com.example.coconote.common.IsDeleted;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,10 +33,13 @@ public class CanvasService {
     private final CanvasRepository canvasRepository;
     private final ChannelRepository channelRepository;
 
-    public CanvasService(CanvasRepository canvasRepository, ChannelRepository channelRepository){
-
+    public CanvasService(CanvasRepository canvasRepository, ChannelRepository channelRepository, KafkaTemplate<String, Object> kafkaTemplate, SimpMessageSendingOperations messagingTemplate){
         this.canvasRepository = canvasRepository;
         this.channelRepository = channelRepository;
+
+//        websocket 용도
+        this.kafkaTemplate = kafkaTemplate;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Transactional
@@ -52,6 +64,9 @@ public class CanvasService {
                 .build();
 
         canvasRepository.save(canvas);
+
+        topics.put(String.valueOf(canvas.getId()), String.valueOf(canvas.getId()));
+
         return CreateCanvasResDto.fromEntity(canvas);
     }
 
@@ -124,6 +139,69 @@ public class CanvasService {
 
     public Canvas findByIdAndIsDeletedReturnOrElseNull(Long canvasId){
         return canvasRepository.findById(canvasId).orElse(null);
+    }
+
+
+//    ========== websocket 소스코드 영역
+    private static final String CHAT_ROOMS = "CHAT_ROOM";
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private Map<String, String> topics;
+
+    @PostConstruct
+    private void init() {
+        topics = new HashMap<>();
+    }
+
+    public List<CanvasListResDto> findAllRoom() {
+        // 실제 구현 필요
+        return null;
+    }
+
+    public CanvasDetResDto findRoomById(String id) {
+        // 실제 구현 필요
+        return null;
+    }
+
+//    public CanvasDetResDto createChatRoom(String name) {
+//        CanvasDetResDto chatRoom = CanvasDetResDto.create(name);
+//        topics.put(chatRoom.getId(), chatRoom.getId());
+//        return chatRoom;
+//    }
+
+    public void enterChatRoom(String roomId) {
+        String topic = topics.get(roomId);
+        if (topic == null) {
+            topics.put(roomId, roomId);
+        }
+    }
+
+    public String getTopic(String roomId) {
+        return topics.get(roomId);
+    }
+
+//    @KafkaListener(topics = "#{canvasService.getTopic(#roomId)}", groupId = "chat-group")
+//    public void listenToMessages(String message) {
+//        // 메시지 처리 로직 추가
+//        System.out.println("Received Message: " + message);
+//    }
+
+    private final SimpMessageSendingOperations messagingTemplate;
+
+    @KafkaListener(topics = "canvas-topic", groupId = "websocket-group"
+            , containerFactory = "kafkaListenerContainerFactory")
+    public void consumerProductQuantity(String message){ // return 시, string 형식으로 message가 들어옴
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            System.out.println(message);
+            // ChatMessage 객채로 맵핑
+            ChatMessage roomMessage =  objectMapper.readValue(message,ChatMessage.class);
+            messagingTemplate.convertAndSend("/sub/canvas/room/" + roomMessage.getRoomId(), roomMessage);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        } catch (Exception e){
+//            만약, 실패했을 때 코드 추가해야함
+        }
+        System.out.println(message);
     }
 
 }
