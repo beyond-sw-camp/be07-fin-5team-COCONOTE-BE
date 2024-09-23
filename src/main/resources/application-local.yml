@@ -26,7 +26,10 @@ spring:
       ddl-auto: update
     show_sql: true
     open-in-view: false
-
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 100
   mail:
     host: ${MAIL_HOST}
     port: ${MAIL_PORT}

@@ -21,6 +21,9 @@ public class CleanupJobScheduler {
     @Autowired
     private Job threadCleanupJob;
 
+    @Autowired
+    private Job canvasCleanupJob;
+
 //    @Scheduled(cron = "0 0 1 * * ?") // 매일 새벽 1시에 실행
     @Scheduled(cron = "0 0 1 * * ?") // 매 1분마다 실행
     public void runFileCleanupJob() throws Exception {
@@ -35,5 +38,13 @@ public class CleanupJobScheduler {
                 .addDate("date", new Date())
                 .toJobParameters();
         jobLauncher.run(threadCleanupJob, jobParameters);
+    }
+
+    @Scheduled(cron = "0 * * * * ?")
+    public void runCanvasCleanupJob() throws Exception {
+        JobParameters jobParameters = new JobParametersBuilder()
+                .addDate("date", new Date())
+                .toJobParameters();
+        jobLauncher.run(canvasCleanupJob, jobParameters);
     }
 }
