@@ -1,4 +1,4 @@
-package com.example.coconote.config;
+package com.example.coconote.config.cleanUpConfig;
 
 import com.example.coconote.global.fileUpload.entity.FileEntity;
 import com.example.coconote.global.fileUpload.service.S3Service;
