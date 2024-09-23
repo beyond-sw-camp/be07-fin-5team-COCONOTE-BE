@@ -1,7 +1,5 @@
 package com.example.coconote.api.thread.controller;
 
-// import 생략...
-
 import com.example.coconote.api.thread.entity.MessageType;
 import com.example.coconote.api.thread.dto.requset.ThreadCreateReqDto;
 import com.example.coconote.api.thread.dto.response.ThreadResDto;

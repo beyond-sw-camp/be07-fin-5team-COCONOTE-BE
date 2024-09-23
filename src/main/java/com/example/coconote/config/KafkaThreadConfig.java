@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 @Configuration
 @EnableKafka
-public class KafkaConfig {
+public class KafkaThreadConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
     // Producer Configuration
