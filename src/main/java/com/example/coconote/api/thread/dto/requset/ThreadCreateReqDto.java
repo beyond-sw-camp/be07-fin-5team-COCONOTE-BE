@@ -1,7 +1,7 @@
 package com.example.coconote.api.thread.dto.requset;
 
 import com.example.coconote.api.channel.entity.Channel;
-import com.example.coconote.api.chatRoom.entity.MessageType;
+import com.example.coconote.api.thread.entity.MessageType;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.thread.entity.Thread;
 import lombok.AllArgsConstructor;
