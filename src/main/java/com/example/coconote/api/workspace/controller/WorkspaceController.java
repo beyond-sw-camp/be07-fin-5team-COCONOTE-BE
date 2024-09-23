@@ -3,7 +3,6 @@ package com.example.coconote.api.workspace.controller;
 import com.example.coconote.api.workspace.dto.request.WorkspaceCreateReqDto;
 import com.example.coconote.api.workspace.dto.request.WorkspaceUpdateReqDto;
 import com.example.coconote.api.workspace.dto.response.WorkspaceListResDto;
-import com.example.coconote.api.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.service.WorkspaceService;
 import com.example.coconote.common.CommonResDto;
 import io.swagger.v3.oas.annotations.Operation;

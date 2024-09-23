@@ -39,8 +39,9 @@ public class CanvasService {
         if (createCanvasReqDto.getParentCanvasId() != null) {
             parentCanvas = canvasRepository.findById(createCanvasReqDto.getParentCanvasId())
                     .orElseThrow(() -> new IllegalArgumentException("부모 캔버스가 존재하지 않습니다."));
+
             // 부모 캔버스가 현재 채널에 속해 있는지 확인
-            if (!parentCanvas.getChannel().getId().equals(channel.getId())) {
+            if (!parentCanvas.getChannel().getChannelId().equals(channel.getChannelId())) {
                 throw new IllegalArgumentException("부모 캔버스가 현재 채널에 속해 있지 않습니다.");
             }
         }
@@ -58,7 +59,7 @@ public class CanvasService {
     public Page<CanvasListResDto> getCanvasListInChannel(Long channelId, String email, Pageable pageable, Integer depth){
         Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new IllegalArgumentException("채널이 존재하지 않습니다."));
 
-        Page<Canvas> canvasList = canvasRepository.findByChannelIdAndParentCanvasIdAndIsDeleted(pageable, channelId, null, IsDeleted.N);
+        Page<Canvas> canvasList = canvasRepository.findByChannelAndParentCanvasIdAndIsDeleted(pageable, channel, null, IsDeleted.N);
 
 
 //        List<CanvasListResDto> childCanvas = null;
@@ -91,8 +92,8 @@ public class CanvasService {
             parentCanvas = canvasRepository.findByIdAndIsDeleted(canvas.getParentCanvas().getId(), IsDeleted.N).orElse(null);
         }
 
-        List<Canvas> siblingCanvasList = canvasRepository.findByParentCanvasIdAndChannelIdAndIsDeleted(parentCanvas!=null ? parentCanvas.getId() : null,
-                canvas.getChannel().getId(), IsDeleted.N);
+        List<Canvas> siblingCanvasList = canvasRepository.findByParentCanvasIdAndChannelAndIsDeleted(parentCanvas!=null ? parentCanvas.getId() : null,
+                canvas.getChannel(), IsDeleted.N);
         List<CanvasListResDto> siblingCanvasListDto = !siblingCanvasList.isEmpty() ?
                 siblingCanvasList.stream().map(a->a.fromListEntity()).toList()
                 : null;

@@ -218,7 +218,7 @@ public class S3Service {
         Folder folder = folderRepository.findById(moveFileReqDto.getFolderId())
                 .orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
 
-        if (!folder.getChannel().getId().equals(fileEntity.getFolder().getChannel().getId())) {
+        if (!folder.getChannel().getChannelId().equals(fileEntity.getFolder().getChannel().getChannelId())) {
             throw new IllegalArgumentException("다른 채널에 있는 폴더로 이동할수 없습니다.");
         }
 //        todo : 바꾸려는 유저가 채널에 속해있는지 확인
@@ -232,7 +232,7 @@ public class S3Service {
                 .fileName(fileEntity.getFileName())
 //                todo : Email -> 파일 이동한 사람 이름으로 변경하기
                 .createMemberName(fileEntity.getCreator().getEmail())
-                .channelId(folder.getChannel().getId())
+                .channelId(folder.getChannel().getChannelId())
                 .build();
     }
 
