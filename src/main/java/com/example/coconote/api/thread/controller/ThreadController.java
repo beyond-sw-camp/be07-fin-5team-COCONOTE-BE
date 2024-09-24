@@ -5,6 +5,7 @@ import com.example.coconote.api.thread.dto.requset.ThreadReqDto;
 import com.example.coconote.api.thread.dto.response.ThreadResDto;
 import com.example.coconote.api.thread.service.ThreadService;
 import com.example.coconote.common.CommonResDto;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,13 +19,15 @@ import org.springframework.web.bind.annotation.*;
 public class ThreadController {
     private final ThreadService threadService;
 
+    @Operation(summary= "쓰레드 생성")
     @PostMapping("/create")
     public ResponseEntity<?> createThread(@RequestBody ThreadReqDto dto) {
         ThreadResDto threadResDto = threadService.createThread(dto);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "쓰레드가 성공적으로 생성되었습니다.", threadResDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }
-
+    
+    @Operation(summary= "쓰레드 수정")
     @PostMapping("/update")
     public ResponseEntity<?> updateThread(@RequestBody ThreadReqDto dto) {
         ThreadResDto threadResDto = threadService.updateThread(dto);
@@ -32,6 +35,7 @@ public class ThreadController {
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
+    @Operation(summary= "쓰레드 목록 반환")
     @GetMapping("/list/{channelId}")
     public ResponseEntity<?> listThreads(@PathVariable Long channelId, Pageable pageable) {
         Page<ThreadResDto> ThreadListResDtos = threadService.threadList(channelId, pageable);
@@ -39,6 +43,7 @@ public class ThreadController {
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
+    @Operation(summary= "쓰레드 삭제")
     @DeleteMapping("/delete/{threadId}")
     public ResponseEntity<?> deleteThread(@PathVariable Long threadId) {
         threadService.deleteThread(threadId);
