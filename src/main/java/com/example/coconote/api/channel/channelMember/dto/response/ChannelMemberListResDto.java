@@ -1,6 +1,6 @@
 package com.example.coconote.api.channel.channelMember.dto.response;
 
-import com.example.coconote.api.channelMember.entity.ChannelRole;
+import com.example.coconote.api.channel.channelMember.entity.ChannelRole;
 import com.example.coconote.api.workspace.workspaceMember.dto.response.WorkspaceMemberResDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
