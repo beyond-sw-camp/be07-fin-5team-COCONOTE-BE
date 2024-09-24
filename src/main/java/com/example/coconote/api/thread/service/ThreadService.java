@@ -1,7 +1,7 @@
 package com.example.coconote.api.thread.service;
 
-import com.example.coconote.api.channel.entity.Channel;
-import com.example.coconote.api.channel.repository.ChannelRepository;
+import com.example.coconote.api.channel.channel.entity.Channel;
+import com.example.coconote.api.channel.channel.repository.ChannelRepository;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
 import com.example.coconote.api.thread.dto.requset.ThreadCreateReqDto;

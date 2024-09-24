@@ -1,8 +1,7 @@
 package com.example.coconote.api.section.dto.request;
 
-import com.example.coconote.api.channel.entity.Channel;
 import com.example.coconote.api.section.entity.Section;
-import com.example.coconote.api.workspace.entity.Workspace;
+import com.example.coconote.api.workspace.workspace.entity.Workspace;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

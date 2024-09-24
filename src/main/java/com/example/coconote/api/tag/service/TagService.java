@@ -1,7 +1,7 @@
 package com.example.coconote.api.tag.service;
 
-import com.example.coconote.api.channel.entity.Channel;
-import com.example.coconote.api.channel.repository.ChannelRepository;
+import com.example.coconote.api.channel.channel.entity.Channel;
+import com.example.coconote.api.channel.channel.repository.ChannelRepository;
 import com.example.coconote.api.tag.dto.request.TagCreateReqDto;
 import com.example.coconote.api.tag.dto.request.TagUpdateReqDto;
 import com.example.coconote.api.tag.dto.response.TagResDto;

@@ -1,6 +1,6 @@
 package com.example.coconote.api.tag.entity;
 
-import com.example.coconote.api.channel.entity.Channel;
+import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.tag.dto.response.TagResDto;
 import com.example.coconote.common.BaseEntity;
 import com.example.coconote.common.IsDeleted;
