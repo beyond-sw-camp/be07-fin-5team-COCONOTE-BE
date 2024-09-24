@@ -1,6 +1,6 @@
 package com.example.coconote.config;
 
-import com.example.coconote.api.thread.dto.requset.ThreadCreateReqDto;
+import com.example.coconote.api.thread.dto.requset.ThreadReqDto;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -23,7 +23,7 @@ public class KafkaThreadConfig {
     private String bootstrapServers;
     // Producer Configuration
     @Bean
-    public ProducerFactory<String, ThreadCreateReqDto> producerThreadFactory() {
+    public ProducerFactory<String, ThreadReqDto> producerThreadFactory() {
         Map<String, Object> configs = new HashMap<>();
         configs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -31,16 +31,16 @@ public class KafkaThreadConfig {
         return new DefaultKafkaProducerFactory<>(configs);
     }
     @Bean
-    public KafkaTemplate<String, ThreadCreateReqDto> kafkaThreadTemplate() {
+    public KafkaTemplate<String, ThreadReqDto> kafkaThreadTemplate() {
         return new KafkaTemplate<>(producerThreadFactory());
     }
     // Consumer Configuration
     @Bean
-    public ConsumerFactory<String, ThreadCreateReqDto> consumerThreadFactory() {
+    public ConsumerFactory<String, ThreadReqDto> consumerThreadFactory() {
         return new DefaultKafkaConsumerFactory<>(
                 consumerConfigurations(),
                 new StringDeserializer(),
-                new ErrorHandlingDeserializer<>(new JsonDeserializer<>(ThreadCreateReqDto.class))
+                new ErrorHandlingDeserializer<>(new JsonDeserializer<>(ThreadReqDto.class))
         );
     }
     private Map<String, Object> consumerConfigurations() {
@@ -54,8 +54,8 @@ public class KafkaThreadConfig {
         return configurations;
     }
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, ThreadCreateReqDto> kafkaThreadListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, ThreadCreateReqDto> factory = new ConcurrentKafkaListenerContainerFactory<>();
+    public ConcurrentKafkaListenerContainerFactory<String, ThreadReqDto> kafkaThreadListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, ThreadReqDto> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerThreadFactory());
         return factory;
     }

@@ -1,9 +1,8 @@
 package com.example.coconote.api.thread.controller;
 
 
-import com.example.coconote.api.thread.dto.requset.ThreadCreateReqDto;
+import com.example.coconote.api.thread.dto.requset.ThreadReqDto;
 import com.example.coconote.api.thread.dto.response.ThreadResDto;
-import com.example.coconote.api.thread.entity.Thread;
 import com.example.coconote.api.thread.service.ThreadService;
 import com.example.coconote.common.CommonResDto;
 import lombok.RequiredArgsConstructor;
@@ -20,10 +19,17 @@ public class ThreadController {
     private final ThreadService threadService;
 
     @PostMapping("/create")
-    public ResponseEntity<?> createThread(@RequestBody ThreadCreateReqDto dto) {
+    public ResponseEntity<?> createThread(@RequestBody ThreadReqDto dto) {
         ThreadResDto threadResDto = threadService.createThread(dto);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "쓰레드가 성공적으로 생성되었습니다.", threadResDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/update")
+    public ResponseEntity<?> updateThread(@RequestBody ThreadReqDto dto) {
+        ThreadResDto threadResDto = threadService.updateThread(dto);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "쓰레드가 성공적으로 수정되었습니다.", threadResDto);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
     @GetMapping("/list/{channelId}")
