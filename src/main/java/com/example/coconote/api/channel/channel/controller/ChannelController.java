@@ -28,18 +28,12 @@ public class ChannelController {
         this.channelService = channelService;
     }
 
-    @Operation(summary= "채널 생성")
+    @Operation(summary = "채널 생성")
     @PostMapping("/channel/create")
     public ResponseEntity<Object> channelCreate(@RequestBody ChannelCreateReqDto dto, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
-        try {
-            ChannelDetailResDto resDto = channelService.channelCreate(dto, customPrincipal.getEmail());
-            CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "channel is successfully created", resDto);
-            return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
-        }catch (Exception e){
-            e.printStackTrace();
-            e.getMessage();
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        ChannelDetailResDto resDto = channelService.channelCreate(dto, customPrincipal.getEmail());
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "channel is successfully created", resDto);
+        return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }
 
     @Operation(summary= "채널 조회")
