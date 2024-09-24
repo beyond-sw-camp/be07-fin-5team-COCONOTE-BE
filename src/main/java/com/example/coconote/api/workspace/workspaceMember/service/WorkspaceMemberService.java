@@ -53,6 +53,9 @@ public class WorkspaceMemberService {
 
     public WorkspaceMemberResDto workspaceMemberUpdate(Long id, WorkspaceMemberUpdateReqDto dto) {
         WorkspaceMember workspaceMember = workspaceMemberRepository.findById(id).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+        if(workspaceMember.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("찾을 수 없습니다.");
+        }
         workspaceMember.updateEntity(dto);
         WorkspaceMemberResDto restDto = workspaceMember.fromEntity();
         return restDto;
@@ -61,11 +64,17 @@ public class WorkspaceMemberService {
 
     public Boolean workspaceMemberChangeRole(Long id) {
         WorkspaceMember workspaceMember = workspaceMemberRepository.findById(id).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+        if(workspaceMember.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("찾을 수 없습니다.");
+        }
         return workspaceMember.changeRole();
     }
 
     public void workspaceMemberDelete(Long id) {
         WorkspaceMember workspaceMember = workspaceMemberRepository.findById(id).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+        if(workspaceMember.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("찾을 수 없습니다.");
+        }
         workspaceMember.deleteEntity();
     }
 

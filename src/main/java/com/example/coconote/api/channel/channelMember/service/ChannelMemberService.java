@@ -40,13 +40,14 @@ public class ChannelMemberService {
                 .channel(channel)
                 .build();
         channelMemberRepository.save(channelMember);
-        ChannelMemberListResDto resDto = channelMember.fromEntity();
-
-        return resDto;
+        return channelMember.fromEntity();
     }
 
     public List<ChannelMemberListResDto> channelMemberList(Long channelId) {
         Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new EntityNotFoundException("채널이 존재하지 않습니다."));
+        if(channel.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("찾을 수 없습니다.");
+        }
         List<ChannelMember> channelMembers = channelMemberRepository.findByChannelAndIsDeleted(channel, IsDeleted.N);
         List<ChannelMemberListResDto> resDtos = new ArrayList<>();
 
@@ -58,16 +59,25 @@ public class ChannelMemberService {
 
     public Boolean channelMemberChangeRole(Long id) {
         ChannelMember channelMember = channelMemberRepository.findById(id).orElseThrow(()->new EntityNotFoundException("존재하지 않는 회원입니다."));
+        if(channelMember.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("찾을 수 없습니다.");
+        }
         return channelMember.changeRole();
     }
 
     public Boolean channelBookmark(Long id) {
         ChannelMember channelMember = channelMemberRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(" 찾을 수 없습니다."));
+        if(channelMember.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("찾을 수 없습니다.");
+        }
         return channelMember.bookmarkMyChannel();
     }
 
     public void channelMemberDelete(Long id) {
         ChannelMember channelMember = channelMemberRepository.findById(id).orElseThrow(()->new EntityNotFoundException("존재하지 않는 회원입니다."));
+        if(channelMember.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("찾을 수 없습니다.");
+        }
         channelMember.deleteEntity();
     }
 }

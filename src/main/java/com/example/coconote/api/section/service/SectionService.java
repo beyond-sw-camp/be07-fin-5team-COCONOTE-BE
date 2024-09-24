@@ -34,9 +34,7 @@ public class SectionService {
         Section section = dto.toEntity(workspace);
         sectionRepository.save(section);
 
-        SectionListResDto resDto = section.fromEntity();
-
-        return resDto;
+        return section.fromEntity();
     }
 
 
@@ -51,7 +49,10 @@ public class SectionService {
     }
 
     public SectionListResDto sectionUpdate(Long id, SectionUpdateReqDto dto) {
-        Section section = sectionRepository.findById(id).orElseThrow(()->new EntityNotFoundException("section not found"));
+        Section section = sectionRepository.findById(id).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+        if(section.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("찾을 수 없습니다.");
+        }
         section.updateEntity(dto);
         SectionListResDto resDto = section.fromEntity();
         return resDto;
@@ -60,6 +61,9 @@ public class SectionService {
 
     public void sectionDelete(Long id) {
         Section section = sectionRepository.findById(id).orElseThrow(()->new EntityNotFoundException("section not found"));
+        if(section.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("찾을 수 없습니다.");
+        }
         Workspace workspace = workspaceRepository.findById(section.getWorkspace().getWorkspaceId()).orElse(null);
         section.deleteEntity();
         workspaceRepository.save(workspace);

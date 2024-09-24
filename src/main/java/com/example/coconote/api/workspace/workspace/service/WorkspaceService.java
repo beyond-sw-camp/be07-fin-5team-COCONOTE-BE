@@ -66,7 +66,9 @@ public class WorkspaceService {
 
     public List<SectionListResDto> workspaceRead(Long workspaceId) {
         Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
-
+        if(workspace.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("찾을 수 없습니다.");
+        }
         List<Section> sections = sectionRepository.findByWorkspaceAndIsDeleted(workspace, IsDeleted.N);
         List<SectionListResDto> sDtos = new ArrayList<>();
         for(Section s : sections) {
@@ -78,6 +80,9 @@ public class WorkspaceService {
 
     public WorkspaceListResDto workspaceUpdate(Long id, WorkspaceUpdateReqDto dto) {
         Workspace workspace = workspaceRepository.findById(id).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+        if(workspace.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("찾을 수 없습니다.");
+        }
         workspace.updateEntity(dto);
         WorkspaceListResDto resDto = workspace.fromEntity();
         return resDto;
@@ -85,6 +90,9 @@ public class WorkspaceService {
 
     public void workspaceDelete(Long id) {
         Workspace workspace = workspaceRepository.findById(id).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+        if(workspace.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("찾을 수 없습니다.");
+        }
         workspace.deleteEntity();
     }
 

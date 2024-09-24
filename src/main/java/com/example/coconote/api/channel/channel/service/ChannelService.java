@@ -78,12 +78,18 @@ public class ChannelService {
 
     public Channel channelUpdate(Long id, ChannelUpdateReqDto dto) {
         Channel channel = channelRepository.findById(id).orElseThrow(()->new EntityNotFoundException(" 찾을 수 없습니다."));
+        if(channel.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("찾을 수 없습니다.");
+        }
         channel.updateEntity(dto);
         return channel;
     }
 
     public void channelDelete(Long id) {
         Channel channel = channelRepository.findById(id).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+        if(channel.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("찾을 수 없습니다.");
+        }
         channel.deleteEntity();
     }
 

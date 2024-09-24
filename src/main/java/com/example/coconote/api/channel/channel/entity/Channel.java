@@ -61,13 +61,13 @@ public class Channel extends BaseEntity {
     }
     public ChannelResDto fromEntity() {
         return ChannelResDto.builder()
-                .id(this.channelId)
+                .channelId(this.channelId)
                 .build();
     }
 
     public ChannelResDto toResDto() {
         return ChannelResDto.builder()
-                .id(this.channelId)
+                .channelId(this.channelId)
                 .build();
     }
 
