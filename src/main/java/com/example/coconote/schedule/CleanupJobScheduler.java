@@ -21,15 +21,15 @@ public class CleanupJobScheduler {
     @Autowired
     private Job threadCleanupJob;
 
-//    @Scheduled(cron = "0 0 1 * * ?") // 매일 새벽 1시에 실행
-    @Scheduled(cron = "0 0 1 * * ?") // 매 1분마다 실행
+    @Scheduled(cron = "0 0 1 * * ?") // 매일 새벽 1시에 실행
+//    @Scheduled(cron = "0 0 1 * * ?") // 매 1분마다 실행
     public void runFileCleanupJob() throws Exception {
         JobParameters jobParameters = new JobParametersBuilder()
                 .addDate("date", new Date())
                 .toJobParameters();
         jobLauncher.run(fileCleanupJob, jobParameters);
     }
-    @Scheduled(cron = "0 * * * * ?") // Every minute
+    @Scheduled(cron = "0 0 1 * * ?") // Every minute
     public void runThreadCleanupJob() throws Exception {
         JobParameters jobParameters = new JobParametersBuilder()
                 .addDate("date", new Date())

@@ -1,7 +1,7 @@
 package com.example.coconote.api.thread.controller;
 
 import com.example.coconote.api.thread.entity.MessageType;
-import com.example.coconote.api.thread.dto.requset.ThreadCreateReqDto;
+import com.example.coconote.api.thread.dto.requset.ThreadReqDto;
 import com.example.coconote.api.thread.dto.response.ThreadResDto;
 import com.example.coconote.api.thread.service.ThreadService;
 import lombok.RequiredArgsConstructor;
@@ -20,10 +20,10 @@ public class WebSocketController {
 
     private final SimpMessageSendingOperations messagingTemplate;
     private final ThreadService threadService;
-    private final KafkaTemplate<String, ThreadCreateReqDto> kafkaThreadTemplate;
+    private final KafkaTemplate<String, ThreadReqDto> kafkaThreadTemplate;
 
     @MessageMapping("/chat/message")
-    public void message(ThreadCreateReqDto message) {
+    public void message(ThreadReqDto message) {
         if (MessageType.ENTER.equals(message.getType()))
             message.setContent(message.getSenderId() + "님이 입장하셨습니다.");
 
@@ -34,13 +34,23 @@ public class WebSocketController {
     }
 
     @KafkaListener(topics = "chat_topic", groupId = "my-consumer-group")
-    public void listen(ConsumerRecord<String, ThreadCreateReqDto> record) {
-        ThreadCreateReqDto threadCreateReqDto = record.value();
+    public void listen(ConsumerRecord<String, ThreadReqDto> record) {
+        ThreadReqDto threadReqDto = record.value();
 
-        ThreadResDto threadResDto = threadService.createThread(threadCreateReqDto);
+        ThreadResDto threadResDto;
+
+        if(MessageType.UPDATE.equals(threadReqDto.getType())) {
+            threadResDto = threadService.updateThread(threadReqDto);
+        } else if (MessageType.DELETE.equals(threadReqDto.getType())) {
+            threadResDto = threadService.deleteThread(threadReqDto.getThreadId());
+        } else {
+            threadResDto = threadService.createThread(threadReqDto);
+        }
+
+
         // 수신한 메시지를 채널로 브로드캐스트하기 전에 로그 찍기
         log.info("Received message from Kafka: {}", threadResDto);
         // 수신한 메시지를 채널로 브로드캐스트
-        messagingTemplate.convertAndSend("/sub/chat/room/" + threadCreateReqDto.getChannelId(), threadResDto);
+        messagingTemplate.convertAndSend("/sub/chat/room/" + threadReqDto.getChannelId(), threadResDto);
     }
 }

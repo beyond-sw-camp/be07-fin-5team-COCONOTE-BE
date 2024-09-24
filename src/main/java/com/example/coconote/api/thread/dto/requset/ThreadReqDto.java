@@ -15,12 +15,13 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ThreadCreateReqDto {
+public class ThreadReqDto {
     //TODO: jwt토큰이 완성되면 memberId 필요없어짐 삭제
     private MessageType type;
     private Long senderId;
     private String content;
     private List<String> files;
+    private Long threadId;
     private Long parentId;
     private Long channelId;
 

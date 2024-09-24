@@ -4,8 +4,9 @@ import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
-import com.example.coconote.api.thread.dto.requset.ThreadCreateReqDto;
+import com.example.coconote.api.thread.dto.requset.ThreadReqDto;
 import com.example.coconote.api.thread.dto.response.ThreadResDto;
+import com.example.coconote.api.thread.entity.MessageType;
 import com.example.coconote.api.thread.entity.Thread;
 import com.example.coconote.api.thread.repository.ThreadRepository;
 import com.example.coconote.api.threadTag.repository.ThreadTagRepository;
@@ -28,7 +29,7 @@ public class ThreadService {
     private final ChannelRepository channelRepository;
     private final ThreadTagRepository threadTagRepository;
 
-    public ThreadResDto createThread(ThreadCreateReqDto dto) {
+    public ThreadResDto createThread(ThreadReqDto dto) {
         //TODO: jwt토큰이 완성되면 memberId 는 불러오면됨
         Member member = memberRepository.findById(dto.getSenderId()).orElseThrow(()-> new EntityNotFoundException("해당멤버가 없습니다."));
         Thread parentThread = null;
@@ -52,9 +53,19 @@ public class ThreadService {
     }
 
     @Transactional
-    public void deleteThread(Long threadId) {
+    public ThreadResDto deleteThread(Long threadId) {
         Thread thread = threadRepository.findById(threadId).orElseThrow(()->new EntityNotFoundException("thread not found"));
 //        isDeleted를 true로 바꾸는 것으로 대체
         thread.markAsDeleted();
+        return ThreadResDto.builder()
+                .id(thread.getId())
+                .type(MessageType.DELETE)
+                .build();
+    }
+
+    public ThreadResDto updateThread(ThreadReqDto threadReqDto) {
+        Thread thread = threadRepository.findById(threadReqDto.getThreadId()).orElseThrow(()->new EntityNotFoundException("thread not found"));
+        thread.updateThread(threadReqDto);
+        return thread.fromEntity(MessageType.UPDATE);
     }
 }
