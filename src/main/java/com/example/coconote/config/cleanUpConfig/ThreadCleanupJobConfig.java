@@ -59,9 +59,8 @@ public class ThreadCleanupJobConfig {
         return new JpaPagingItemReaderBuilder<Thread>()
                 .name("threadReader")
                 .entityManagerFactory(entityManagerFactory)
-                .pageSize(10)
-                .queryString("SELECT t FROM Thread t WHERE t.isDeleted = 'Y' AND t.deletedTime < :oneMinuteAgo")
-                .parameterValues(Collections.singletonMap("oneMinuteAgo", LocalDateTime.now().minusMinutes(1)))
+                .queryString("SELECT t FROM Thread t WHERE t.isDeleted = 'Y' AND t.deletedTime < :oneMonthAgo")
+                .parameterValues(Collections.singletonMap("oneMonthAgo", LocalDateTime.now().minusMonths(1)))
                 .build();
     }
 

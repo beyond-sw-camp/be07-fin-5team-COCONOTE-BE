@@ -62,7 +62,6 @@ public class FileCleanupBatchConfig {
         return new JpaPagingItemReaderBuilder<FileEntity>()
                 .name("fileReader")
                 .entityManagerFactory(entityManagerFactory)
-                .pageSize(10)
 //                .queryString("SELECT f FROM FileEntity f WHERE f.isDeleted = 'Y' AND f.deletedTime < :sevenDaysAgo")
 //                .parameterValues(Collections.singletonMap("sevenDaysAgo", LocalDateTime.now().minusDays(7)))
 //                한달

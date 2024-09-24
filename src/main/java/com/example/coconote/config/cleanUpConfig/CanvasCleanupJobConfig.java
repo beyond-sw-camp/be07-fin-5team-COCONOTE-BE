@@ -60,9 +60,8 @@ public class CanvasCleanupJobConfig {
         return new JpaPagingItemReaderBuilder<Canvas>()
                 .name("canvasReader")
                 .entityManagerFactory(entityManagerFactory)
-                .pageSize(10) // 페이지 사이즈 설정
-                .queryString("SELECT c FROM Canvas c WHERE c.isDeleted = 'Y' AND c.deletedTime < :oneMinutesAgo")
-                .parameterValues(Collections.singletonMap("oneMinutesAgo", LocalDateTime.now().minusMinutes(1)))
+                .queryString("SELECT c FROM Canvas c WHERE c.isDeleted = 'Y' AND c.deletedTime < :oneMonthAgo")
+                .parameterValues(Collections.singletonMap("oneMonthAgo", LocalDateTime.now().minusMonths(1)))
                 .build();
     }
 
