@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChannelResDto {
-    private Long id;
+    private Long channelId;
 }
