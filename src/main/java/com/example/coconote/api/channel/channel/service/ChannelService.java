@@ -51,8 +51,6 @@ public class ChannelService {
         }
         Channel channel = dto.toEntity(section);
 
-        createDefaultFolder(channel);
-
         Member member = memberRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("존재하지 않는 회원입니다."));
         WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspace(member, section.getWorkspace()).orElseThrow(()-> new EntityNotFoundException("워크스페이스 회원이 존재하지 않습니다."));
 
@@ -66,7 +64,9 @@ public class ChannelService {
         channel.getChannelMembers().add(channelMember);
         workspaceMember.getChannelMembers().add(channelMember);
         channelRepository.save(channel);
+        createDefaultFolder(channel);
         ChannelDetailResDto resDto = channel.fromEntity(section);
+
 
         return resDto;
     }
@@ -91,7 +91,7 @@ public class ChannelService {
         if(section.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 삭제된 섹션입니다.");
         }
-        List<Channel> channels = channelRepository.findByIsDeleted(IsDeleted.N);
+        List<Channel> channels = channelRepository.findBySectionAndIsDeleted(section, IsDeleted.N);
         List<ChannelDetailResDto> dtos = new ArrayList<>();
         for(Channel c : channels) {
             dtos.add(c.fromEntity(section));

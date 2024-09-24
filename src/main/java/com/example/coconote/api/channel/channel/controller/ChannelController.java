@@ -6,6 +6,7 @@ import com.example.coconote.api.channel.channel.dto.response.ChannelDetailResDto
 import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channel.service.ChannelService;
 import com.example.coconote.api.drive.dto.response.FolderAllListResDto;
+import com.example.coconote.common.CommonErrorDto;
 import com.example.coconote.common.CommonResDto;
 import com.example.coconote.security.entity.CustomPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,9 +31,15 @@ public class ChannelController {
     @Operation(summary= "채널 생성")
     @PostMapping("/channel/create")
     public ResponseEntity<Object> channelCreate(@RequestBody ChannelCreateReqDto dto, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
-        ChannelDetailResDto resDto = channelService.channelCreate(dto, customPrincipal.getEmail());
-        CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "channel is successfully created", resDto);
-        return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
+        try {
+            ChannelDetailResDto resDto = channelService.channelCreate(dto, customPrincipal.getEmail());
+            CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "channel is successfully created", resDto);
+            return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
+        }catch (Exception e){
+            e.printStackTrace();
+            e.getMessage();
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 
     @Operation(summary= "채널 조회")
