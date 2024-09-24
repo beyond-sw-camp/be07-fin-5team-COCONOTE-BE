@@ -36,7 +36,7 @@ public class ChannelController {
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }
 
-    @Operation(summary= "채널 조회")
+    @Operation(summary= "한 섹션 내 채널 목록 조회")
     @GetMapping("/channel/list/{sectionId}")
     public ResponseEntity<Object> channelRead(@PathVariable Long sectionId) {
         List<ChannelDetailResDto> dtos = channelService.channelList(sectionId);

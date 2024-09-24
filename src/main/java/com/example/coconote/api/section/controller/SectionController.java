@@ -32,7 +32,7 @@ public class SectionController {
 
     }
 
-    @Operation(summary= "섹션 조회")
+    @Operation(summary= "한 워크스페이스 내 섹션 목록 조회")
     @GetMapping("/section/list/{workspaceId}")
     public ResponseEntity<Object> sectionRead(@PathVariable Long workspaceId) {
         List<SectionListResDto> dtos = sectionService.sectionList(workspaceId);

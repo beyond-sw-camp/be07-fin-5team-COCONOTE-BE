@@ -42,7 +42,7 @@ public class WorkspaceController {
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
-    @Operation(summary= "워크스페이스내 모든 섹션 및 채널 조회")
+    @Operation(summary= "워크스페이스 내 모든 섹션 및 채널 조회(워크스페이스 상세 조회)")
     @GetMapping("/workspace/list/{workspaceId}")
     public ResponseEntity<Object> workspaceRead(@PathVariable Long workspaceId) {
         List<SectionListResDto> dtos = workspaceService.workspaceRead(workspaceId);
