@@ -22,7 +22,7 @@ public class ChannelMemberController {
     }
 
     @Operation(summary= "채널 회원 생성(초대/가입)")
-    @PostMapping("/channelMember/create/{channelId}") // 채널 가입
+    @PostMapping("/channelmember/create/{channelId}") // 채널 가입
     public ResponseEntity<Object> channelMemberCreate(@RequestBody ChannelMemberCreateReqDto dto) {
         ChannelMemberListResDto resDto = channelMemberService.channelMemberCreate(dto);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "member is successfully created", resDto);
@@ -30,7 +30,7 @@ public class ChannelMemberController {
     }
 
     @Operation(summary= "채널 회원 목록 조회")
-    @GetMapping("/channelMember/list/{channelId}") // 채널 유저 목록 조회
+    @GetMapping("/channelmember/list/{channelId}") // 채널 유저 목록 조회
     public ResponseEntity<Object> channelMemberRead(@PathVariable Long channelId) {
         List<ChannelMemberListResDto> dtos = channelMemberService.channelMemberList(channelId);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "list is successfully found", dtos);
@@ -38,7 +38,7 @@ public class ChannelMemberController {
     }
 
     @Operation(summary= "채널 관리자 권한 부여/박탈")
-    @PatchMapping("/channelMember/role/{id}") // 채널 관리자 권한 부여/삭제
+    @PatchMapping("/channelmember/role/{id}") // 채널 관리자 권한 부여/삭제
     public ResponseEntity<Object> channelMemberChangeRole(@PathVariable Long id) {
         CommonResDto commonResDto;
         Boolean value = channelMemberService.channelMemberChangeRole(id);
@@ -51,7 +51,7 @@ public class ChannelMemberController {
     }
 
     @Operation(summary= "채널 즐겨찾기 추가/해제")
-    @PatchMapping("/channelMember/bookmark/{id}")  // 채널 즐겨찾기
+    @PatchMapping("/channelmember/bookmark/{id}")  // 채널 즐겨찾기
     public ResponseEntity<Object> channelBookmark(@PathVariable Long id) {
         CommonResDto commonResDto;
         Boolean value = channelMemberService.channelBookmark(id);
@@ -64,7 +64,7 @@ public class ChannelMemberController {
     }
 
     @Operation(summary= "채널 회원 강퇴/탈퇴")
-    @DeleteMapping("/channelMember/delete/{id}") // 채널 강퇴
+    @DeleteMapping("/channelmember/delete/{id}") // 채널 강퇴
     public ResponseEntity<Object> channelMemberDelete(@PathVariable Long id) {
         channelMemberService.channelMemberDelete(id);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "channelMember is successfully deleted", null);
