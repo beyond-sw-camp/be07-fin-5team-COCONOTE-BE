@@ -7,6 +7,7 @@ import com.example.coconote.api.tag.dto.response.TagResDto;
 import com.example.coconote.api.tag.entity.Tag;
 import com.example.coconote.api.tag.service.TagService;
 import com.example.coconote.common.CommonResDto;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import java.util.List;
 public class TagController {
     private final TagService tagService;
 
+    @Operation(summary= "태그 생성")
     @PostMapping("create")
     public ResponseEntity<?> createTag(@RequestBody TagCreateReqDto dto) {
         Tag tag = tagService.createTag(dto);
@@ -27,6 +29,7 @@ public class TagController {
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }
 
+    @Operation(summary= "태그 목록 반환")
     @GetMapping("list/{channelId}")
     public ResponseEntity<?> listTags(@PathVariable Long channelId) {
         List<TagResDto> tagResDtos = tagService.tagList(channelId);
@@ -34,6 +37,7 @@ public class TagController {
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
+    @Operation(summary= "태그 이름 변경")
     @PostMapping("update")
     public ResponseEntity<?> updateTag(@RequestBody TagUpdateReqDto dto){
         Tag tag = tagService.updateTag(dto);
@@ -41,6 +45,7 @@ public class TagController {
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
+    @Operation(summary= "태그 삭제")
     @DeleteMapping("delete/{tagId}")
     public ResponseEntity<?> deleteTag(@PathVariable Long tagId) {
         tagService.deleteTag(tagId);

@@ -1,6 +1,6 @@
 package com.example.coconote.api.thread.repository;
 
-import com.example.coconote.api.channel.entity.Channel;
+import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.thread.entity.Thread;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

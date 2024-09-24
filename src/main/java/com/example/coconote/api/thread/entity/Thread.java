@@ -1,8 +1,9 @@
 package com.example.coconote.api.thread.entity;
 
-import com.example.coconote.api.channel.entity.Channel;
+import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.tag.dto.response.TagResDto;
+import com.example.coconote.api.thread.dto.requset.ThreadReqDto;
 import com.example.coconote.api.thread.dto.response.ThreadResDto;
 import com.example.coconote.api.threadTag.entity.ThreadTag;
 import com.example.coconote.common.BaseEntity;
@@ -50,6 +51,19 @@ public class Thread extends BaseEntity {
                 .build();
     }
 
+    public ThreadResDto fromEntity(MessageType type) {
+        List<TagResDto> tags = this.threadTags.stream().map(threadTag -> threadTag.fromEntity()).toList();
+        return ThreadResDto.builder()
+                .id(this.id)
+                .type(type)
+                .memberName(this.member.getNickname())
+                .createdTime(this.getCreatedTime().toString())
+                .content(this.content)
+                .files(this.files)
+                .tags(tags)
+                .build();
+    }
+
     public ThreadResDto fromEntity(List<ThreadResDto> childThreadList) {
         List<TagResDto> tags = this.threadTags.stream().map(threadTag -> threadTag.fromEntity()).toList();
         return ThreadResDto.builder()
@@ -67,5 +81,10 @@ public class Thread extends BaseEntity {
     public void markAsDeleted() {
         this.isDeleted = IsDeleted.Y;
         this.deletedTime = LocalDateTime.now();
+    }
+
+    public void updateThread(ThreadReqDto threadReqDto) {
+        this.content = threadReqDto.getContent();
+        this.files = threadReqDto.getFiles();
     }
 }

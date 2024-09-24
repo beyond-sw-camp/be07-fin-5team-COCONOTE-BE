@@ -1,6 +1,6 @@
 package com.example.coconote.api.drive.repository;
 
-import com.example.coconote.api.channel.entity.Channel;
+import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.drive.entity.Folder;
 import com.example.coconote.common.IsDeleted;
 import org.springframework.data.jpa.repository.JpaRepository;

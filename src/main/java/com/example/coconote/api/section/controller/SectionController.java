@@ -3,7 +3,6 @@ package com.example.coconote.api.section.controller;
 import com.example.coconote.api.section.dto.request.SectionCreateReqDto;
 import com.example.coconote.api.section.dto.request.SectionUpdateReqDto;
 import com.example.coconote.api.section.dto.response.SectionListResDto;
-import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.section.service.SectionService;
 import com.example.coconote.common.CommonResDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api/v1")
 public class SectionController {
 
     private final SectionService sectionService;
@@ -33,9 +33,9 @@ public class SectionController {
     }
 
     @Operation(summary= "섹션 조회")
-    @GetMapping("/section/list")
-    public ResponseEntity<Object> sectionRead() {
-        List<SectionListResDto> dtos = sectionService.sectionList();
+    @GetMapping("/section/list/{workspaceId}")
+    public ResponseEntity<Object> sectionRead(@PathVariable Long workspaceId) {
+        List<SectionListResDto> dtos = sectionService.sectionList(workspaceId);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "list is successfully found", dtos);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }

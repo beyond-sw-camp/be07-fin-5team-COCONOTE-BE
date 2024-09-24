@@ -104,3 +104,6 @@ aws:
   s3:
     region: ${local.s3.region}
     bucket: ${local.s3.bucket}
+
+jwt:
+  secret: ${local.jwt.secret}

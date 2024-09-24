@@ -32,7 +32,7 @@ public class CleanupJobScheduler {
                 .toJobParameters();
         jobLauncher.run(fileCleanupJob, jobParameters);
     }
-    @Scheduled(cron = "0 * * * * ?") // Every minute
+    @Scheduled(cron = "0 0 1 * * ?") // Every minute
     public void runThreadCleanupJob() throws Exception {
         JobParameters jobParameters = new JobParametersBuilder()
                 .addDate("date", new Date())
