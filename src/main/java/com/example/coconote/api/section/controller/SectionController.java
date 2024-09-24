@@ -3,7 +3,6 @@ package com.example.coconote.api.section.controller;
 import com.example.coconote.api.section.dto.request.SectionCreateReqDto;
 import com.example.coconote.api.section.dto.request.SectionUpdateReqDto;
 import com.example.coconote.api.section.dto.response.SectionListResDto;
-import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.section.service.SectionService;
 import com.example.coconote.common.CommonResDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api/v1")
 public class SectionController {
 
     private final SectionService sectionService;
