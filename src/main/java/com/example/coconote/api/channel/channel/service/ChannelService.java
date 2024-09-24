@@ -2,9 +2,11 @@ package com.example.coconote.api.channel.channel.service;
 
 import com.example.coconote.api.channel.channel.dto.request.ChannelCreateReqDto;
 import com.example.coconote.api.channel.channel.dto.request.ChannelUpdateReqDto;
-import com.example.coconote.api.channel.channel.dto.response.ChannelListResDto;
+import com.example.coconote.api.channel.channel.dto.response.ChannelDetailResDto;
 import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;
+import com.example.coconote.api.channel.channelMember.entity.ChannelMember;
+import com.example.coconote.api.channel.channelMember.repository.ChannelMemberRepository;
 import com.example.coconote.api.drive.dto.response.FileListDto;
 import com.example.coconote.api.drive.dto.response.FolderAllListResDto;
 import com.example.coconote.api.drive.dto.response.FolderListDto;
@@ -14,6 +16,8 @@ import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
 import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.section.repository.SectionRepository;
+import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
+import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
 import com.example.coconote.common.IsDeleted;
 import com.example.coconote.global.fileUpload.entity.FileEntity;
 import com.example.coconote.global.fileUpload.repository.FileRepository;
@@ -36,17 +40,33 @@ public class ChannelService {
     private final FolderRepository folderRepository;
     private final MemberRepository memberRepository;
     private final FileRepository fileRepository;
+    private final WorkspaceMemberRepository workspaceMemberRepository;
+    private final ChannelMemberRepository channelMemberRepository;
 
     @Transactional
-    public ChannelListResDto channelCreate(ChannelCreateReqDto dto) {
+    public ChannelDetailResDto channelCreate(ChannelCreateReqDto dto, String email) {
         Section section = sectionRepository.findById(dto.getSectionId()).orElseThrow(()-> new EntityNotFoundException("존재하지 않는 섹션입니다."));
         if(section.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 삭제된 섹션입니다.");
         }
         Channel channel = dto.toEntity(section);
-        channelRepository.save(channel);
+
         createDefaultFolder(channel);
-        ChannelListResDto resDto = channel.fromEntity(section);
+
+        Member member = memberRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("존재하지 않는 회원입니다."));
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspace(member, section.getWorkspace()).orElseThrow(()-> new EntityNotFoundException("워크스페이스 회원이 존재하지 않습니다."));
+
+        ChannelMember channelMember = ChannelMember.builder()
+                .workspaceMember(workspaceMember)
+                .channel(channel)
+                .channelRole(com.example.coconote.api.channelMember.entity.ChannelRole.MANAGER)
+                .build();
+
+        channelMemberRepository.save(channelMember);
+        channel.getChannelMembers().add(channelMember);
+        workspaceMember.getChannelMembers().add(channelMember);
+        channelRepository.save(channel);
+        ChannelDetailResDto resDto = channel.fromEntity(section);
 
         return resDto;
     }
@@ -65,14 +85,14 @@ public class ChannelService {
         folderRepository.save(folder);
     }
 
-    public List<ChannelListResDto> channelList(Long sectionId) {
+    public List<ChannelDetailResDto> channelList(Long sectionId) {
 
         Section section = sectionRepository.findById(sectionId).orElseThrow(()->new EntityNotFoundException("존재하지 않는 섹션입니다."));
         if(section.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 삭제된 섹션입니다.");
         }
         List<Channel> channels = channelRepository.findByIsDeleted(IsDeleted.N);
-        List<ChannelListResDto> dtos = new ArrayList<>();
+        List<ChannelDetailResDto> dtos = new ArrayList<>();
         for(Channel c : channels) {
             dtos.add(c.fromEntity(section));
         }

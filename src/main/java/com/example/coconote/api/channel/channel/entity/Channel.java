@@ -1,7 +1,7 @@
 package com.example.coconote.api.channel.channel.entity;
 
 import com.example.coconote.api.channel.channel.dto.request.ChannelUpdateReqDto;
-import com.example.coconote.api.channel.channel.dto.response.ChannelListResDto;
+import com.example.coconote.api.channel.channel.dto.response.ChannelDetailResDto;
 import com.example.coconote.api.channel.channel.dto.response.ChannelResDto;
 import com.example.coconote.api.channel.channelMember.entity.ChannelMember;
 import com.example.coconote.api.drive.entity.Folder;
@@ -50,8 +50,8 @@ public class Channel extends BaseEntity {
 //    @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL)
 //    private List<Canvas> canvas;
 
-    public ChannelListResDto fromEntity(Section section) {
-        return ChannelListResDto.builder()
+    public ChannelDetailResDto fromEntity(Section section) {
+        return ChannelDetailResDto.builder()
                 .sectionId(section.getSectionId())
                 .channelId(this.channelId)
                 .channelName(this.channelName)

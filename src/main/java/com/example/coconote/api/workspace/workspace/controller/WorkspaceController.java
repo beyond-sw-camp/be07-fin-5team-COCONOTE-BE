@@ -6,10 +6,12 @@ import com.example.coconote.api.workspace.workspace.dto.request.WorkspaceUpdateR
 import com.example.coconote.api.workspace.workspace.dto.response.WorkspaceListResDto;
 import com.example.coconote.api.workspace.workspace.service.WorkspaceService;
 import com.example.coconote.common.CommonResDto;
+import com.example.coconote.security.entity.CustomPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,8 +28,8 @@ public class WorkspaceController {
 
     @Operation(summary= "워크스페이스 생성")
     @PostMapping("/workspace/create")
-    public ResponseEntity<Object> workspaceCreate(@RequestBody WorkspaceCreateReqDto dto) {
-            WorkspaceListResDto resDto = workspaceService.workspaceCreate(dto);
+    public ResponseEntity<Object> workspaceCreate(@RequestBody WorkspaceCreateReqDto dto, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+            WorkspaceListResDto resDto = workspaceService.workspaceCreate(dto, customPrincipal.getEmail());
             CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "workspace is successfully created", resDto);
             return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }
