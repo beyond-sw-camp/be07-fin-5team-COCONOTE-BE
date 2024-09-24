@@ -1,6 +1,6 @@
 package com.example.coconote.api.tag.dto.request;
 
-import com.example.coconote.api.channel.entity.Channel;
+import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.tag.entity.Tag;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
