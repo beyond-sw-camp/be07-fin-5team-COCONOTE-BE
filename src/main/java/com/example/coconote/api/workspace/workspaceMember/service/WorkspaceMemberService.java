@@ -34,15 +34,23 @@ public class WorkspaceMemberService {
 
     public WorkspaceMemberResDto workspaceMemberCreate(WorkspaceMemberCreateReqDto dto) {
         Workspace workspace = workspaceRepository.findById(dto.getWorkspaceId()).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+        if(workspace.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("이미 삭제된 워크스페이스입니다.");
+        }
         Member member = memberRepository.findById(dto.getMemberId()).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+        if(member.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("이미 탈퇴한 회원입니다.");
+        }
         WorkspaceMember workspaceMember = dto.toEntity(workspace, member);
         workspaceMemberRepository.save(workspaceMember);
-        WorkspaceMemberResDto resDto = workspaceMember.fromEntity();
-        return resDto;
+        return workspaceMember.fromEntity();
     }
 
     public List<WorkspaceMemberResDto> workspaceMemberList(Long workspaceId) {
-        Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(()-> new EntityNotFoundException());
+        Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(()-> new EntityNotFoundException("찾을 수 없습니다."));
+        if(workspace.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("이미 삭제된 워크스페이스입니다.");
+        }
         List<WorkspaceMember> workspaceMembers = workspaceMemberRepository.findByWorkspaceAndIsDeleted(workspace, IsDeleted.N);
         List<WorkspaceMemberResDto> dtos = new ArrayList<>();
         for(WorkspaceMember w : workspaceMembers) {
@@ -54,7 +62,7 @@ public class WorkspaceMemberService {
     public WorkspaceMemberResDto workspaceMemberUpdate(Long id, WorkspaceMemberUpdateReqDto dto) {
         WorkspaceMember workspaceMember = workspaceMemberRepository.findById(id).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
         if(workspaceMember.getIsDeleted().equals(IsDeleted.Y)) {
-            throw new IllegalArgumentException("찾을 수 없습니다.");
+            throw new IllegalArgumentException("이미 워크스페이스에서 탈퇴한 회원입니다.");
         }
         workspaceMember.updateEntity(dto);
         WorkspaceMemberResDto restDto = workspaceMember.fromEntity();
@@ -65,7 +73,7 @@ public class WorkspaceMemberService {
     public Boolean workspaceMemberChangeRole(Long id) {
         WorkspaceMember workspaceMember = workspaceMemberRepository.findById(id).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
         if(workspaceMember.getIsDeleted().equals(IsDeleted.Y)) {
-            throw new IllegalArgumentException("찾을 수 없습니다.");
+            throw new IllegalArgumentException("이미 워크스페이스에서 탈퇴한 회원입니다.");
         }
         return workspaceMember.changeRole();
     }
@@ -73,9 +81,8 @@ public class WorkspaceMemberService {
     public void workspaceMemberDelete(Long id) {
         WorkspaceMember workspaceMember = workspaceMemberRepository.findById(id).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
         if(workspaceMember.getIsDeleted().equals(IsDeleted.Y)) {
-            throw new IllegalArgumentException("찾을 수 없습니다.");
+            throw new IllegalArgumentException("이미 워크스페이스에서 탈퇴한 회원입니다.");
         }
         workspaceMember.deleteEntity();
     }
-
 }

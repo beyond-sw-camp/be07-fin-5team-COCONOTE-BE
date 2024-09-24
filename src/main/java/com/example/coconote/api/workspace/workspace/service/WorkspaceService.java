@@ -65,9 +65,9 @@ public class WorkspaceService {
     }
 
     public List<SectionListResDto> workspaceRead(Long workspaceId) {
-        Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+        Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(()->new EntityNotFoundException("워크스페이스를 찾을 수 없습니다."));
         if(workspace.getIsDeleted().equals(IsDeleted.Y)) {
-            throw new IllegalArgumentException("찾을 수 없습니다.");
+            throw new IllegalArgumentException("이미 삭제된 워크스페이스입니다.");
         }
         List<Section> sections = sectionRepository.findByWorkspaceAndIsDeleted(workspace, IsDeleted.N);
         List<SectionListResDto> sDtos = new ArrayList<>();
@@ -79,9 +79,9 @@ public class WorkspaceService {
     }
 
     public WorkspaceListResDto workspaceUpdate(Long id, WorkspaceUpdateReqDto dto) {
-        Workspace workspace = workspaceRepository.findById(id).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+        Workspace workspace = workspaceRepository.findById(id).orElseThrow(()->new EntityNotFoundException("워크스페이스를 찾을 수 없습니다."));
         if(workspace.getIsDeleted().equals(IsDeleted.Y)) {
-            throw new IllegalArgumentException("찾을 수 없습니다.");
+            throw new IllegalArgumentException("이미 삭제된 워크스페이스입니다.");
         }
         workspace.updateEntity(dto);
         WorkspaceListResDto resDto = workspace.fromEntity();
@@ -89,9 +89,9 @@ public class WorkspaceService {
     }
 
     public void workspaceDelete(Long id) {
-        Workspace workspace = workspaceRepository.findById(id).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+        Workspace workspace = workspaceRepository.findById(id).orElseThrow(()->new EntityNotFoundException("워크스페이스를 찾을 수 없습니다."));
         if(workspace.getIsDeleted().equals(IsDeleted.Y)) {
-            throw new IllegalArgumentException("찾을 수 없습니다.");
+            throw new IllegalArgumentException("이미 삭제된 워크스페이스입니다.");
         }
         workspace.deleteEntity();
     }

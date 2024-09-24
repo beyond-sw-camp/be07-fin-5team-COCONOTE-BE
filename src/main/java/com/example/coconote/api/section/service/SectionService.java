@@ -30,7 +30,9 @@ public class SectionService {
 
     public SectionListResDto sectionCreate(SectionCreateReqDto dto) {
         Workspace workspace = workspaceRepository.findById(dto.getWorkspaceId()).orElseThrow(()-> new EntityNotFoundException("존재하지 않는 워크스페이스입니다."));
-
+        if(workspace.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("이미 삭제된 워크스페이스입니다.");
+        }
         Section section = dto.toEntity(workspace);
         sectionRepository.save(section);
 
@@ -40,6 +42,9 @@ public class SectionService {
 
     public List<SectionListResDto> sectionList(Long workspaceId) {
         Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(()-> new EntityNotFoundException("워크스페이스를 찾을 수 없습니다."));
+        if(workspace.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("이미 삭제된 워크스페이스입니다.");
+        }
         List<Section> sections = sectionRepository.findByWorkspaceAndIsDeleted(workspace, IsDeleted.N);
         List<SectionListResDto> dtos = new ArrayList<>();
         for(Section s : sections) {
@@ -49,9 +54,9 @@ public class SectionService {
     }
 
     public SectionListResDto sectionUpdate(Long id, SectionUpdateReqDto dto) {
-        Section section = sectionRepository.findById(id).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+        Section section = sectionRepository.findById(id).orElseThrow(()->new EntityNotFoundException("섹션을 찾을 수 없습니다."));
         if(section.getIsDeleted().equals(IsDeleted.Y)) {
-            throw new IllegalArgumentException("찾을 수 없습니다.");
+            throw new IllegalArgumentException("이미 삭제된 섹션입니다.");
         }
         section.updateEntity(dto);
         SectionListResDto resDto = section.fromEntity();
@@ -60,12 +65,10 @@ public class SectionService {
 
 
     public void sectionDelete(Long id) {
-        Section section = sectionRepository.findById(id).orElseThrow(()->new EntityNotFoundException("section not found"));
+        Section section = sectionRepository.findById(id).orElseThrow(()->new EntityNotFoundException("섹션을 찾을 수 없습니다."));
         if(section.getIsDeleted().equals(IsDeleted.Y)) {
-            throw new IllegalArgumentException("찾을 수 없습니다.");
+            throw new IllegalArgumentException("이미 삭제된 섹션입니다.");
         }
-        Workspace workspace = workspaceRepository.findById(section.getWorkspace().getWorkspaceId()).orElse(null);
         section.deleteEntity();
-        workspaceRepository.save(workspace);
     }
 }

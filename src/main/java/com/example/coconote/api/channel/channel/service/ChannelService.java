@@ -40,7 +40,9 @@ public class ChannelService {
     @Transactional
     public ChannelListResDto channelCreate(ChannelCreateReqDto dto) {
         Section section = sectionRepository.findById(dto.getSectionId()).orElseThrow(()-> new EntityNotFoundException("존재하지 않는 섹션입니다."));
-
+        if(section.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("이미 삭제된 섹션입니다.");
+        }
         Channel channel = dto.toEntity(section);
         channelRepository.save(channel);
         createDefaultFolder(channel);
@@ -65,11 +67,12 @@ public class ChannelService {
 
     public List<ChannelListResDto> channelList(Long sectionId) {
 
-        Section section = sectionRepository.findById(sectionId).orElseThrow(()->new EntityNotFoundException("없는 섹션입니다."));
+        Section section = sectionRepository.findById(sectionId).orElseThrow(()->new EntityNotFoundException("존재하지 않는 섹션입니다."));
+        if(section.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("이미 삭제된 섹션입니다.");
+        }
         List<Channel> channels = channelRepository.findByIsDeleted(IsDeleted.N);
         List<ChannelListResDto> dtos = new ArrayList<>();
-
-
         for(Channel c : channels) {
             dtos.add(c.fromEntity(section));
         }
@@ -77,25 +80,28 @@ public class ChannelService {
     }
 
     public Channel channelUpdate(Long id, ChannelUpdateReqDto dto) {
-        Channel channel = channelRepository.findById(id).orElseThrow(()->new EntityNotFoundException(" 찾을 수 없습니다."));
+        Channel channel = channelRepository.findById(id).orElseThrow(()->new EntityNotFoundException("존재하지 않는 채널입니다."));
         if(channel.getIsDeleted().equals(IsDeleted.Y)) {
-            throw new IllegalArgumentException("찾을 수 없습니다.");
+            throw new IllegalArgumentException("이미 삭제된 채널입니다.");
         }
         channel.updateEntity(dto);
         return channel;
     }
 
     public void channelDelete(Long id) {
-        Channel channel = channelRepository.findById(id).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+        Channel channel = channelRepository.findById(id).orElseThrow(()->new EntityNotFoundException("존재하지 않는 채널입니다."));
         if(channel.getIsDeleted().equals(IsDeleted.Y)) {
-            throw new IllegalArgumentException("찾을 수 없습니다.");
+            throw new IllegalArgumentException("이미 삭제된 채널입니다.");
         }
         channel.deleteEntity();
     }
 
     public FolderAllListResDto channelDrive(Long channelId, String email) {
-        Member member = memberRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
-        Channel channel = channelRepository.findById(channelId).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+        Member member = memberRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("존재하지 않는 회원입니다."));
+        Channel channel = channelRepository.findById(channelId).orElseThrow(()->new EntityNotFoundException("존재하지 않는 채널입니다."));
+        if(channel.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("이미 삭제된 채널입니다.");
+        }
 //        루트 폴더 찾기
         Folder rootFolder = folderRepository.findByChannelAndParentFolderIsNull(channel).orElseThrow(() -> new EntityNotFoundException("찾을 수 없습니다."));
 
