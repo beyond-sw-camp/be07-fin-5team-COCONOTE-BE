@@ -76,10 +76,13 @@ public class WorkspaceService {
 
     public List<WorkspaceListResDto> workspaceList(String email) {
         Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("회원을 찾을 수 없습니다."));
-        List<Workspace> workspaces = workspaceRepository.findByMemberAndIsDeleted(member, IsDeleted.N);
+        List<WorkspaceMember> workspaceMembers = workspaceMemberRepository.findByMemberAndIsDeleted(member, IsDeleted.N);
         List<WorkspaceListResDto> dtos = new ArrayList<>();
-        for(Workspace w : workspaces) {
-            dtos.add(w.fromEntity());
+        if(workspaceMembers != null) {
+            for (WorkspaceMember w : workspaceMembers) {
+                Workspace workspace = workspaceRepository.findByWorkspaceMemberAndIsDeleted(w, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("가입되어 있는 워크스페이스가 없습니다."));
+                dtos.add(workspace.fromEntity());
+            }
         }
         return dtos;
     }
