@@ -43,7 +43,7 @@ public class ThreadService {
 
     public Page<ThreadResDto> threadList(Long channelId, Pageable pageable) {
         Channel channel = channelRepository.findById(channelId).orElseThrow(()->new EntityNotFoundException("channel not found"));
-        Page<Thread> threads = threadRepository.findAllByChannelAndParentIsNull(channel,pageable);
+        Page<Thread> threads = threadRepository.findAllByChannelAndParentIsNullOrderByCreatedTimeDesc(channel,pageable);
         Page<ThreadResDto> threadResDtos = threads.map(thread -> {
             List<Thread> childThreads = threadRepository.findAllByParent(thread);
             List<ThreadResDto> childThreadResDtos = childThreads.stream().map(Thread::fromEntity).toList();
