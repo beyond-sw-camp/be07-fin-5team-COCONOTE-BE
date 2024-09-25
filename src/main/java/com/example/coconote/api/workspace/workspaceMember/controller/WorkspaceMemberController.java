@@ -1,6 +1,5 @@
 package com.example.coconote.api.workspace.workspaceMember.controller;
 
-import com.example.coconote.api.workspace.workspaceMember.dto.request.WorkspaceMemberCreateReqDto;
 import com.example.coconote.api.workspace.workspaceMember.dto.response.WorkspaceMemberResDto;
 import com.example.coconote.api.workspace.workspaceMember.service.WorkspaceMemberService;
 import com.example.coconote.api.workspace.workspaceMember.dto.request.WorkspaceMemberUpdateReqDto;
@@ -27,9 +26,9 @@ public class WorkspaceMemberController {
 
 
     @Operation(summary= "웤스 회원 가입")
-    @PostMapping("/workspace/member/create")
-    public ResponseEntity<Object> workspaceMemberCreate(@RequestBody WorkspaceMemberCreateReqDto dto, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
-        WorkspaceMemberResDto resDto = workspaceMemberService.workspaceMemberCreate(dto, customPrincipal.getEmail() );
+    @PostMapping("/workspace/member/create/{workspaceId}")
+    public ResponseEntity<Object> workspaceMemberCreate(@PathVariable Long workspaceId, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        WorkspaceMemberResDto resDto = workspaceMemberService.workspaceMemberCreate(workspaceId, customPrincipal.getEmail() );
         CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "member is successfully created", resDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }

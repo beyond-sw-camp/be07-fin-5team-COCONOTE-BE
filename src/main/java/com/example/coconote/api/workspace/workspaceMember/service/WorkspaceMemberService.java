@@ -4,7 +4,6 @@ import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
 import com.example.coconote.api.workspace.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.workspace.repository.WorkspaceRepository;
-import com.example.coconote.api.workspace.workspaceMember.dto.request.WorkspaceMemberCreateReqDto;
 import com.example.coconote.api.workspace.workspaceMember.dto.response.WorkspaceMemberResDto;
 import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
@@ -32,8 +31,8 @@ public class WorkspaceMemberService {
         this.memberRepository = memberRepository;
     }
 
-    public WorkspaceMemberResDto workspaceMemberCreate(WorkspaceMemberCreateReqDto dto, String email) {
-        Workspace workspace = workspaceRepository.findById(dto.getWorkspaceId()).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+    public WorkspaceMemberResDto workspaceMemberCreate(Long workspaceId, String email) {
+        Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
         if(workspace.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 삭제된 워크스페이스입니다.");
         }
@@ -47,7 +46,11 @@ public class WorkspaceMemberService {
             throw new IllegalArgumentException("이미 워크스페이스에 가입되어 있는 회원입니다.");
         }
 
-        WorkspaceMember workspaceMember = dto.toEntity(workspace, member);
+        WorkspaceMember workspaceMember = WorkspaceMember.builder()
+                .workspace(workspace)
+                .member(member)
+                .nickname(member.getNickname())
+                .build();
         workspaceMemberRepository.save(workspaceMember);
         return workspaceMember.fromEntity();
     }
