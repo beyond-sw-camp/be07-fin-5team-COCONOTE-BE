@@ -32,15 +32,17 @@ public class WorkspaceMemberService {
         this.memberRepository = memberRepository;
     }
 
-    public WorkspaceMemberResDto workspaceMemberCreate(WorkspaceMemberCreateReqDto dto) {
+    public WorkspaceMemberResDto workspaceMemberCreate(WorkspaceMemberCreateReqDto dto, String email) {
         Workspace workspace = workspaceRepository.findById(dto.getWorkspaceId()).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
         if(workspace.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 삭제된 워크스페이스입니다.");
         }
-        Member member = memberRepository.findById(dto.getMemberId()).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+
+        Member member = getMemberByEmail(email);
         if(member.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 탈퇴한 회원입니다.");
         }
+
         WorkspaceMember workspaceMember = dto.toEntity(workspace, member);
         workspaceMemberRepository.save(workspaceMember);
         return workspaceMember.fromEntity();
@@ -84,5 +86,9 @@ public class WorkspaceMemberService {
             throw new IllegalArgumentException("이미 워크스페이스에서 탈퇴한 회원입니다.");
         }
         workspaceMember.deleteEntity();
+    }
+
+    private Member getMemberByEmail(String email){
+        return memberRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
     }
 }

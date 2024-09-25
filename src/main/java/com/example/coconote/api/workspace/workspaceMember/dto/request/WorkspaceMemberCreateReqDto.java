@@ -14,9 +14,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class WorkspaceMemberCreateReqDto {
     private Long workspaceId;
-    private Long memberId;
+//    private Long memberId;
     private String memberName;
-    private String nickname;
+//    private String nickname;
     private String field;
     private String position;
     private String profileImage;
@@ -26,7 +26,7 @@ public class WorkspaceMemberCreateReqDto {
                 .workspace(workspace)
                 .member(member)
                 .memberName(this.memberName)
-                .nickname(this.nickname)
+                .nickname(member.getNickname())
                 .field(this.field)
                 .position(this.position)
                 .profileImage(this.profileImage)
