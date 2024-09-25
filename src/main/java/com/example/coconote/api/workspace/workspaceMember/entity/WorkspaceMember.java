@@ -2,7 +2,6 @@ package com.example.coconote.api.workspace.workspaceMember.entity;
 
 import com.example.coconote.api.channel.channelMember.entity.ChannelMember;
 import com.example.coconote.api.member.entity.Member;
-import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.workspace.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.workspaceMember.dto.request.WorkspaceMemberUpdateReqDto;
 import com.example.coconote.api.workspace.workspaceMember.dto.response.WorkspaceMemberResDto;

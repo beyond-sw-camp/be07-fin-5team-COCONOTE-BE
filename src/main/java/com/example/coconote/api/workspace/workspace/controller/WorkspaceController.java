@@ -34,10 +34,10 @@ public class WorkspaceController {
             return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }
 
-    @Operation(summary= "워크스페이스 목록 조회")
+    @Operation(summary= "내 워크스페이스 목록 조회")
     @GetMapping("/workspace/list")
-    public ResponseEntity<Object> workspaceList() {
-        List<WorkspaceListResDto> dtos = workspaceService.workspaceList();
+    public ResponseEntity<Object> workspaceList(@AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        List<WorkspaceListResDto> dtos = workspaceService.workspaceList(customPrincipal.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "list is successfully found", dtos);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }

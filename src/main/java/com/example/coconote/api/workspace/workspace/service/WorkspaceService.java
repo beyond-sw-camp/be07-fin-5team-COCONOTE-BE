@@ -74,8 +74,9 @@ public class WorkspaceService {
     }
 
 
-    public List<WorkspaceListResDto> workspaceList() {
-        List<Workspace> workspaces = workspaceRepository.findByIsDeleted(IsDeleted.N);
+    public List<WorkspaceListResDto> workspaceList(String email) {
+        Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+        List<Workspace> workspaces = workspaceRepository.findByMemberAndIsDeleted(member, IsDeleted.N);
         List<WorkspaceListResDto> dtos = new ArrayList<>();
         for(Workspace w : workspaces) {
             dtos.add(w.fromEntity());
