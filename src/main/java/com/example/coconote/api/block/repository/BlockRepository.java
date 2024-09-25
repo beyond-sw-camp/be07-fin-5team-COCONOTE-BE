@@ -12,4 +12,6 @@ import java.util.Optional;
 public interface BlockRepository extends JpaRepository<Block,Long> {
     Optional<Block> findByPrevBlockId(Long prevBlockId);
     List<Block> findByCanvasIdAndIsDeleted(Long canvasId, IsDeleted isDeleted);
+
+    Optional<Block> findByFeId(String feId);
 }

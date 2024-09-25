@@ -37,6 +37,11 @@ public class Block extends BaseEntity {
     @JoinColumn(name = "parent_block_id")
     private Block parentBlock;
 
+//    (프론트 tiptap 종속) 블록의 타입
+    private Type type;
+    private String feId; // 프론트에서 적용해주는 uuid 형식의 block id
+//    private Integer level;
+
     public void changePrevBlock(Block block) {
         this.prevBlock = block;
     }

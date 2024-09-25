@@ -74,7 +74,8 @@ public class BlockService {
 
     @Transactional
     public Boolean updateBlock(UpdateBlockReqDto updateBlockReqDto, String email){
-        Block block = blockRepository.findById(updateBlockReqDto.getBlockId()).orElseThrow(() -> new IllegalArgumentException("해당 Block이 존재하지 않습니다."));
+        Block block = blockRepository.findByFeId(updateBlockReqDto.getFeId())
+                .orElseThrow(() -> new IllegalArgumentException("해당 Block이 존재하지 않습니다."));
         Block prevBlock = updateBlockReqDto.getPrevBlockId() != null
                 ? blockRepository.findById(updateBlockReqDto.getPrevBlockId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 Prev Block이 존재하지 않습니다."))
