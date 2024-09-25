@@ -1,13 +1,14 @@
 package com.example.coconote.api.channel.channelMember.controller;
 
-import com.example.coconote.api.channel.channelMember.dto.request.ChannelMemberCreateReqDto;
 import com.example.coconote.api.channel.channelMember.dto.response.ChannelMemberListResDto;
 import com.example.coconote.api.channel.channelMember.service.ChannelMemberService;
 import com.example.coconote.common.CommonResDto;
+import com.example.coconote.security.entity.CustomPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,8 +24,8 @@ public class ChannelMemberController {
 
     @Operation(summary= "채널 회원 생성(초대/가입)")
     @PostMapping("/channelmember/create/{channelId}") // 채널 가입
-    public ResponseEntity<Object> channelMemberCreate(@RequestBody ChannelMemberCreateReqDto dto) {
-        ChannelMemberListResDto resDto = channelMemberService.channelMemberCreate(dto);
+    public ResponseEntity<Object> channelMemberCreate(@PathVariable Long channelId, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        ChannelMemberListResDto resDto = channelMemberService.channelMemberCreate(channelId, customPrincipal.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "member is successfully created", resDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }

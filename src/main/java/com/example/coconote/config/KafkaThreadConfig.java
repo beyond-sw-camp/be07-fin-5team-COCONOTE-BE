@@ -1,6 +1,6 @@
 package com.example.coconote.config;
 
-import com.example.coconote.api.thread.dto.requset.ThreadReqDto;
+import com.example.coconote.api.thread.thread.dto.requset.ThreadReqDto;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;

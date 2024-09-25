@@ -5,10 +5,12 @@ import com.example.coconote.api.workspace.workspaceMember.dto.response.Workspace
 import com.example.coconote.api.workspace.workspaceMember.service.WorkspaceMemberService;
 import com.example.coconote.api.workspace.workspaceMember.dto.request.WorkspaceMemberUpdateReqDto;
 import com.example.coconote.common.CommonResDto;
+import com.example.coconote.security.entity.CustomPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,8 +28,8 @@ public class WorkspaceMemberController {
 
     @Operation(summary= "웤스 회원 가입")
     @PostMapping("/workspacemember/create")
-    public ResponseEntity<Object> workspaceMemberCreate(@RequestBody WorkspaceMemberCreateReqDto dto) {
-        WorkspaceMemberResDto resDto = workspaceMemberService.workspaceMemberCreate(dto);
+    public ResponseEntity<Object> workspaceMemberCreate(@RequestBody WorkspaceMemberCreateReqDto dto, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        WorkspaceMemberResDto resDto = workspaceMemberService.workspaceMemberCreate(dto, customPrincipal.getEmail() );
         CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "member is successfully created", resDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }

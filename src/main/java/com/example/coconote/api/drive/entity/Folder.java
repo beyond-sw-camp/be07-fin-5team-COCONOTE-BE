@@ -32,6 +32,7 @@ public class Folder extends BaseEntity {
     private List<Folder> childFolders;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "channel_id")
     private Channel channel;
 
     public void changeFolderName(String folderName) {
