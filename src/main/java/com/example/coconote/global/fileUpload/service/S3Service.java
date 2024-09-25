@@ -11,6 +11,7 @@ import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
 import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
+import com.example.coconote.common.IsDeleted;
 import com.example.coconote.global.fileUpload.dto.request.FileMetadataReqDto;
 import com.example.coconote.global.fileUpload.dto.request.FileSaveListDto;
 import com.example.coconote.global.fileUpload.dto.request.FileUploadRequest;
@@ -184,9 +185,10 @@ public class S3Service {
         FileEntity fileEntity = getFileEntityById(fileId);
         Member member = getMemberByEmail(email);
         Channel channel = fileEntity.getFolder().getChannel();
-        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspace(member, channel.getSection().getWorkspace())
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, channel.getSection().getWorkspace(), IsDeleted.N)
                 .orElseThrow(() -> new IllegalArgumentException("워크스페이스 멤버를 찾을 수 없습니다."));
-        ChannelMember channelMember = channelMemberRepository.findByWorkspaceMemberAndChannel(workspaceMember, channel);
+        ChannelMember channelMember = channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, workspaceMember, IsDeleted.N)
+                .orElseThrow(() -> new IllegalArgumentException("채널 멤버를 찾을 수 없습니다."));
 
         // 파일 삭제 권한 검증
 //        채널 매니저 이거나 파일을 업로드한 사람만 삭제 가능

@@ -2,6 +2,7 @@ package com.example.coconote.api.channel.channelMember.repository;
 
 import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channelMember.entity.ChannelMember;
+import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import com.example.coconote.common.IsDeleted;
@@ -12,6 +13,5 @@ import java.util.Optional;
 
 public interface ChannelMemberRepository extends JpaRepository<ChannelMember, Long> {
     List<ChannelMember> findByChannelAndIsDeleted(Channel channel, IsDeleted isDeleted);
-
-    ChannelMember findByWorkspaceMemberAndChannel(WorkspaceMember workspaceMember, Channel channel);
+    Optional<ChannelMember> findByChannelAndWorkspaceMemberAndIsDeleted(Channel channel, WorkspaceMember workspaceMember, IsDeleted isDeleted);
 }

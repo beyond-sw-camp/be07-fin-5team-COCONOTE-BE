@@ -53,7 +53,7 @@ public class ChannelService {
         Channel channel = dto.toEntity(section);
 
         Member member = memberRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("존재하지 않는 회원입니다."));
-        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspace(member, section.getWorkspace()).orElseThrow(()-> new EntityNotFoundException("워크스페이스 회원이 존재하지 않습니다."));
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, section.getWorkspace(), IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("워크스페이스 회원이 존재하지 않습니다."));
 
         ChannelMember channelMember = ChannelMember.builder()
                 .workspaceMember(workspaceMember)
