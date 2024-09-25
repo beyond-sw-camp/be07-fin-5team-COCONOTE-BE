@@ -84,6 +84,22 @@ spring:
     consumer:
       group-id: websocket-group
       auto-offset-reset: earliest
+  elasticsearch:
+    uris: http://localhost:9200
+    connection-timeout: 1000  # 밀리초
+    socket-timeout: 30000     # 밀리초
+    rest-client:
+      username: elastic
+      password: changeme  # 보안을 설정했다면 비밀번호가 필요함
+
+logging:
+  level:
+    org:
+      springframework:
+        kafka: DEBUG  # Kafka 관련 디버그 로그를 활성화
+    co.elastic.clients: DEBUG  # ElasticSearch 관련 디버그 로그를 활성화
+
+
 
 springdoc:
   api-docs:
