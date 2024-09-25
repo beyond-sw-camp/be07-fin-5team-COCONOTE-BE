@@ -6,6 +6,7 @@ import com.example.coconote.api.channel.channel.dto.response.ChannelDetailResDto
 import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;
 import com.example.coconote.api.channel.channelMember.entity.ChannelMember;
+import com.example.coconote.api.channel.channelMember.entity.ChannelRole;
 import com.example.coconote.api.channel.channelMember.repository.ChannelMemberRepository;
 import com.example.coconote.api.drive.dto.response.FileListDto;
 import com.example.coconote.api.drive.dto.response.FolderAllListResDto;
@@ -57,7 +58,7 @@ public class ChannelService {
         ChannelMember channelMember = ChannelMember.builder()
                 .workspaceMember(workspaceMember)
                 .channel(channel)
-                .channelRole(com.example.coconote.api.channelMember.entity.ChannelRole.MANAGER)
+                .channelRole(ChannelRole.MANAGER)
                 .build();
 
         channelMemberRepository.save(channelMember);

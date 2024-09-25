@@ -6,7 +6,6 @@ import com.example.coconote.api.channel.channel.dto.response.ChannelDetailResDto
 import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channel.service.ChannelService;
 import com.example.coconote.api.drive.dto.response.FolderAllListResDto;
-import com.example.coconote.common.CommonErrorDto;
 import com.example.coconote.common.CommonResDto;
 import com.example.coconote.security.entity.CustomPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
