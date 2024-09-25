@@ -4,6 +4,7 @@ import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channelMember.entity.ChannelMember;
 import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import com.example.coconote.api.member.entity.Member;
+import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import com.example.coconote.common.IsDeleted;
 import org.springframework.data.jpa.repository.JpaRepository;
 
