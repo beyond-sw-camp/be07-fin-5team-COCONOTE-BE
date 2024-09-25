@@ -13,7 +13,7 @@ public class SearchService {
     private final WorkspaceMemberSearchRepository workspaceMemberSearchRepository;
 
     // 멤버 이름, 이메일, 닉네임을 기반으로 검색
-    public List<WorkspaceMemberDocument> searchWorkspaceMembers(String keyword) {
-        return workspaceMemberSearchRepository.findByMemberNameContainingOrEmailContainingOrNicknameContaining(keyword, keyword, keyword);
+    public List<WorkspaceMemberDocument> searchWorkspaceMembers(Long workspaceId, String keyword) {
+        return workspaceMemberSearchRepository.findByWorkspaceIdAndEmailOrNickname(workspaceId, keyword);
     }
 }

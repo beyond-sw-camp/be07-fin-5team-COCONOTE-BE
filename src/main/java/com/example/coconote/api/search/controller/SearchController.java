@@ -19,8 +19,8 @@ public class SearchController {
 
     // 멤버 검색 API (이름, 이메일, 닉네임 검색)
     @GetMapping("/search/workspace/members")
-    public ResponseEntity<List<WorkspaceMemberDocument>> searchWorkspaceMembers(@RequestParam String keyword) {
-        List<WorkspaceMemberDocument> members = searchService.searchWorkspaceMembers(keyword);
+    public ResponseEntity<List<WorkspaceMemberDocument>> searchWorkspaceMembers(@RequestParam Long workspaceId, @RequestParam String keyword) {
+        List<WorkspaceMemberDocument> members = searchService.searchWorkspaceMembers(workspaceId, keyword);
         return ResponseEntity.ok(members);
     }
 }
