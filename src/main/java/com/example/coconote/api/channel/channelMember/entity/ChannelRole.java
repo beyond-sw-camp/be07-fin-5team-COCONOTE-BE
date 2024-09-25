@@ -1,5 +1,8 @@
-package com.example.coconote.api.channelMember.entity;
+package com.example.coconote.api.channel.channelMember.entity;
 
+import lombok.Getter;
+
+@Getter
 public enum ChannelRole {
-    MANAGER, USER
+    MANAGER, USER;
 }

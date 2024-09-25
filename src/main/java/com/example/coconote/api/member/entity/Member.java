@@ -2,7 +2,9 @@ package com.example.coconote.api.member.entity;
 
 import com.example.coconote.common.BaseEntity;
 import jakarta.persistence.*;
+
 import lombok.*;
+import org.hibernate.validator.constraints.UniqueElements;
 
 @Getter
 @Builder

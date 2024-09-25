@@ -7,7 +7,6 @@ import com.example.coconote.api.search.mapper.WorkspaceMemberMapper;
 import com.example.coconote.api.search.repository.WorkspaceMemberSearchRepository;
 import com.example.coconote.api.workspace.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.workspace.repository.WorkspaceRepository;
-import com.example.coconote.api.workspace.workspaceMember.dto.request.WorkspaceMemberCreateReqDto;
 import com.example.coconote.api.workspace.workspaceMember.dto.response.WorkspaceMemberResDto;
 import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
@@ -36,16 +35,26 @@ public class WorkspaceMemberService {
 
 
     @Transactional
-    public WorkspaceMemberResDto workspaceMemberCreate(WorkspaceMemberCreateReqDto dto) {
-        Workspace workspace = workspaceRepository.findById(dto.getWorkspaceId()).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+    public WorkspaceMemberResDto workspaceMemberCreate(Long workspaceId, String email) {
+        Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
         if(workspace.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 삭제된 워크스페이스입니다.");
         }
-        Member member = memberRepository.findById(dto.getMemberId()).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+
+        Member member = getMemberByEmail(email);
         if(member.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 탈퇴한 회원입니다.");
         }
-        WorkspaceMember workspaceMember = dto.toEntity(workspace, member);
+        // 이미 워크스페이스 회원일 때 예외
+        if(workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N).isPresent()) {
+            throw new IllegalArgumentException("이미 워크스페이스에 가입되어 있는 회원입니다.");
+        }
+
+        WorkspaceMember workspaceMember = WorkspaceMember.builder()
+                .workspace(workspace)
+                .member(member)
+                .nickname(member.getNickname())
+                .build();
         workspaceMemberRepository.save(workspaceMember);
 
         WorkspaceMemberDocument document = workspaceMemberMapper.toDocument(workspaceMember);
@@ -107,5 +116,9 @@ public class WorkspaceMemberService {
 
         workspaceMember.deleteEntity();
         workspaceMemberSearchRepository.deleteById(String.valueOf(workspaceMember.getWorkspaceMemberId()));  // ElasticSearch에서 삭제
+    }
+
+    private Member getMemberByEmail(String email){
+        return memberRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
     }
 }

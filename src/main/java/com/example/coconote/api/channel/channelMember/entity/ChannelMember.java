@@ -2,7 +2,6 @@ package com.example.coconote.api.channel.channelMember.entity;
 
 import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channelMember.dto.response.ChannelMemberListResDto;
-import com.example.coconote.api.channelMember.entity.ChannelRole;
 import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import com.example.coconote.common.BaseEntity;
 import com.example.coconote.common.IsDeleted;
@@ -34,7 +33,7 @@ public class ChannelMember extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    private com.example.coconote.api.channelMember.entity.ChannelRole channelRole = com.example.coconote.api.channelMember.entity.ChannelRole.USER; // 최초 가입 시에는 그냥 일반 유저
+    private ChannelRole channelRole = ChannelRole.USER; // 최초 가입 시에는 그냥 일반 유저
 
     @Builder.Default
     private Boolean isBookmark = true; // 최초 가입 시에는 즐겨찾기 자동으로 등록돼 있음
@@ -49,7 +48,7 @@ public class ChannelMember extends BaseEntity {
 
 
     public boolean changeRole() { // 권한이 상승(?)했으면 true 반환
-        if(this.channelRole.equals(com.example.coconote.api.channelMember.entity.ChannelRole.USER)) {
+        if(this.channelRole.equals(ChannelRole.USER)) {
             this.channelRole = ChannelRole.MANAGER;
             return true;
         }else {

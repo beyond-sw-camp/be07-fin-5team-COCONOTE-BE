@@ -1,6 +1,6 @@
 package com.example.coconote.config.cleanUpConfig;
 
-import com.example.coconote.api.thread.entity.Thread;
+import com.example.coconote.api.thread.thread.entity.Thread;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import org.springframework.batch.core.Job;

@@ -1,6 +1,8 @@
 package com.example.coconote.api.workspace.workspace.service;
 
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;
+import com.example.coconote.api.member.entity.Member;
+import com.example.coconote.api.member.repository.MemberRepository;
 import com.example.coconote.api.section.dto.response.SectionListResDto;
 import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.section.repository.SectionRepository;
@@ -9,6 +11,9 @@ import com.example.coconote.api.workspace.workspace.dto.request.WorkspaceUpdateR
 import com.example.coconote.api.workspace.workspace.dto.response.WorkspaceListResDto;
 import com.example.coconote.api.workspace.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.workspace.repository.WorkspaceRepository;
+import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
+import com.example.coconote.api.workspace.workspaceMember.entity.WsRole;
+import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,14 +29,18 @@ public class WorkspaceService {
 
     private final WorkspaceRepository workspaceRepository;
     private final SectionRepository sectionRepository;
+    private final MemberRepository memberRepository;
+    private final WorkspaceMemberRepository workspaceMemberRepository;
 
     @Autowired
-    public WorkspaceService(WorkspaceRepository workspaceRepository, SectionRepository sectionRepository) {
+    public WorkspaceService(WorkspaceRepository workspaceRepository, SectionRepository sectionRepository, MemberRepository memberRepository, WorkspaceMemberRepository workspaceMemberRepository) {
         this.workspaceRepository = workspaceRepository;
         this.sectionRepository = sectionRepository;
+        this.memberRepository = memberRepository;
+        this.workspaceMemberRepository = workspaceMemberRepository;
     }
 
-    public WorkspaceListResDto workspaceCreate(WorkspaceCreateReqDto dto) {
+    public WorkspaceListResDto workspaceCreate(WorkspaceCreateReqDto dto, String email) {
 
         String imgUrl = "";
         // 이미지파일 저장하고 String 이미지URL로 바꾸는 코드
@@ -49,9 +58,19 @@ public class WorkspaceService {
         workspace.getSections().add(sectionDefault);
         workspace.getSections().add(sectionBookmark);
 
+
+        Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+        WorkspaceMember workspaceMember = WorkspaceMember.builder()
+                .workspace(workspace)
+                .member(member)
+                .nickname(member.getNickname())
+                .wsRole(WsRole.PMANAGER)
+                .build();
+
+        workspaceMemberRepository.save(workspaceMember);
+        workspace.getWorkspaceMembers().add(workspaceMember);
         workspaceRepository.save(workspace);
-        WorkspaceListResDto resDto = workspace.fromEntity();
-        return resDto;
+        return workspace.fromEntity();
     }
 
 
