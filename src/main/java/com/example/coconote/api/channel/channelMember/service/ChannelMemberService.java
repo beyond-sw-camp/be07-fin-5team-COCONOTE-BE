@@ -41,9 +41,12 @@ public class ChannelMemberService {
             throw new IllegalArgumentException("이미 삭제된 채널입니다.");
         }
         Member member = memberRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
-        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspace(member, channel.getSection().getWorkspace()).orElseThrow(()-> new EntityNotFoundException("존재하지 않는 회원입니다."));
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, channel.getSection().getWorkspace(), IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("존재하지 않는 회원입니다."));
         if(workspaceMember.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 워크스페이스를 탈퇴한 회원입니다.");
+        }
+        if(channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, workspaceMember, IsDeleted.N).isPresent()) {
+            throw new IllegalArgumentException("이미 채널에 가입되어 있는 회원입니다.");
         }
         ChannelMember channelMember = ChannelMember.builder()
                 .workspaceMember(workspaceMember)
