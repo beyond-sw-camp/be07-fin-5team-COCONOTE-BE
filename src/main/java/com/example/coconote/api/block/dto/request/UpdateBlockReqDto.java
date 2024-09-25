@@ -13,12 +13,14 @@ import lombok.NoArgsConstructor;
 public class UpdateBlockReqDto {
 //    private Long blockId; // Attr의 feId로 판별 예정
     private Long canvasId;
-
-    private Long prevBlockId;
-    private Long parentBlockId;
     private String contents;
+
+    //    ⭐ 추후 로그인 붙일 때 변경
+    private String member;
 
     //    front 종속 값
     private Type type;
     private String feId;
+    private String prevBlockId;
+    private String parentBlockId;
 }

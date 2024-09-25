@@ -34,16 +34,16 @@ public class BlockController {
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }
 
-    @Operation(
-            summary = "Block Update",
-            description = "기존 Block Update."
-    )
-    @PatchMapping("/{blockId}/update")
-    public ResponseEntity<?> updateBlock(@PathVariable String email, @RequestBody UpdateBlockReqDto updateBlockReqDto){
-        Boolean isUpdated = blockService.updateBlock(updateBlockReqDto, email);
-        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "Block이 성공적으로 업데이트 되었습니다.", isUpdated);
-        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
-    }
+//    @Operation(
+//            summary = "Block Update",
+//            description = "기존 Block Update."
+//    )
+//    @PatchMapping("/{blockId}/update")
+//    public ResponseEntity<?> updateBlock(@PathVariable String email, @RequestBody UpdateBlockReqDto updateBlockReqDto){
+//        Boolean isUpdated = blockService.updateBlock(updateBlockReqDto, email);
+//        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "Block이 성공적으로 업데이트 되었습니다.", isUpdated);
+//        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+//    }
 
     @Operation(
             summary = "해당 캔버스를 참조하고 있는 블록 리스트",

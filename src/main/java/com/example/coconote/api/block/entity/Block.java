@@ -3,14 +3,19 @@ package com.example.coconote.api.block.entity;
 import com.example.coconote.api.block.dto.response.BlockListResDto;
 import com.example.coconote.api.canvas.entity.Canvas;
 import com.example.coconote.common.BaseEntity;
+import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -27,20 +32,39 @@ public class Block extends BaseEntity {
 
     private String contents;
 
+    //    ⭐ 추후 로그인 붙일 때 변경
+    private String member;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "prev_block_id")
+    @JoinColumn(name = "prev_block_fe_id")
 //    순서를 알기 위한, 동레벨의 이전 블록
 //    이전 블록이 없다면, 최상위 블록!
     private Block prevBlock;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_block_id")
+    @JoinColumn(name = "parent_block_fe_id")
     private Block parentBlock;
 
 //    (프론트 tiptap 종속) 블록의 타입
+    @Enumerated(EnumType.STRING)
     private Type type;
+
+    @Column(unique = true)
     private String feId; // 프론트에서 적용해주는 uuid 형식의 block id
 //    private Integer level;
+
+    // 소프트 삭제 메서드
+    public void markAsDeleted(List<Block> parentLinkedChildrenBlocks) {
+        this.isDeleted = IsDeleted.Y;
+        this.deletedTime = LocalDateTime.now();
+
+        // 재귀적으로 삭제 처리
+        if (parentLinkedChildrenBlocks != null) {
+            for (Block child : parentLinkedChildrenBlocks) {
+                child.markAsDeleted(null);
+            }
+        }
+    }
 
     public void changePrevBlock(Block block) {
         this.prevBlock = block;
@@ -56,14 +80,20 @@ public class Block extends BaseEntity {
         }
 
         if(!Objects.equals(this.contents, contents)){
+            log.info(this.getContents());
+            log.info("!!!!!!!!!!");
+            log.info(contents);
             this.contents = contents;
         }
     }
 
     public BlockListResDto fromEntity() {
         return BlockListResDto.builder()
-                .id(this.id)
+                .feId(this.feId)
+                .type(this.getType())
                 .content(this.contents)
+                .member(this.member)
                 .build();
     }
+
 }

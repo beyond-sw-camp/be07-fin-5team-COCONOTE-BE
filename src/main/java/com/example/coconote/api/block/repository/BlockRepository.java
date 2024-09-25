@@ -14,4 +14,8 @@ public interface BlockRepository extends JpaRepository<Block,Long> {
     List<Block> findByCanvasIdAndIsDeleted(Long canvasId, IsDeleted isDeleted);
 
     Optional<Block> findByFeId(String feId);
+
+    Optional<Block> findByPrevBlockFeId(String feId);
+
+    List<Block> findByParentBlockFeId(String feId);
 }
