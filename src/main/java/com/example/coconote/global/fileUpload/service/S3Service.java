@@ -9,6 +9,10 @@ import com.example.coconote.api.drive.entity.Folder;
 import com.example.coconote.api.drive.repository.FolderRepository;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.workspace.workspace.entity.Workspace;
+import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
+import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
+import com.example.coconote.common.IsDeleted;
 import com.example.coconote.global.fileUpload.dto.request.FileMetadataReqDto;
 import com.example.coconote.global.fileUpload.dto.request.FileSaveListDto;
 import com.example.coconote.global.fileUpload.dto.request.FileUploadRequest;
@@ -50,6 +54,7 @@ public class S3Service {
     private final FolderRepository folderRepository;
     private final MemberRepository memberRepository;
     private final ChannelMemberRepository channelMemberRepository;
+    private final WorkspaceMemberRepository workspaceMemberRepository;
 
     @Value("${aws.s3.region}")
     private String region;
@@ -181,7 +186,10 @@ public class S3Service {
         FileEntity fileEntity = getFileEntityById(fileId);
         Member member = getMemberByEmail(email);
         Channel channel = fileEntity.getFolder().getChannel();
-        ChannelMember channelMember = channelMemberRepository.findByChannelAndMember(channel, member)
+        Workspace workspace = channel.getSection().getWorkspace();
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member,workspace,IsDeleted.N)
+                .orElseThrow(() -> new IllegalArgumentException("워크스페이스 멤버를 찾을 수 없습니다."));
+        ChannelMember channelMember = channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, workspaceMember, IsDeleted.N)
                 .orElseThrow(() -> new IllegalArgumentException("채널 멤버를 찾을 수 없습니다."));
 
         // 파일 삭제 권한 검증
