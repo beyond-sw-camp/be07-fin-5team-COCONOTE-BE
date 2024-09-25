@@ -42,6 +42,10 @@ public class WorkspaceMemberService {
         if(member.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 탈퇴한 회원입니다.");
         }
+        // 이미 워크스페이스 회원일 때 예외
+        if(workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N).isPresent()) {
+            throw new IllegalArgumentException("이미 워크스페이스에 가입되어 있는 회원입니다.");
+        }
 
         WorkspaceMember workspaceMember = dto.toEntity(workspace, member);
         workspaceMemberRepository.save(workspaceMember);
