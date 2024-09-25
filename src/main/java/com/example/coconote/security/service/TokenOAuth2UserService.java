@@ -2,6 +2,8 @@ package com.example.coconote.security.service;
 
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.workspace.workspace.dto.request.WorkspaceCreateReqDto;
+import com.example.coconote.api.workspace.workspace.service.WorkspaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -15,6 +17,7 @@ import java.util.Map;
 public class TokenOAuth2UserService extends DefaultOAuth2UserService {
 
     private final MemberRepository memberRepository;
+    private final WorkspaceService workspaceService;
 
     @Override
     @Transactional
@@ -47,8 +50,11 @@ public class TokenOAuth2UserService extends DefaultOAuth2UserService {
                     Member newMember = new Member();
                     newMember.setEmail(email);
                     newMember.setNickname(name);
-                    return memberRepository.save(newMember);
+                    Member tempMember = memberRepository.save(newMember);
+                    workspaceService.workspaceCreate(new WorkspaceCreateReqDto("My Workspace", ""), email);
+                    return tempMember;
                 });
+
         return oAuth2User;
     }
 }
