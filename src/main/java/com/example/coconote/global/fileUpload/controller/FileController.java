@@ -5,10 +5,12 @@ import com.example.coconote.global.fileUpload.dto.request.*;
 import com.example.coconote.global.fileUpload.dto.response.FileMetadataResDto;
 import com.example.coconote.global.fileUpload.dto.response.MoveFileResDto;
 import com.example.coconote.global.fileUpload.service.S3Service;
+import com.example.coconote.security.entity.CustomPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,8 +24,8 @@ public class FileController {
     private final S3Service s3Service;
 
     @PostMapping("/presigned-urls")
-    public ResponseEntity<?> generatePresignedUrls(@RequestBody List<FileUploadRequest> files) {
-        Map<String, String> presignedUrls = s3Service.generatePresignedUrls(files);
+    public ResponseEntity<?> generatePresignedUrls(@RequestBody List<FileUploadRequest> files, @AuthenticationPrincipal CustomPrincipal member) {
+        Map<String, String> presignedUrls = s3Service.generatePresignedUrls(files, member.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "Presigned URLs generated successfully", presignedUrls);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
@@ -32,8 +34,8 @@ public class FileController {
     // 2. 파일 메타데이터 저장 API
     @Operation(summary = "파일 URL 저장 API, Channel ID는 필수, Folder ID는 선택(없으면 null 로 보내면 됨)")
     @PostMapping("/metadata")
-    public ResponseEntity<?> saveFileMetadata(@RequestBody FileMetadataReqDto fileMetadataList, @RequestParam String email) {
-        List<FileMetadataResDto> savedMetadata = s3Service.saveFileMetadata(fileMetadataList, email);
+    public ResponseEntity<?> saveFileMetadata(@RequestBody FileMetadataReqDto fileMetadataList, @AuthenticationPrincipal CustomPrincipal member) {
+        List<FileMetadataResDto> savedMetadata = s3Service.saveFileMetadata(fileMetadataList, member.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "File metadata saved successfully", savedMetadata);
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }
@@ -41,24 +43,25 @@ public class FileController {
     // 3. 파일 삭제 API
     @Operation(summary = "파일 삭제 API (삭제 가능한 사람은 파일을 업로드한 사람 또는 채널의 관리자)")
     @DeleteMapping("/{fileId}")
-    public ResponseEntity<?> deleteFile(@PathVariable Long fileId, String email) {
-        s3Service.deleteFile(fileId, email);
+    public ResponseEntity<?> deleteFile(@PathVariable Long fileId, @AuthenticationPrincipal CustomPrincipal member) {
+        s3Service.deleteFile(fileId,member.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "File deleted successfully", null);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
 //    // 4. 파일 이동 API
-    @PatchMapping
-    public ResponseEntity<?> moveFile(@RequestBody MoveFileReqDto moveFileReqDto, String email) {
-        MoveFileResDto response = s3Service.moveFile(moveFileReqDto, email);
-        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "File moved successfully", null);
+    @Operation(summary = "파일 이동 API ")
+    @PatchMapping("/move")
+    public ResponseEntity<?> moveFile(@RequestBody MoveFileReqDto moveFileReqDto, @AuthenticationPrincipal CustomPrincipal member) {
+        MoveFileResDto response = s3Service.moveFile(moveFileReqDto, member.getEmail());
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "File moved successfully", response);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
 //    presigned url to download
     @GetMapping("/{fileId}/download")
-    public ResponseEntity<?> getPresignedUrlToDownload (@PathVariable Long fileId,@RequestParam String email) {
-        String presignedUrl = s3Service.getPresignedUrlToDownload(fileId, email);
+    public ResponseEntity<?> getPresignedUrlToDownload (@PathVariable Long fileId, @AuthenticationPrincipal CustomPrincipal member) {
+        String presignedUrl = s3Service.getPresignedUrlToDownload(fileId, member.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "Presigned URL generated successfully", presignedUrl);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
