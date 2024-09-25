@@ -47,9 +47,10 @@ public class TokenOAuth2UserService extends DefaultOAuth2UserService {
         Member member = memberRepository.findByEmail(email)
                 .orElseGet(() -> {
                     // 가입된 회원이 없을 경우 새로 생성
-                    Member newMember = new Member();
-                    newMember.setEmail(email);
-                    newMember.setNickname(name);
+                    Member newMember = Member.builder()
+                            .email(email)
+                            .nickname(name)
+                            .build();
                     Member tempMember = memberRepository.save(newMember);
                     workspaceService.workspaceCreate(new WorkspaceCreateReqDto("My Workspace", ""), email);
                     return tempMember;
