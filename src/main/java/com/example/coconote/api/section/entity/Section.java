@@ -41,6 +41,9 @@ public class Section extends BaseEntity {
     @Builder.Default
     private SectionType sectionType = SectionType.GENERAL;
 
+//    @Builder.Default
+//    private Boolean isExpanded = false;
+
     public SectionListResDto fromEntity() {
         List<ChannelResDto> cDtos = new ArrayList<>();
         if(this.channels != null) {

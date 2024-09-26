@@ -37,8 +37,8 @@ public class ChannelController {
 
     @Operation(summary= "한 섹션 내 채널 목록 조회")
     @GetMapping("/channel/list/{sectionId}")
-    public ResponseEntity<Object> channelRead(@PathVariable Long sectionId) {
-        List<ChannelDetailResDto> dtos = channelService.channelList(sectionId);
+    public ResponseEntity<Object> channelRead(@PathVariable Long sectionId, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        List<ChannelDetailResDto> dtos = channelService.channelList(sectionId, customPrincipal.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "list is successfully found", dtos);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }

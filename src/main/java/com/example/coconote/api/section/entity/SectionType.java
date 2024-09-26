@@ -4,5 +4,5 @@ import lombok.Getter;
 
 @Getter
 public enum SectionType {
-    BOOKMARK, DEFAULT, GENERAL
+    DEFAULT, GENERAL
 }

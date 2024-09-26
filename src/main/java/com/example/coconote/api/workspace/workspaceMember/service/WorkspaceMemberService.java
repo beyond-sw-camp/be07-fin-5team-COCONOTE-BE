@@ -31,6 +31,7 @@ public class WorkspaceMemberService {
         this.memberRepository = memberRepository;
     }
 
+
     public WorkspaceMemberResDto workspaceMemberCreate(Long workspaceId, String email) {
         Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
         if(workspace.getIsDeleted().equals(IsDeleted.Y)) {

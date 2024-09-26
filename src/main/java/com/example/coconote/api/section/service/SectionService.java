@@ -59,9 +59,9 @@ public class SectionService {
         if(section.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 삭제된 섹션입니다.");
         }
-        if(section.getSectionType().equals(SectionType.BOOKMARK)) {
-            throw new IllegalArgumentException("즐겨찾기 섹션은 수정할 수 없습니다.");
-        }
+//        if(section.getSectionType().equals(SectionType.BOOKMARK)) {
+//            throw new IllegalArgumentException("즐겨찾기 섹션은 수정할 수 없습니다.");
+//        }
         section.updateEntity(dto);
         SectionListResDto resDto = section.fromEntity();
         return resDto;
@@ -73,9 +73,7 @@ public class SectionService {
         if(section.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 삭제된 섹션입니다.");
         }
-        if(section.getSectionType().equals(SectionType.BOOKMARK)) {
-            throw new IllegalArgumentException("즐겨찾기 섹션은 삭제할 수 없습니다.");
-        }else if(section.getSectionType().equals(SectionType.DEFAULT)) {
+        if(section.getSectionType().equals(SectionType.DEFAULT)) {
             throw new IllegalArgumentException("기본 섹션은 삭제할 수 없습니다.");
         }
         section.deleteEntity();
