@@ -9,6 +9,9 @@ import com.example.coconote.api.thread.thread.dto.response.ThreadResDto;
 import com.example.coconote.api.thread.thread.entity.MessageType;
 import com.example.coconote.api.thread.thread.entity.Thread;
 import com.example.coconote.api.thread.thread.repository.ThreadRepository;
+import com.example.coconote.api.thread.threadFile.dto.request.ThreadFileDto;
+import com.example.coconote.api.thread.threadFile.entity.ThreadFile;
+import com.example.coconote.api.thread.threadFile.repository.ThreadFileRepository;
 import com.example.coconote.api.thread.threadTag.repository.ThreadTagRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +31,7 @@ public class ThreadService {
     private final MemberRepository memberRepository;
     private final ChannelRepository channelRepository;
     private final ThreadTagRepository threadTagRepository;
+    private final ThreadFileRepository threadFileRepository;
 
     public ThreadResDto createThread(ThreadReqDto dto) {
         //TODO: jwt토큰이 완성되면 memberId 는 불러오면됨
@@ -37,7 +41,13 @@ public class ThreadService {
             parentThread = threadRepository.findById(dto.getParentId()).orElse(null);
         }
         Channel channel = channelRepository.findById(dto.getChannelId()).orElseThrow(()->new EntityNotFoundException("해당 채널이 없습니다."));
+
         Thread thread = threadRepository.save(dto.toEntity(member,parentThread, channel));
+        if(dto.getFiles() != null){
+            for (ThreadFileDto threadFileDto : dto.getFiles()){
+                threadFileRepository.save(threadFileDto.toEntity(thread));
+            }
+        }
         return thread.fromEntity();
     }
 
@@ -47,7 +57,8 @@ public class ThreadService {
         Page<ThreadResDto> threadResDtos = threads.map(thread -> {
             List<Thread> childThreads = threadRepository.findAllByParent(thread);
             List<ThreadResDto> childThreadResDtos = childThreads.stream().map(Thread::fromEntity).toList();
-            return thread.fromEntity(childThreadResDtos);
+            List<ThreadFileDto> threadFileDtos = thread.getThreadFiles().stream().map(ThreadFile::fromEntity).toList();
+            return thread.fromEntity(childThreadResDtos,threadFileDtos);
         });
         return threadResDtos;
     }
