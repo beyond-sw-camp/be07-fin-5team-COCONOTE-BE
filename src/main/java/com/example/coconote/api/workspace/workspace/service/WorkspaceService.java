@@ -4,6 +4,7 @@ import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
 import com.example.coconote.api.section.dto.response.SectionListResDto;
 import com.example.coconote.api.section.entity.Section;
+import com.example.coconote.api.section.entity.SectionType;
 import com.example.coconote.api.section.repository.SectionRepository;
 import com.example.coconote.api.workspace.workspace.dto.request.WorkspaceCreateReqDto;
 import com.example.coconote.api.workspace.workspace.dto.request.WorkspaceUpdateReqDto;
@@ -49,10 +50,12 @@ public class WorkspaceService {
         Section sectionDefault = Section.builder()
                 .sectionName("기본")
                 .workspace(workspace)
+                .sectionType(SectionType.DEFAULT)
                 .build();
         Section sectionBookmark = Section.builder()
                 .sectionName("즐겨찾기")
                 .workspace(workspace)
+                .sectionType(SectionType.BOOKMARK)
                 .build();
         workspace.getSections().add(sectionDefault);
         workspace.getSections().add(sectionBookmark);
@@ -75,11 +78,6 @@ public class WorkspaceService {
 
     public List<WorkspaceListResDto> workspaceList(String email) {
 
-        // 내가 속한 워크스페이스들만 보고 싶음
-        // 멤버 정보를 가지고 > 워크스페이스멤버레포에서 멤버로 찾음 > 워크스페이스 멤버 리스트 추출됨
-        // 워크스페이스 멤버 리스트에서 워크스페이스만 추출하고 싶음
-        //
-
         Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("회원을 찾을 수 없습니다."));
         List<WorkspaceMember> workspaceMembers = workspaceMemberRepository.findByMemberAndIsDeleted(member, IsDeleted.N);
         List<WorkspaceListResDto> dtos = new ArrayList<>();
@@ -92,7 +90,7 @@ public class WorkspaceService {
         return dtos;
     }
 
-    public List<SectionListResDto> workspaceRead(Long workspaceId) {
+    public List<SectionListResDto> workspaceDetail(Long workspaceId) {
         Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(()->new EntityNotFoundException("워크스페이스를 찾을 수 없습니다."));
         if(workspace.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 삭제된 워크스페이스입니다.");

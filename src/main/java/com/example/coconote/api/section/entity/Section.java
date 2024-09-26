@@ -14,7 +14,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +36,10 @@ public class Section extends BaseEntity {
     @OneToMany(mappedBy = "section", cascade = CascadeType.PERSIST)
     @Builder.Default
     private List<Channel> channels = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private SectionType sectionType = SectionType.GENERAL;
 
     public SectionListResDto fromEntity() {
         List<ChannelResDto> cDtos = new ArrayList<>();
