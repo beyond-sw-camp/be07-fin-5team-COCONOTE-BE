@@ -38,10 +38,10 @@ public class Thread extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private Channel channel;
     @Builder.Default
-    @OneToMany(mappedBy = "thread", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "thread", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ThreadTag> threadTags = new ArrayList<>();
     @Builder.Default
-    @OneToMany(mappedBy = "thread", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "thread", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ThreadFile> threadFiles = new ArrayList<>();
 
     public ThreadResDto fromEntity() {

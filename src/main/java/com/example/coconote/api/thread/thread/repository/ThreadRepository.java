@@ -11,6 +11,7 @@ import java.util.List;
 
 @Repository
 public interface ThreadRepository extends JpaRepository<Thread, Long> {
+
     Page<Thread> findAllByChannelAndParentIsNullOrderByCreatedTimeDesc(Channel channel, Pageable pageable);
 //    Page<Thread> findAllByChannelAndIsDeleted_NAndParentIsNullOrderByCreatedTimeDesc(Channel channel, Pageable pageable);
 
