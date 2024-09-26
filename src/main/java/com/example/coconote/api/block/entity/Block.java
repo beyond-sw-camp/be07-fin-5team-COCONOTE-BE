@@ -49,9 +49,10 @@ public class Block extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Type type;
 
+    private Integer level; // front 태그에 level이 필요한 경우 사용
+
     @Column(unique = true)
     private String feId; // 프론트에서 적용해주는 uuid 형식의 block id
-//    private Integer level;
 
     // 소프트 삭제 메서드
     public void markAsDeleted(List<Block> parentLinkedChildrenBlocks) {
