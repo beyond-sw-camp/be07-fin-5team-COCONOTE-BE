@@ -1,7 +1,10 @@
 package com.example.coconote.api.search.service;
 
+import com.example.coconote.api.channel.channel.entity.Channel;
+import com.example.coconote.api.search.entity.ChannelDocument;
 import com.example.coconote.api.search.entity.FileEntityDocument;
 import com.example.coconote.api.search.entity.WorkspaceMemberDocument;
+import com.example.coconote.api.search.mapper.ChannelMapper;
 import com.example.coconote.api.search.mapper.FileEntityMapper;
 import com.example.coconote.api.search.mapper.WorkspaceMemberMapper;
 import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
@@ -21,6 +24,8 @@ public class SearchService {
     private final OpenSearchClient openSearchClient;
     private final WorkspaceMemberMapper workspaceMemberMapper;
     private final FileEntityMapper fileEntityMapper;
+    private final ChannelMapper channelMapper;
+
 
     // 워크스페이스 ID를 기반으로 에일리어스를 동적으로 생성
     private String getAliasForWorkspace(Long workspaceId) {
@@ -118,5 +123,24 @@ public class SearchService {
     public List<FileEntityDocument> searchFiles(Long workspaceId, String keyword) {
         String alias = getAliasForWorkspace(workspaceId);
         return searchDocuments(alias, "fileName", keyword, "fileUrl", keyword, FileEntityDocument.class);
+    }
+
+    // 채널 인덱스 저장
+    public void indexChannel(Long workspaceId, Channel channel) {
+        ChannelDocument document = channelMapper.toDocument(channel);
+        String alias = getAliasForWorkspace(workspaceId);
+        indexDocument(alias, document.getChannelId(), document);
+    }
+
+    // 채널 삭제
+    public void deleteChannel(Long workspaceId, String channelId) {
+        String alias = getAliasForWorkspace(workspaceId);
+        deleteDocument(alias, channelId);
+    }
+
+    // 채널 검색
+    public List<ChannelDocument> searchChannels(Long workspaceId, String keyword) {
+        String alias = getAliasForWorkspace(workspaceId);
+        return searchDocuments(alias, "channelName", keyword, "channelInfo", keyword, ChannelDocument.class);
     }
 }

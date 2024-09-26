@@ -15,6 +15,7 @@ import com.example.coconote.api.drive.entity.Folder;
 import com.example.coconote.api.drive.repository.FolderRepository;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.section.repository.SectionRepository;
 import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
@@ -43,6 +44,7 @@ public class ChannelService {
     private final FileRepository fileRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
     private final ChannelMemberRepository channelMemberRepository;
+    private final SearchService searchService;
 
     @Transactional
     public ChannelDetailResDto channelCreate(ChannelCreateReqDto dto, String email) {
@@ -65,6 +67,9 @@ public class ChannelService {
         channel.getChannelMembers().add(channelMember);
         workspaceMember.getChannelMembers().add(channelMember);
         channelRepository.save(channel);
+
+        searchService.indexChannel(section.getWorkspace().getWorkspaceId(), channel);
+
         createDefaultFolder(channel);
         ChannelDetailResDto resDto = channel.fromEntity(section);
 
@@ -106,21 +111,27 @@ public class ChannelService {
         return dtos;
     }
 
+    @Transactional
     public Channel channelUpdate(Long id, ChannelUpdateReqDto dto) {
         Channel channel = channelRepository.findById(id).orElseThrow(()->new EntityNotFoundException("존재하지 않는 채널입니다."));
         if(channel.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 삭제된 채널입니다.");
         }
         channel.updateEntity(dto);
+
+        channelRepository.save(channel);
+        searchService.indexChannel(channel.getSection().getWorkspace().getWorkspaceId(), channel);
         return channel;
     }
 
+    @Transactional
     public void channelDelete(Long id) {
         Channel channel = channelRepository.findById(id).orElseThrow(()->new EntityNotFoundException("존재하지 않는 채널입니다."));
         if(channel.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 삭제된 채널입니다.");
         }
         channel.deleteEntity();
+        searchService.deleteChannel(channel.getSection().getWorkspace().getWorkspaceId(), channel.getChannelId().toString());
     }
 
     public FolderAllListResDto channelDrive(Long channelId, String email) {
