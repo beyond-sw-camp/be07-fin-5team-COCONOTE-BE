@@ -62,6 +62,9 @@ public class FolderService {
         Member member = getMemberByEmail(email);
         Folder folder = getFolderByFolderId(folderId);
         Channel channel = getChannelByChannelId(folder.getChannel().getChannelId());
+        if(folder.getFolderName().equals("캔버스 자동업로드 폴더") || folder.getFolderName().equals("쓰레드 자동업로드 폴더")){
+            throw new IllegalArgumentException("이 폴더는 이름을 변경할 수 없습니다.");
+        }
 //        채널 멤버인지 확인
         checkChannelMember(member, channel);
 
@@ -74,6 +77,11 @@ public class FolderService {
         Member member = getMemberByEmail(email);
         Folder folder = getFolderByFolderId(folderId);
         Channel channel = getChannelByChannelId(folder.getChannel().getChannelId());
+
+        if(folder.getFolderName().equals("캔버스 자동업로드 폴더") || folder.getFolderName().equals("쓰레드 자동업로드 폴더")){
+            throw new IllegalArgumentException("이 폴더는 삭제할 수 없습니다.");
+        }
+
 //        채널 멤버인지 확인
         checkChannelMember(member, channel);
 //        자식 폴더들도 재귀적으로 삭제 처리
@@ -93,6 +101,10 @@ public class FolderService {
         Channel parentChannel = getChannelByChannelId(parentFolder.getChannel().getChannelId());
         if (!channel.getChannelId().equals(parentChannel.getChannelId())) {
             throw new IllegalArgumentException("폴더가 서로 다른 채널에 있습니다.");
+        }
+
+        if(folder.getFolderName().equals("캔버스 자동업로드 폴더") || folder.getFolderName().equals("쓰레드 자동업로드 폴더")){
+            throw new IllegalArgumentException("이 폴더는 삭제할 수 없습니다.");
         }
 //        채널 멤버인지 확인
         checkChannelMember(member, parentFolder.getChannel());
