@@ -78,12 +78,18 @@ public class ChannelService {
                 .channel(channel)
                 .build();
         Folder folder = Folder.builder()
-                .folderName("자동업로드 폴더")
+                .folderName("캔버스 자동업로드 폴더")
+                .channel(channel)
+                .parentFolder(rootFolder)
+                .build();
+        Folder folder2 = Folder.builder()
+                .folderName("쓰레드 자동업로드 폴더")
                 .channel(channel)
                 .parentFolder(rootFolder)
                 .build();
         folderRepository.save(rootFolder);
         folderRepository.save(folder);
+        folderRepository.save(folder2);
     }
 
     public List<ChannelDetailResDto> channelList(Long sectionId) {
