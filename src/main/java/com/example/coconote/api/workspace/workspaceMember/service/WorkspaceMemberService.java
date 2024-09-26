@@ -62,7 +62,7 @@ public class WorkspaceMemberService {
         workspaceMemberRepository.save(workspaceMember);
 
 // OpenSearch에 인덱싱
-        searchService.indexWorkspaceMember(workspaceMember);
+        searchService.indexWorkspaceMember(workspaceId, workspaceMember);
         return workspaceMember.fromEntity();
     }
 
@@ -89,7 +89,7 @@ public class WorkspaceMemberService {
 
         workspaceMemberRepository.save(workspaceMember);
 // OpenSearch에 인덱싱
-        searchService.indexWorkspaceMember(workspaceMember);
+        searchService.indexWorkspaceMember(id, workspaceMember);
 
         WorkspaceMemberResDto restDto = workspaceMember.fromEntity();
         return restDto;
@@ -105,7 +105,7 @@ public class WorkspaceMemberService {
 
         workspaceMemberRepository.save(workspaceMember);
 // OpenSearch에 인덱싱
-        searchService.deleteWorkspaceMember(String.valueOf(workspaceMember.getWorkspaceMemberId()));
+        searchService.deleteWorkspaceMember(workspaceMember.getWorkspace().getWorkspaceId() ,String.valueOf(workspaceMember.getWorkspaceMemberId()));
 
 
         return workspaceMember.changeRole();

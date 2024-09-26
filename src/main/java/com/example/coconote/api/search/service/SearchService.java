@@ -1,11 +1,13 @@
 package com.example.coconote.api.search.service;
 
+import com.example.coconote.api.search.entity.FileEntityDocument;
 import com.example.coconote.api.search.entity.WorkspaceMemberDocument;
+import com.example.coconote.api.search.mapper.FileEntityMapper;
 import com.example.coconote.api.search.mapper.WorkspaceMemberMapper;
 import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
+import com.example.coconote.global.fileUpload.entity.FileEntity;
 import lombok.RequiredArgsConstructor;
 import org.opensearch.client.opensearch.OpenSearchClient;
-import org.opensearch.client.opensearch._types.FieldValue;
 import org.opensearch.client.opensearch.core.SearchResponse;
 import org.springframework.stereotype.Service;
 
@@ -13,79 +15,108 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-
 @Service
 @RequiredArgsConstructor
 public class SearchService {
     private final OpenSearchClient openSearchClient;
     private final WorkspaceMemberMapper workspaceMemberMapper;
-    private static final String INDEX_NAME = "workspace_members";
+    private final FileEntityMapper fileEntityMapper;
 
+    // 워크스페이스 ID를 기반으로 에일리어스를 동적으로 생성
+    private String getAliasForWorkspace(Long workspaceId) {
+        return "workspace_" + workspaceId;  // 에일리어스 이름 생성
+    }
 
-
-    // OpenSearch 인덱스에 문서 저장
-    public void indexWorkspaceMember(WorkspaceMember workspaceMember) {
-        WorkspaceMemberDocument document = workspaceMemberMapper.toDocument(workspaceMember);
+    // 공통 인덱스 저장 메서드
+    private <T> void indexDocument(String alias, String documentId, T document) {
         try {
             openSearchClient.index(i -> i
-                    .index(INDEX_NAME)  // 인덱스 이름
-                    .id(document.getId())        // 문서 ID
-                    .document(document)          // 문서 내용
+                    .index(alias)
+                    .id(documentId)
+                    .document(document)
             );
         } catch (IOException e) {
-            throw new RuntimeException("OpenSearch에 인덱싱 중 오류가 발생했습니다.", e);
+            throw new RuntimeException("OpenSearch 인덱싱 중 오류가 발생했습니다.", e);
         }
     }
 
-    // OpenSearch 인덱스에서 문서 삭제
-    public void deleteWorkspaceMember(String workspaceMemberId) {
+    // 공통 문서 삭제 메서드
+    private void deleteDocument(String alias, String documentId) {
         try {
             openSearchClient.delete(d -> d
-                    .index(INDEX_NAME)  // 상수로 인덱스 이름 사용
-                    .id(workspaceMemberId)
+                    .index(alias)
+                    .id(documentId)
             );
         } catch (IOException e) {
             throw new RuntimeException("OpenSearch에서 문서를 삭제하는 중 오류가 발생했습니다.", e);
         }
     }
 
-    // OpenSearch query to search by email or nickname
-    public List<WorkspaceMemberDocument> searchWorkspaceMembers(Long workspaceId, String keyword) {
-        List<WorkspaceMemberDocument> results = new ArrayList<>();
-
+    // 공통 검색 메서드
+    private <T> List<T> searchDocuments(String alias, String field1, String value1, String field2, String value2, Class<T> documentClass) {
+        List<T> results = new ArrayList<>();
         try {
-            // Construct OpenSearch query
-            SearchResponse<WorkspaceMemberDocument> searchResponse = openSearchClient.search(s -> s
-                            .index("workspace_members")
+            SearchResponse<T> searchResponse = openSearchClient.search(s -> s
+                            .index(alias)
                             .query(q -> q
                                     .bool(b -> b
-                                            .must(m -> m.term(t -> t
-                                                    .field("workspaceId")
-                                                    .value(FieldValue.of(workspaceId))
+                                            .should(sh -> sh.wildcard(w -> w
+                                                    .field(field1)
+                                                    .value("*" + value1 + "*")
                                             ))
                                             .should(sh -> sh.wildcard(w -> w
-                                                    .field("email")
-                                                    .value("*" + keyword + "*")
+                                                    .field(field2)
+                                                    .value("*" + value2 + "*")
                                             ))
-                                            .should(sh -> sh.wildcard(w -> w
-                                                    .field("nickname")
-                                                    .value("*" + keyword + "*")
-                                            ))
-                                            .minimumShouldMatch(String.valueOf(1))  // 최소 1개의 should 조건이 일치해야 함
+                                            .minimumShouldMatch(String.valueOf(1))
                                     )
                             ),
-                    WorkspaceMemberDocument.class
+                    documentClass
             );
 
-            // Map the response hits to WorkspaceMemberDocument list
             searchResponse.hits().hits().forEach(hit -> results.add(hit.source()));
 
         } catch (IOException e) {
-            // Handle exceptions
-            throw new IllegalArgumentException("Failed to search workspace members");
+            throw new IllegalArgumentException("OpenSearch 검색 중 오류가 발생했습니다.", e);
         }
-
         return results;
     }
-}
 
+    // 워크스페이스 멤버 인덱스 저장
+    public void indexWorkspaceMember(Long workspaceId, WorkspaceMember workspaceMember) {
+        WorkspaceMemberDocument document = workspaceMemberMapper.toDocument(workspaceMember);
+        String alias = getAliasForWorkspace(workspaceId);
+        indexDocument(alias, document.getId(), document);
+    }
+
+    // 워크스페이스 멤버 삭제
+    public void deleteWorkspaceMember(Long workspaceId, String workspaceMemberId) {
+        String alias = getAliasForWorkspace(workspaceId);
+        deleteDocument(alias, workspaceMemberId);
+    }
+
+    // 워크스페이스 멤버 검색
+    public List<WorkspaceMemberDocument> searchWorkspaceMembers(Long workspaceId, String keyword) {
+        String alias = getAliasForWorkspace(workspaceId);
+        return searchDocuments(alias, "email", keyword, "nickname", keyword, WorkspaceMemberDocument.class);
+    }
+
+    // 파일 인덱스 저장
+    public void indexFileEntity(Long workspaceId, FileEntity fileEntity) {
+        FileEntityDocument document = fileEntityMapper.toDocument(fileEntity);
+        String alias = getAliasForWorkspace(workspaceId);
+        indexDocument(alias, document.getFileId(), document);
+    }
+
+    // 파일 삭제
+    public void deleteFileEntity(Long workspaceId, String fileId) {
+        String alias = getAliasForWorkspace(workspaceId);
+        deleteDocument(alias, fileId);
+    }
+
+    // 파일 검색
+    public List<FileEntityDocument> searchFiles(Long workspaceId, String keyword) {
+        String alias = getAliasForWorkspace(workspaceId);
+        return searchDocuments(alias, "fileName", keyword, "fileUrl", keyword, FileEntityDocument.class);
+    }
+}
