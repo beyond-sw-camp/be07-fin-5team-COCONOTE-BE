@@ -1,6 +1,7 @@
 package com.example.coconote.api.search.controller;
 
 import com.example.coconote.api.search.entity.FileEntityDocument;
+import com.example.coconote.api.search.entity.ThreadDocument;
 import com.example.coconote.api.search.entity.WorkspaceMemberDocument;
 import com.example.coconote.api.search.service.SearchService;
 import lombok.RequiredArgsConstructor;
@@ -30,5 +31,12 @@ public class SearchController {
     public ResponseEntity<List<FileEntityDocument>> searchFiles(@RequestParam Long workspaceId, @RequestParam String keyword) {
         List<FileEntityDocument> files = searchService.searchFiles(workspaceId, keyword);
         return ResponseEntity.ok(files);
+    }
+
+//    쓰레드 검색 API
+    @GetMapping("/search/threads")
+    public ResponseEntity<List<ThreadDocument>> searchThreads(@RequestParam Long workspaceId, @RequestParam String keyword) {
+        List<ThreadDocument> threads = searchService.searchThreads(workspaceId, keyword);
+        return ResponseEntity.ok(threads);
     }
 }

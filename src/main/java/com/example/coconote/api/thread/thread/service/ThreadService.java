@@ -4,6 +4,7 @@ import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.api.thread.thread.dto.requset.ThreadReqDto;
 import com.example.coconote.api.thread.thread.dto.response.ThreadResDto;
 import com.example.coconote.api.thread.thread.entity.MessageType;
@@ -32,6 +33,7 @@ public class ThreadService {
     private final ChannelRepository channelRepository;
     private final ThreadTagRepository threadTagRepository;
     private final ThreadFileRepository threadFileRepository;
+    private final SearchService searchService;
 
     public ThreadResDto createThread(ThreadReqDto dto) {
         //TODO: jwt토큰이 완성되면 memberId 는 불러오면됨
@@ -43,6 +45,10 @@ public class ThreadService {
         Channel channel = channelRepository.findById(dto.getChannelId()).orElseThrow(()->new EntityNotFoundException("해당 채널이 없습니다."));
 
         Thread thread = threadRepository.save(dto.toEntity(member,parentThread, channel));
+
+//        검색
+        searchService.indexThread(channel.getSection().getWorkspace().getWorkspaceId(), thread);
+
         if(dto.getFiles() != null){
             for (ThreadFileDto threadFileDto : dto.getFiles()){
                 threadFileRepository.save(threadFileDto.toEntity(thread));
@@ -68,6 +74,7 @@ public class ThreadService {
         Thread thread = threadRepository.findById(threadId).orElseThrow(()->new EntityNotFoundException("thread not found"));
 //        isDeleted를 true로 바꾸는 것으로 대체
         thread.markAsDeleted();
+        searchService.deleteThread(thread.getChannel().getSection().getWorkspace().getWorkspaceId(), String.valueOf(thread.getId()));
         return ThreadResDto.builder()
                 .id(thread.getId())
                 .type(MessageType.DELETE)
@@ -77,6 +84,7 @@ public class ThreadService {
     public ThreadResDto updateThread(ThreadReqDto threadReqDto) {
         Thread thread = threadRepository.findById(threadReqDto.getThreadId()).orElseThrow(()->new EntityNotFoundException("thread not found"));
         thread.updateThread(threadReqDto);
+        searchService.indexThread(thread.getChannel().getSection().getWorkspace().getWorkspaceId(), thread);
         return thread.fromEntity(MessageType.UPDATE);
     }
 }
