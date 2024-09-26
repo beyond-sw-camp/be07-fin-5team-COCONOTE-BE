@@ -4,7 +4,7 @@ import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
 import com.example.coconote.api.search.entity.WorkspaceMemberDocument;
 import com.example.coconote.api.search.mapper.WorkspaceMemberMapper;
-import com.example.coconote.api.search.repository.WorkspaceMemberSearchRepository;
+import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.api.workspace.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.workspace.repository.WorkspaceRepository;
 import com.example.coconote.api.workspace.workspaceMember.dto.response.WorkspaceMemberResDto;
@@ -14,10 +14,14 @@ import com.example.coconote.api.workspace.workspaceMember.dto.request.WorkspaceM
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.opensearch.client.opensearch.OpenSearchClient;
+import org.opensearch.client.opensearch.core.DeleteResponse;
+import org.opensearch.client.opensearch.core.IndexResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,9 +33,9 @@ public class WorkspaceMemberService {
     private final WorkspaceMemberRepository workspaceMemberRepository;
     private final WorkspaceRepository workspaceRepository;
     private final MemberRepository memberRepository;
-    private final WorkspaceMemberSearchRepository workspaceMemberSearchRepository;
     private final WorkspaceMemberMapper workspaceMemberMapper;
-
+    private final OpenSearchClient openSearchClient;  // OpenSearchClient 의존성 주입
+    private final SearchService searchService;
 
 
     @Transactional
@@ -57,9 +61,8 @@ public class WorkspaceMemberService {
                 .build();
         workspaceMemberRepository.save(workspaceMember);
 
-        WorkspaceMemberDocument document = workspaceMemberMapper.toDocument(workspaceMember);
-        workspaceMemberSearchRepository.save(document);  // ElasticSearch에 인덱싱
-
+// OpenSearch에 인덱싱
+        searchService.indexWorkspaceMember(workspaceMember);
         return workspaceMember.fromEntity();
     }
 
@@ -85,8 +88,8 @@ public class WorkspaceMemberService {
         workspaceMember.updateEntity(dto);
 
         workspaceMemberRepository.save(workspaceMember);
-        WorkspaceMemberDocument document = workspaceMemberMapper.toDocument(workspaceMember);
-        workspaceMemberSearchRepository.save(document);  // ElasticSearch에 인덱싱
+// OpenSearch에 인덱싱
+        searchService.indexWorkspaceMember(workspaceMember);
 
         WorkspaceMemberResDto restDto = workspaceMember.fromEntity();
         return restDto;
@@ -101,8 +104,9 @@ public class WorkspaceMemberService {
         }
 
         workspaceMemberRepository.save(workspaceMember);
-        WorkspaceMemberDocument document = workspaceMemberMapper.toDocument(workspaceMember);
-        workspaceMemberSearchRepository.save(document);  // ElasticSearch에 인덱싱
+// OpenSearch에 인덱싱
+        searchService.deleteWorkspaceMember(String.valueOf(workspaceMember.getWorkspaceMemberId()));
+
 
         return workspaceMember.changeRole();
     }
@@ -115,8 +119,15 @@ public class WorkspaceMemberService {
         }
 
         workspaceMember.deleteEntity();
-        workspaceMemberSearchRepository.deleteById(String.valueOf(workspaceMember.getWorkspaceMemberId()));  // ElasticSearch에서 삭제
-    }
+        // OpenSearch에서 문서 삭제
+        try {
+            DeleteResponse deleteResponse = openSearchClient.delete(d -> d
+                    .index("workspace_members")  // 인덱스 이름
+                    .id(String.valueOf(workspaceMember.getWorkspaceMemberId()))  // 삭제할 문서의 ID
+            );
+        } catch (IOException e) {
+            throw new RuntimeException("OpenSearch에서 문서를 삭제하는 중 오류가 발생했습니다.", e);
+        }    }
 
     private Member getMemberByEmail(String email){
         return memberRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));

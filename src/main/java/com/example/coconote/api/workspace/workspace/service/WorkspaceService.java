@@ -3,6 +3,7 @@ package com.example.coconote.api.workspace.workspace.service;
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.api.section.dto.response.SectionListResDto;
 import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.section.repository.SectionRepository;
@@ -16,6 +17,7 @@ import com.example.coconote.api.workspace.workspaceMember.entity.WsRole;
 import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,20 +27,15 @@ import java.util.List;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class WorkspaceService {
 
     private final WorkspaceRepository workspaceRepository;
     private final SectionRepository sectionRepository;
     private final MemberRepository memberRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
+    private final SearchService searchService;
 
-    @Autowired
-    public WorkspaceService(WorkspaceRepository workspaceRepository, SectionRepository sectionRepository, MemberRepository memberRepository, WorkspaceMemberRepository workspaceMemberRepository) {
-        this.workspaceRepository = workspaceRepository;
-        this.sectionRepository = sectionRepository;
-        this.memberRepository = memberRepository;
-        this.workspaceMemberRepository = workspaceMemberRepository;
-    }
 
     public WorkspaceListResDto workspaceCreate(WorkspaceCreateReqDto dto, String email) {
 
@@ -70,6 +67,8 @@ public class WorkspaceService {
         workspaceMemberRepository.save(workspaceMember);
         workspace.getWorkspaceMembers().add(workspaceMember);
         workspaceRepository.save(workspace);
+
+        searchService.indexWorkspaceMember(workspaceMember);
         return workspace.fromEntity();
     }
 
