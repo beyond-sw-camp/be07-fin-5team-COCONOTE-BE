@@ -2,13 +2,15 @@ package com.example.coconote.api.search.entity;
 
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.data.elasticsearch.annotations.Document;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@Document(indexName = "workspace_members")  // ElasticSearch 인덱스 이름
+@NoArgsConstructor
+@AllArgsConstructor
 public class WorkspaceMemberDocument {
 
     @Id
