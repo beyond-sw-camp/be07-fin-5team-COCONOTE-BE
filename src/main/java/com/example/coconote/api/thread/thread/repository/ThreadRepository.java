@@ -2,6 +2,7 @@ package com.example.coconote.api.thread.thread.repository;
 
 import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.thread.thread.entity.Thread;
+import com.example.coconote.common.IsDeleted;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,7 +14,7 @@ import java.util.List;
 public interface ThreadRepository extends JpaRepository<Thread, Long> {
 
     Page<Thread> findAllByChannelAndParentIsNullOrderByCreatedTimeDesc(Channel channel, Pageable pageable);
-//    Page<Thread> findAllByChannelAndIsDeleted_NAndParentIsNullOrderByCreatedTimeDesc(Channel channel, Pageable pageable);
+    Page<Thread> findAllByChannelAndIsDeletedAndParentIsNullOrderByCreatedTimeDesc(Channel channel, IsDeleted isDeleted, Pageable pageable);
 
     List<Thread> findAllByParent(Thread thread);
 }
