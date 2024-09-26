@@ -14,4 +14,5 @@ import java.util.Optional;
 public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember, Long> {
     List<WorkspaceMember> findByWorkspaceAndIsDeleted(Workspace workspace, IsDeleted isDeleted);
     Optional<WorkspaceMember> findByMemberAndWorkspaceAndIsDeleted(Member member, Workspace workspace, IsDeleted isDeleted);
+    List<WorkspaceMember> findByMemberAndIsDeleted(Member member, IsDeleted isDeleted);
 }

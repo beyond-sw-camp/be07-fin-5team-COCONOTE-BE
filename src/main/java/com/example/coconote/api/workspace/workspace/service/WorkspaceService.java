@@ -1,6 +1,5 @@
 package com.example.coconote.api.workspace.workspace.service;
 
-import com.example.coconote.api.channel.channel.repository.ChannelRepository;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
 import com.example.coconote.api.section.dto.response.SectionListResDto;
@@ -74,11 +73,21 @@ public class WorkspaceService {
     }
 
 
-    public List<WorkspaceListResDto> workspaceList() {
-        List<Workspace> workspaces = workspaceRepository.findByIsDeleted(IsDeleted.N);
+    public List<WorkspaceListResDto> workspaceList(String email) {
+
+        // 내가 속한 워크스페이스들만 보고 싶음
+        // 멤버 정보를 가지고 > 워크스페이스멤버레포에서 멤버로 찾음 > 워크스페이스 멤버 리스트 추출됨
+        // 워크스페이스 멤버 리스트에서 워크스페이스만 추출하고 싶음
+        //
+
+        Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+        List<WorkspaceMember> workspaceMembers = workspaceMemberRepository.findByMemberAndIsDeleted(member, IsDeleted.N);
         List<WorkspaceListResDto> dtos = new ArrayList<>();
-        for(Workspace w : workspaces) {
-            dtos.add(w.fromEntity());
+        if(workspaceMembers != null) {
+            for (WorkspaceMember w : workspaceMembers) {
+                Workspace workspace = w.getWorkspace();
+                dtos.add(workspace.fromEntity());
+            }
         }
         return dtos;
     }
