@@ -13,8 +13,8 @@ import java.util.List;
 @Repository
 public interface ThreadRepository extends JpaRepository<Thread, Long> {
 
-    Page<Thread> findAllByChannelAndParentIsNullOrderByCreatedTimeDesc(Channel channel, Pageable pageable);
+//    Page<Thread> findAllByChannelAndParentIsNullOrderByCreatedTimeDesc(Channel channel, Pageable pageable);
     Page<Thread> findAllByChannelAndIsDeletedAndParentIsNullOrderByCreatedTimeDesc(Channel channel, IsDeleted isDeleted, Pageable pageable);
 
-    List<Thread> findAllByParent(Thread thread);
+    List<Thread> findAllByParentAndIsDeleted(Thread thread, IsDeleted isDeleted);
 }

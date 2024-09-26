@@ -56,7 +56,7 @@ public class ThreadService {
         Channel channel = channelRepository.findById(channelId).orElseThrow(()->new EntityNotFoundException("channel not found"));
         Page<Thread> threads = threadRepository.findAllByChannelAndIsDeletedAndParentIsNullOrderByCreatedTimeDesc(channel, IsDeleted.N, pageable);
         Page<ThreadResDto> threadResDtos = threads.map(thread -> {
-            List<Thread> childThreads = threadRepository.findAllByParent(thread);
+            List<Thread> childThreads = threadRepository.findAllByParentAndIsDeleted(thread, IsDeleted.N);
             List<ThreadResDto> childThreadResDtos = childThreads.stream().map(Thread::fromEntity).toList();
             List<ThreadFileDto> threadFileDtos = thread.getThreadFiles().stream().map(ThreadFile::fromEntity).toList();
             return thread.fromEntity(childThreadResDtos,threadFileDtos);
