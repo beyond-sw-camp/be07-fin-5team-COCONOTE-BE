@@ -33,27 +33,27 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
-@RequiredArgsConstructor
 public class CanvasService {
     private final CanvasRepository canvasRepository;
     private final ChannelRepository channelRepository;
     private final MemberRepository memberRepository;
-    private final KafkaTemplate<String, Object> kafkaTemplate;
-    private final SimpMessageSendingOperations messagingTemplate;
     private final SearchService searchService;
 
-    public CanvasService(CanvasRepository canvasRepository, ChannelRepository channelRepository, KafkaTemplate<String, Object> kafkaTemplate, SimpMessageSendingOperations messagingTemplate){
+    public CanvasService(CanvasRepository canvasRepository, ChannelRepository channelRepository, MemberRepository memberRepository, KafkaTemplate<String, Object> kafkaTemplate, SimpMessageSendingOperations messagingTemplate, SearchService searchService){
         this.canvasRepository = canvasRepository;
         this.channelRepository = channelRepository;
+        this.memberRepository = memberRepository;
 
 //        websocket 용도
         this.kafkaTemplate = kafkaTemplate;
         this.messagingTemplate = messagingTemplate;
+        this.searchService = searchService;
     }
 
     @Transactional
-    public CreateCanvasResDto createCanvas(CreateCanvasReqDto createCanvasReqDto){
+    public CreateCanvasResDto createCanvas(CreateCanvasReqDto createCanvasReqDto, String email){
         Channel channel = channelRepository.findById(createCanvasReqDto.getChannelId()).orElseThrow(() -> new IllegalArgumentException("채널이 존재하지 않습니다."));
+
         Member member = getMemberByEmail(email);
         Canvas parentCanvas = null;
         // 부모 캔버스 조회 (parentCanvasId가 null이 아닐 경우에만)

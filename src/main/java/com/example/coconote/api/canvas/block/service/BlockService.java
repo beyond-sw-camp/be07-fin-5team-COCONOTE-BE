@@ -6,19 +6,19 @@ import com.example.coconote.api.canvas.block.dto.request.UpdateBlockReqDto;
 import com.example.coconote.api.canvas.block.dto.response.BlockListResDto;
 import com.example.coconote.api.canvas.block.dto.response.CreateBlockResDto;
 import com.example.coconote.api.canvas.block.entity.Block;
-import com.example.coconote.api.canvas.block.entity.Type;
 import com.example.coconote.api.canvas.block.entity.Method;
+import com.example.coconote.api.canvas.block.entity.Type;
 import com.example.coconote.api.canvas.block.repository.BlockRepository;
 import com.example.coconote.api.canvas.canvas.dto.request.ChatMessage;
 import com.example.coconote.api.canvas.canvas.entity.Canvas;
 import com.example.coconote.api.canvas.canvas.service.CanvasService;
 import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.common.IsDeleted;
-import io.micrometer.core.instrument.search.Search;
-import lombok.RequiredArgsConstructor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.search.Search;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -35,15 +35,16 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @Transactional(readOnly = true)
-@RequiredArgsConstructor
 public class BlockService {
 
     private final CanvasService canvasService;
     private final BlockRepository blockRepository;
+    private final SearchService searchService;
 
-    public BlockService(CanvasService canvasService, BlockRepository blockRepository, SimpMessageSendingOperations messagingTemplate, KafkaTemplate<String, Object> kafkaTemplate){
+    public BlockService(CanvasService canvasService, BlockRepository blockRepository, SearchService searchService, SimpMessageSendingOperations messagingTemplate, KafkaTemplate<String, Object> kafkaTemplate){
         this.canvasService = canvasService;
         this.blockRepository = blockRepository;
+        this.searchService = searchService;
         this.messagingTemplate = messagingTemplate;
         this.kafkaTemplate = kafkaTemplate;
     }
