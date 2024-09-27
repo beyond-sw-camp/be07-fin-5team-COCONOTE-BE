@@ -47,4 +47,10 @@ public class SearchController {
         List<ThreadDocument> threads = searchService.searchThreads(workspaceId, keyword);
         return ResponseEntity.ok(threads);
     }
+
+//    캔버스 블록 검색
+    @GetMapping("/search/canvas/blocks")
+    public ResponseEntity<?> searchCanvasBlocks(@RequestParam Long workspaceId, @RequestParam String keyword){
+        return ResponseEntity.ok(searchService.searchCanvasAndBlocks(workspaceId, keyword));
+    }
 }

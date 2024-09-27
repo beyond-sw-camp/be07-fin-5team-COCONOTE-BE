@@ -25,7 +25,7 @@ public class JwtTokenProvider {
         SECRET_KEY = new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), SignatureAlgorithm.HS512.getJcaName());
     }
 
-    private final long ACCESS_TOKEN_EXPIRATION_TIME = 15 * 60 * 1000;  // 15분
+    private final long ACCESS_TOKEN_EXPIRATION_TIME =  3 * 24 * 60 * 60 * 1000;  // 7일
     private final long REFRESH_TOKEN_EXPIRATION_TIME = 7 * 24 * 60 * 60 * 1000;  // 7일
 
     public String generateAccessToken(String email) {

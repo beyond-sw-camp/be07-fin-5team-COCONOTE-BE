@@ -7,6 +7,7 @@ import com.example.coconote.api.canvas.canvas.dto.response.CanvasListResDto;
 import com.example.coconote.api.canvas.canvas.dto.response.CreateCanvasResDto;
 import com.example.coconote.api.canvas.canvas.service.CanvasService;
 import com.example.coconote.common.CommonResDto;
+import com.example.coconote.security.entity.CustomPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,8 +33,9 @@ public class CanvasController {
             description = "새로운 Canvas 생성. `parentCanvasId`가 null이면 최상위 Canvas로 간주"
     )
     @PostMapping("/create")
-    public ResponseEntity<?> createCanvas(@RequestBody CreateCanvasReqDto createCanvasReqDto){
-        CreateCanvasResDto createCanvasResDto = canvasService.createCanvas(createCanvasReqDto);
+    public ResponseEntity<?> createCanvas(@RequestBody CreateCanvasReqDto createCanvasReqDto
+            , @AuthenticationPrincipal CustomPrincipal customPrincipal){
+        CreateCanvasResDto createCanvasResDto = canvasService.createCanvas(createCanvasReqDto, customPrincipal.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "Canvas가 성공적으로 생성되었습니다.", createCanvasResDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }

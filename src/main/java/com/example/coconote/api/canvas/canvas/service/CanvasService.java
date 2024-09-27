@@ -8,10 +8,16 @@ import com.example.coconote.api.canvas.canvas.dto.response.CanvasDetResDto;
 import com.example.coconote.api.canvas.canvas.dto.response.CanvasListResDto;
 import com.example.coconote.api.canvas.canvas.dto.response.CreateCanvasResDto;
 import com.example.coconote.api.channel.channel.entity.Channel;
+import com.example.coconote.api.channel.channel.repository.ChannelRepository;
+import com.example.coconote.api.member.entity.Member;
+import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.search.service.SearchService;
+import com.example.coconote.common.IsDeleted;
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;import com.example.coconote.common.IsDeleted;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -30,20 +36,25 @@ import java.util.stream.Collectors;
 public class CanvasService {
     private final CanvasRepository canvasRepository;
     private final ChannelRepository channelRepository;
+    private final MemberRepository memberRepository;
+    private final SearchService searchService;
 
-    public CanvasService(CanvasRepository canvasRepository, ChannelRepository channelRepository, KafkaTemplate<String, Object> kafkaTemplate, SimpMessageSendingOperations messagingTemplate){
+    public CanvasService(CanvasRepository canvasRepository, ChannelRepository channelRepository, MemberRepository memberRepository, KafkaTemplate<String, Object> kafkaTemplate, SimpMessageSendingOperations messagingTemplate, SearchService searchService){
         this.canvasRepository = canvasRepository;
         this.channelRepository = channelRepository;
+        this.memberRepository = memberRepository;
 
 //        websocket 용도
         this.kafkaTemplate = kafkaTemplate;
         this.messagingTemplate = messagingTemplate;
+        this.searchService = searchService;
     }
 
     @Transactional
-    public CreateCanvasResDto createCanvas(CreateCanvasReqDto createCanvasReqDto){
+    public CreateCanvasResDto createCanvas(CreateCanvasReqDto createCanvasReqDto, String email){
         Channel channel = channelRepository.findById(createCanvasReqDto.getChannelId()).orElseThrow(() -> new IllegalArgumentException("채널이 존재하지 않습니다."));
 
+        Member member = getMemberByEmail(email);
         Canvas parentCanvas = null;
         // 부모 캔버스 조회 (parentCanvasId가 null이 아닐 경우에만)
         if (createCanvasReqDto.getParentCanvasId() != null) {
@@ -60,9 +71,12 @@ public class CanvasService {
                 .title(createCanvasReqDto.getTitle())
                 .parentCanvas(parentCanvas)
                 .channel(channel)
+                .createMember(member)
                 .build();
 
         canvasRepository.save(canvas);
+//        검색 인덱스에 저장
+        searchService.indexCanvas(channel.getSection().getWorkspace().getWorkspaceId(), canvas);
 
         topics.put(String.valueOf(canvas.getId()), String.valueOf(canvas.getId()));
 
@@ -138,6 +152,10 @@ public class CanvasService {
 
     public Canvas findByIdAndIsDeletedReturnOrElseNull(Long canvasId){
         return canvasRepository.findById(canvasId).orElse(null);
+    }
+
+    public Member getMemberByEmail(String email){
+        return memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
     }
 
 
