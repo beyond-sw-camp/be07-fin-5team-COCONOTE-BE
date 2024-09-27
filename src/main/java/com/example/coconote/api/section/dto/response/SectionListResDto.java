@@ -15,5 +15,5 @@ import java.util.List;
 public class SectionListResDto {
     private Long sectionId;
     private String sectionName;
-    private List<ChannelResDto> channelResDtoList;
+    private List<String> channelNameList;
 }

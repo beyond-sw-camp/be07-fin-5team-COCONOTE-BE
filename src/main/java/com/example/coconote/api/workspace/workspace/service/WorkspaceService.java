@@ -2,6 +2,7 @@ package com.example.coconote.api.workspace.workspace.service;
 
 import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;
+import com.example.coconote.api.channel.channelMember.dto.response.ChannelMemberListResDto;
 import com.example.coconote.api.channel.channelMember.service.ChannelMemberService;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
@@ -60,16 +61,8 @@ public class WorkspaceService {
                 .workspace(workspace)
                 .sectionType(SectionType.DEFAULT)
                 .build();
-//        Section sectionBookmark = Section.builder()
-//                .sectionName("즐겨찾기")
-//                .workspace(workspace)
-//                .sectionType(SectionType.BOOKMARK)
-//                .isExpanded(true)
-//                .build();
         sectionRepository.save(sectionDefault);
-//        sectionRepository.save(sectionBookmark);
         workspace.getSections().add(sectionDefault);
-//        workspace.getSections().add(sectionBookmark);
 
         // 기본 채널 생성
         Channel channelDefault = Channel.builder()
@@ -101,8 +94,10 @@ public class WorkspaceService {
         workspaceMemberRepository.save(workspaceMember);
         workspace.getWorkspaceMembers().add(workspaceMember);
 
-        channelMemberService.channelMemberCreate(channelDefault.getChannelId(), email);
-        channelMemberService.channelMemberCreate(channelNotice.getChannelId(), email);
+        ChannelMemberListResDto channelMemberDefault = channelMemberService.channelMemberCreate(channelDefault.getChannelId(), email);
+        channelMemberService.channelMemberChangeRole(channelMemberDefault.getId());
+        ChannelMemberListResDto channelMemberNotice = channelMemberService.channelMemberCreate(channelNotice.getChannelId(), email);
+        channelMemberService.channelMemberChangeRole(channelMemberNotice.getId());
 
         return workspace.fromEntity();
     }
@@ -122,7 +117,8 @@ public class WorkspaceService {
         return dtos;
     }
 
-    public List<SectionListResDto> workspaceDetail(Long workspaceId) {
+    public List<SectionListResDto> workspaceDetail(Long workspaceId, String email) {
+        Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("회원을 찾을 수 없습니다."));
         Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(()->new EntityNotFoundException("워크스페이스를 찾을 수 없습니다."));
         if(workspace.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 삭제된 워크스페이스입니다.");
@@ -130,9 +126,8 @@ public class WorkspaceService {
         List<Section> sections = sectionRepository.findByWorkspaceAndIsDeleted(workspace, IsDeleted.N);
         List<SectionListResDto> sDtos = new ArrayList<>();
         for(Section s : sections) {
-            sDtos.add(s.fromEntity());
+            sDtos.add(s.fromEntity(member));
         }
-
         return sDtos;
     }
 

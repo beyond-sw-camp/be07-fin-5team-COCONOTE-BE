@@ -1,7 +1,10 @@
 package com.example.coconote.api.section.entity;
 
+import com.example.coconote.api.channel.channel.dto.response.ChannelDetailResDto;
 import com.example.coconote.api.channel.channel.dto.response.ChannelResDto;
 import com.example.coconote.api.channel.channel.entity.Channel;
+import com.example.coconote.api.channel.channelMember.entity.ChannelMember;
+import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.section.dto.request.SectionUpdateReqDto;
 import com.example.coconote.api.section.dto.response.SectionListResDto;
 import com.example.coconote.api.workspace.workspace.entity.Workspace;
@@ -44,21 +47,24 @@ public class Section extends BaseEntity {
 //    @Builder.Default
 //    private Boolean isExpanded = false;
 
-    public SectionListResDto fromEntity() {
-        List<ChannelResDto> cDtos = new ArrayList<>();
+    public SectionListResDto fromEntity(Member member) {
+        List<String> cList = new ArrayList<>();
+//        List<ChannelDetailResDto> dtos = new ArrayList<>();
         if(this.channels != null) {
             for(Channel c : this.channels) {
-                if(c.getIsDeleted().equals(IsDeleted.Y)) {
-                    continue;
+                List<ChannelMember> cMembers = c.getChannelMembers();
+                for (ChannelMember cm : cMembers) {
+                    if (c.getIsPublic() || cm.getWorkspaceMember().getMember().equals(member)) { // 비공개채널이고 내가 채널멤버도 아님 -> continue
+                        cList.add(c.fromEntity(this).getChannelName());
+                    }
                 }
-                cDtos.add(c.fromEntity());
             }
         }
 
         return SectionListResDto.builder()
                 .sectionId(this.sectionId)
                 .sectionName(this.sectionName)
-                .channelResDtoList(cDtos)
+                .channelNameList(cList)
                 .build();
     }
 

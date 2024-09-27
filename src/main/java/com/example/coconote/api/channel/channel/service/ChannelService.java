@@ -95,12 +95,18 @@ public class ChannelService {
         }
         List<Channel> channels = channelRepository.findBySectionAndIsDeleted(section, IsDeleted.N);
         List<ChannelDetailResDto> dtos = new ArrayList<>();
-//        for(Channel c : channels) {
-//            if(!c.getIsPublic() && c.getChannelMembers()) { // 비공개채널이고 내가 채널멤버도 아님
-//
-//            }
-//            dtos.add(c.fromEntity(section));
-//        }
+        for(Channel c : channels) {
+            // 비공개채널이고 내가 채널멤버도 아니면 -> continue
+            // 내가 채널멤버인지 아닌지 알아보기 -> email과 channel 정보로
+            // email로 멤버 정보를 받아온다
+            // channelMembers 탐색 >
+            List<ChannelMember> cMembers = c.getChannelMembers();
+            for(ChannelMember cm : cMembers) {
+                if(c.getIsPublic()  || cm.getWorkspaceMember().getMember().equals(member)) { // 비공개채널이고 내가 채널멤버도 아님 -> continue
+                    dtos.add(c.fromEntity(section));
+                }
+            }
+        }
         return dtos;
     }
 
