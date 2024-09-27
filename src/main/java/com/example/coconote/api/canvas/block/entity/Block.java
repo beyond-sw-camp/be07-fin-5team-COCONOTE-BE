@@ -81,9 +81,6 @@ public class Block extends BaseEntity {
         }
 
         if(!Objects.equals(this.contents, contents)){
-            log.info(this.getContents());
-            log.info("!!!!!!!!!!");
-            log.info(contents);
             this.contents = contents;
         }
     }
@@ -96,5 +93,4 @@ public class Block extends BaseEntity {
                 .member(this.member)
                 .build();
     }
-
 }
