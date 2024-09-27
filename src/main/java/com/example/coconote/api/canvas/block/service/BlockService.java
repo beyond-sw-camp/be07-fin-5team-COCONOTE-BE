@@ -5,10 +5,14 @@ import com.example.coconote.api.canvas.block.dto.request.UpdateBlockReqDto;
 import com.example.coconote.api.canvas.block.dto.response.BlockListResDto;
 import com.example.coconote.api.canvas.block.dto.response.CreateBlockResDto;
 import com.example.coconote.api.canvas.block.entity.Block;
+import com.example.coconote.api.canvas.block.entity.Type;
 import com.example.coconote.api.canvas.block.repository.BlockRepository;
 import com.example.coconote.api.canvas.canvas.entity.Canvas;
 import com.example.coconote.api.canvas.canvas.service.CanvasService;
+import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.common.IsDeleted;
+import io.micrometer.core.instrument.search.Search;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,15 +23,13 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class BlockService {
 
     private final CanvasService canvasService;
     private final BlockRepository blockRepository;
+    private final SearchService searchService;
 
-    public BlockService(CanvasService canvasService, BlockRepository blockRepository){
-        this.canvasService = canvasService;
-        this.blockRepository = blockRepository;
-    }
 
     @Transactional
     public CreateBlockResDto createBlock(CreateBlockReqDto createBlockReqDto, String email){
@@ -53,6 +55,8 @@ public class BlockService {
         Block block = Block.builder()
                 .canvas(canvas)
                 .contents(createBlockReqDto.getContents())
+//                todo 타입 지정 문제 생기면 변경하세요
+                .type(Type.heading)
                 .prevBlock(prevBlock)
                 .parentBlock(parentBlock)
                 .build();
@@ -68,6 +72,8 @@ public class BlockService {
 
         // Block 저장 및 리턴
         blockRepository.save(block);
+//        검색 인덱스에 저장
+        searchService.indexBlock(canvas.getChannel().getSection().getWorkspace().getWorkspaceId(), block);
 
         return CreateBlockResDto.fromEntity(block);
     }
@@ -95,7 +101,8 @@ public class BlockService {
                 : null;
 
         block.updateAllInfo(prevBlock, parentBlock, updateBlockReqDto.getContents());
-
+        blockRepository.save(block);
+        searchService.indexBlock(block.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), block);
         return true;
     }
 

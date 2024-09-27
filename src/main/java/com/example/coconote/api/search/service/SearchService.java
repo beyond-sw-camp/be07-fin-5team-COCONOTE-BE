@@ -1,14 +1,10 @@
 package com.example.coconote.api.search.service;
 
+import com.example.coconote.api.canvas.block.entity.Block;
+import com.example.coconote.api.canvas.canvas.entity.Canvas;
 import com.example.coconote.api.channel.channel.entity.Channel;
-import com.example.coconote.api.search.entity.ChannelDocument;
-import com.example.coconote.api.search.entity.FileEntityDocument;
-import com.example.coconote.api.search.entity.ThreadDocument;
-import com.example.coconote.api.search.entity.WorkspaceMemberDocument;
-import com.example.coconote.api.search.mapper.ChannelMapper;
-import com.example.coconote.api.search.mapper.FileEntityMapper;
-import com.example.coconote.api.search.mapper.ThreadMapper;
-import com.example.coconote.api.search.mapper.WorkspaceMemberMapper;
+import com.example.coconote.api.search.entity.*;
+import com.example.coconote.api.search.mapper.*;
 import com.example.coconote.api.thread.thread.entity.Thread;
 import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import com.example.coconote.global.fileUpload.entity.FileEntity;
@@ -30,6 +26,7 @@ public class SearchService {
     private final ChannelMapper channelMapper;
 
     private final ThreadMapper threadMapper;
+    private final CanvasBlockMapper canvasBlockMapper;
 
     // 워크스페이스 ID를 기반으로 에일리어스를 동적으로 생성
     private String getAliasForWorkspace(Long workspaceId) {
@@ -166,5 +163,44 @@ public class SearchService {
         String alias = getAliasForWorkspace(workspaceId);
         return searchDocuments(alias, "title", keyword, "content", keyword, ThreadDocument.class);
     }
+
+//     캔버스와 블록을 통합하여 워크스페이스 별로 인덱스에 저장
+//    캔버스 인덱스 저장
+    public void indexCanvas(Long workspaceId, Canvas canvas) {
+        CanvasBlockDocument canvasBlockDocument = canvasBlockMapper.toDocument(canvas);
+        String alias = getAliasForWorkspace(workspaceId);
+        indexDocument(alias, canvasBlockDocument.getCanvasId(), canvasBlockDocument);
+    }
+
+//    블록 인덱스 저장
+    public void indexBlock(Long workspaceId, Block block) {
+        CanvasBlockDocument canvasBlockDocument = canvasBlockMapper.toDocument(block);
+        String alias = getAliasForWorkspace(workspaceId);
+        indexDocument(alias, canvasBlockDocument.getId(), canvasBlockDocument);
+    }
+
+    // 캔버스 삭제
+    public void deleteCanvas(Long workspaceId, Long canvasId) {
+        String alias = getAliasForWorkspace(workspaceId);
+        deleteDocument(alias, String.valueOf(canvasId));
+    }
+
+    // 블록 삭제
+    public void deleteBlock(Long workspaceId, String blockId) {
+        String alias = getAliasForWorkspace(workspaceId);
+        deleteDocument(alias, blockId);
+    }
+
+    // 캔버스 검색
+    public List<CanvasBlockDocument> searchCanvasAndBlocks(Long workspaceId, String keyword) {
+        String alias = getAliasForWorkspace(workspaceId);
+        return searchDocuments(alias, "canvasTitle", keyword, "blockContents", keyword, CanvasBlockDocument.class);
+    }
+
+
+
+//
+
+
 
 }
