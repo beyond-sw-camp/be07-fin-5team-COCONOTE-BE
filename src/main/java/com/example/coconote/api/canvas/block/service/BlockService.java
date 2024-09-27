@@ -139,7 +139,7 @@ public class BlockService {
         return true;
     }
 
-    public List<BlockListResDto> getBlockListFromCanvas(Long canvasId, String email){
+    public List<BlockListResDto> getBlockListFromCanvas(Long canvasId){
         List<Block> blocks = blockRepository.findByCanvasIdAndIsDeleted(canvasId, IsDeleted.N);
 
         // 부모 블록을 기준으로 트리를 만들기 위한 Map 생성

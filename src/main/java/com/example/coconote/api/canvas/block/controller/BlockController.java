@@ -48,8 +48,8 @@ public class BlockController {
             description = "현 캔버스를 참조 하고 있는 블록 리스트 확인하기"
     )
     @GetMapping("/{canvasId}/list")
-    public ResponseEntity<?> getBlockListFromCanvas(@PathVariable Long canvasId, String email){
-        List<BlockListResDto> blockListResDtos = blockService.getBlockListFromCanvas(canvasId, email);
+    public ResponseEntity<?> getBlockListFromCanvas(@PathVariable Long canvasId){
+        List<BlockListResDto> blockListResDtos = blockService.getBlockListFromCanvas(canvasId);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "Canvas 기준으로 블록 리스트가 성공적으로 조회되었습니다.", blockListResDtos);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }

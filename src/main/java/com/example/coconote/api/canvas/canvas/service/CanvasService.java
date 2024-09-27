@@ -41,7 +41,7 @@ public class CanvasService {
     }
 
     @Transactional
-    public CreateCanvasResDto createCanvas(CreateCanvasReqDto createCanvasReqDto, String email){
+    public CreateCanvasResDto createCanvas(CreateCanvasReqDto createCanvasReqDto){
         Channel channel = channelRepository.findById(createCanvasReqDto.getChannelId()).orElseThrow(() -> new IllegalArgumentException("채널이 존재하지 않습니다."));
 
         Canvas parentCanvas = null;
