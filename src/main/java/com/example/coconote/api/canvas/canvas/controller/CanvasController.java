@@ -31,8 +31,8 @@ public class CanvasController {
             description = "새로운 Canvas 생성. `parentCanvasId`가 null이면 최상위 Canvas로 간주"
     )
     @PostMapping("/create")
-    public ResponseEntity<?> createCanvas(@RequestBody CreateCanvasReqDto createCanvasReqDto, String email){
-        CreateCanvasResDto createCanvasResDto = canvasService.createCanvas(createCanvasReqDto, email);
+    public ResponseEntity<?> createCanvas(@RequestBody CreateCanvasReqDto createCanvasReqDto){
+        CreateCanvasResDto createCanvasResDto = canvasService.createCanvas(createCanvasReqDto);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "Canvas가 성공적으로 생성되었습니다.", createCanvasResDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }

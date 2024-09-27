@@ -25,6 +25,6 @@ services:
       - "9999:8080"  # Kafka UI가 9999 포트로 동작합니다
     environment:
       KAFKA_CLUSTERS_0_NAME: local  # Kafka 클러스터 이름
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092  # 내부 네트워크에서 Kafka 브로커와의 연결 정보
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9093  # 내부 네트워크에서 Kafka 브로커와의 연결 정보
       KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181  # Zookeeper 정보
     restart: unless-stopped

@@ -36,7 +36,7 @@ public class ChannelMember extends BaseEntity {
     private ChannelRole channelRole = ChannelRole.USER; // 최초 가입 시에는 그냥 일반 유저
 
     @Builder.Default
-    private Boolean isBookmark = true; // 최초 가입 시에는 즐겨찾기 자동으로 등록돼 있음
+    private Boolean isBookmark = false; // 최초 가입 시에는 즐겨찾기 자동으로 등록돼 있음
 
     public ChannelMemberListResDto fromEntity() {
         return ChannelMemberListResDto.builder()

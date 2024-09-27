@@ -32,24 +32,24 @@ public class BlockController {
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }
 
-    @Operation(
-            summary = "Block Update",
-            description = "기존 Block Update."
-    )
-    @PatchMapping("/{blockId}/update")
-    public ResponseEntity<?> updateBlock(@PathVariable String email, @RequestBody UpdateBlockReqDto updateBlockReqDto){
-        Boolean isUpdated = blockService.updateBlock(updateBlockReqDto, email);
-        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "Block이 성공적으로 업데이트 되었습니다.", isUpdated);
-        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
-    }
+//    @Operation(
+//            summary = "Block Update",
+//            description = "기존 Block Update."
+//    )
+//    @PatchMapping("/{blockId}/update")
+//    public ResponseEntity<?> updateBlock(@PathVariable String email, @RequestBody UpdateBlockReqDto updateBlockReqDto){
+//        Boolean isUpdated = blockService.updateBlock(updateBlockReqDto, email);
+//        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "Block이 성공적으로 업데이트 되었습니다.", isUpdated);
+//        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+//    }
 
     @Operation(
             summary = "해당 캔버스를 참조하고 있는 블록 리스트",
             description = "현 캔버스를 참조 하고 있는 블록 리스트 확인하기"
     )
     @GetMapping("/{canvasId}/list")
-    public ResponseEntity<?> getBlockListFromCanvas(@PathVariable Long canvasId, String email){
-        List<BlockListResDto> blockListResDtos = blockService.getBlockListFromCanvas(canvasId, email);
+    public ResponseEntity<?> getBlockListFromCanvas(@PathVariable Long canvasId){
+        List<BlockListResDto> blockListResDtos = blockService.getBlockListFromCanvas(canvasId);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "Canvas 기준으로 블록 리스트가 성공적으로 조회되었습니다.", blockListResDtos);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }

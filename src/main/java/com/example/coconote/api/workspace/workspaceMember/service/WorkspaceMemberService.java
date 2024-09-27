@@ -38,6 +38,7 @@ public class WorkspaceMemberService {
     private final SearchService searchService;
 
 
+
     @Transactional
     public WorkspaceMemberResDto workspaceMemberCreate(Long workspaceId, String email) {
         Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));

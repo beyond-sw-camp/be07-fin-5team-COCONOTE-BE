@@ -43,7 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 //                JwtAuthenticationToken authentication = new JwtAuthenticationToken(email);
 //                SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                // 이메일로 DB에서 사용자 정보 조회
+                // 이메일로 DB 에서 사용자 정보 조회
                 Member member = memberRepository.findByEmail(email).orElse(null);
                 if (member != null) {
                     // CustomPrincipal 객체로 사용자 정보를 SecurityContextHolder에 저장
