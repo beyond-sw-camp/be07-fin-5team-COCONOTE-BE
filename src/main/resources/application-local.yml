@@ -84,6 +84,11 @@ spring:
     consumer:
       group-id: websocket-group
       auto-offset-reset: earliest
+  opensearch:
+    host: ${local.opensearch.host}
+    username: ${local.opensearch.username}
+    password: ${local.opensearch.password}
+
 
 springdoc:
   api-docs:

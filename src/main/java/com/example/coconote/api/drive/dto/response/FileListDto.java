@@ -15,6 +15,7 @@ import java.util.List;
 public class FileListDto {
     private Long fileId;
     private String fileName;
+    private String fileUrl;
     private String creator;
     private String createdDate;
 
@@ -23,6 +24,7 @@ public class FileListDto {
                 .map(fileEntity -> FileListDto.builder()
                         .fileId(fileEntity.getId())
                         .fileName(fileEntity.getFileName())
+                        .fileUrl(fileEntity.getFileUrl())
                         .creator(fileEntity.getCreator().getNickname())
                         .createdDate(fileEntity.getCreatedTime().toString())
                         .build())
