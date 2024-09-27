@@ -3,10 +3,13 @@ package com.example.coconote.api.search.service;
 import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.search.entity.ChannelDocument;
 import com.example.coconote.api.search.entity.FileEntityDocument;
+import com.example.coconote.api.search.entity.ThreadDocument;
 import com.example.coconote.api.search.entity.WorkspaceMemberDocument;
 import com.example.coconote.api.search.mapper.ChannelMapper;
 import com.example.coconote.api.search.mapper.FileEntityMapper;
+import com.example.coconote.api.search.mapper.ThreadMapper;
 import com.example.coconote.api.search.mapper.WorkspaceMemberMapper;
+import com.example.coconote.api.thread.thread.entity.Thread;
 import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import com.example.coconote.global.fileUpload.entity.FileEntity;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +29,7 @@ public class SearchService {
     private final FileEntityMapper fileEntityMapper;
     private final ChannelMapper channelMapper;
 
+    private final ThreadMapper threadMapper;
 
     // 워크스페이스 ID를 기반으로 에일리어스를 동적으로 생성
     private String getAliasForWorkspace(Long workspaceId) {
@@ -143,4 +147,24 @@ public class SearchService {
         String alias = getAliasForWorkspace(workspaceId);
         return searchDocuments(alias, "channelName", keyword, "channelInfo", keyword, ChannelDocument.class);
     }
+//    쓰레드 인덱스 저장
+    public void indexThread(Long workspaceId, Thread thread) {
+        ThreadDocument document = threadMapper.toDocument(thread);
+        String alias = getAliasForWorkspace(workspaceId);
+        indexDocument(alias, document.getThreadId(), document);
+    }
+
+    // 쓰레드 삭제
+    public void deleteThread(Long workspaceId, String threadId) {
+        String alias = getAliasForWorkspace(workspaceId);
+        deleteDocument(alias, threadId);
+    }
+
+
+    // 쓰레드 검색
+    public List<ThreadDocument> searchThreads(Long workspaceId, String keyword) {
+        String alias = getAliasForWorkspace(workspaceId);
+        return searchDocuments(alias, "title", keyword, "content", keyword, ThreadDocument.class);
+    }
+
 }
