@@ -1,5 +1,6 @@
 package com.example.coconote.api.search.controller;
 
+import com.example.coconote.api.search.entity.ChannelDocument;
 import com.example.coconote.api.search.entity.FileEntityDocument;
 import com.example.coconote.api.search.entity.ThreadDocument;
 import com.example.coconote.api.search.entity.WorkspaceMemberDocument;
@@ -31,6 +32,13 @@ public class SearchController {
     public ResponseEntity<List<FileEntityDocument>> searchFiles(@RequestParam Long workspaceId, @RequestParam String keyword) {
         List<FileEntityDocument> files = searchService.searchFiles(workspaceId, keyword);
         return ResponseEntity.ok(files);
+    }
+
+//    채널 검색 API (채널명, 채널 정보 검색)
+    @GetMapping("/search/channels")
+    public ResponseEntity<List<ChannelDocument>> searchChannels(@RequestParam Long workspaceId, @RequestParam String keyword) {
+        List<ChannelDocument> channels = searchService.searchChannels(workspaceId, keyword);
+        return ResponseEntity.ok(channels);
     }
 
 //    쓰레드 검색 API
