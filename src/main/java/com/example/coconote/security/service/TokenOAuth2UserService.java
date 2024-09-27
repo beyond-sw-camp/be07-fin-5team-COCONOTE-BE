@@ -2,6 +2,8 @@ package com.example.coconote.security.service;
 
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.workspace.workspace.dto.request.WorkspaceCreateReqDto;
+import com.example.coconote.api.workspace.workspace.service.WorkspaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -10,12 +12,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
-
 @Service
 @RequiredArgsConstructor
 public class TokenOAuth2UserService extends DefaultOAuth2UserService {
 
     private final MemberRepository memberRepository;
+    private final WorkspaceService workspaceService;
 
     @Override
     @Transactional
@@ -41,14 +43,17 @@ public class TokenOAuth2UserService extends DefaultOAuth2UserService {
             throw new IllegalArgumentException("지원하지 않는 로그인 제공자입니다.");
         }
 
-        // 이메일로 DB에서 회원 확인
+        // 이메일로 DB 에서 회원 확인
         Member member = memberRepository.findByEmail(email)
                 .orElseGet(() -> {
                     // 가입된 회원이 없을 경우 새로 생성
-                    Member newMember = new Member();
-                    newMember.setEmail(email);
-                    newMember.setNickname(name);
-                    return memberRepository.save(newMember);
+                    Member newMember = Member.builder()
+                            .email(email)
+                            .nickname(name)
+                            .build();
+                    Member tempMember = memberRepository.save(newMember);
+                    workspaceService.workspaceCreate(new WorkspaceCreateReqDto("My Workspace", ""), email);
+                    return tempMember;
                 });
 
         return oAuth2User;

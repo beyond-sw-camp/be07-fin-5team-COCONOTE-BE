@@ -45,7 +45,7 @@ public class Block extends BaseEntity {
     @JoinColumn(name = "parent_block_fe_id")
     private Block parentBlock;
 
-//    (프론트 tiptap 종속) 블록의 타입
+    //    (프론트 tiptap 종속) 블록의 타입
     @Enumerated(EnumType.STRING)
     private Type type;
 
@@ -81,9 +81,6 @@ public class Block extends BaseEntity {
         }
 
         if(!Objects.equals(this.contents, contents)){
-            log.info(this.getContents());
-            log.info("!!!!!!!!!!");
-            log.info(contents);
             this.contents = contents;
         }
     }
@@ -96,5 +93,4 @@ public class Block extends BaseEntity {
                 .member(this.member)
                 .build();
     }
-
 }

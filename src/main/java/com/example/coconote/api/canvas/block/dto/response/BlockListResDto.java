@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -25,3 +26,4 @@ public class BlockListResDto {
     @Builder.Default
     private List<BlockListResDto> childBlock = new ArrayList<>();
 }
+

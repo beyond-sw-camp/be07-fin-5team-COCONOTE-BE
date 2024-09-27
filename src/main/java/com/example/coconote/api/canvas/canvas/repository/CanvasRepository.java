@@ -1,7 +1,7 @@
 package com.example.coconote.api.canvas.canvas.repository;
 
 import com.example.coconote.api.canvas.canvas.entity.Canvas;
-import com.example.coconote.api.channel.entity.Channel;
+import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.common.IsDeleted;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

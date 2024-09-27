@@ -7,9 +7,8 @@ import com.example.coconote.api.canvas.canvas.dto.request.CreateCanvasReqDto;
 import com.example.coconote.api.canvas.canvas.dto.response.CanvasDetResDto;
 import com.example.coconote.api.canvas.canvas.dto.response.CanvasListResDto;
 import com.example.coconote.api.canvas.canvas.dto.response.CreateCanvasResDto;
-import com.example.coconote.api.channel.entity.Channel;
-import com.example.coconote.api.channel.repository.ChannelRepository;
-import com.example.coconote.common.IsDeleted;
+import com.example.coconote.api.channel.channel.entity.Channel;
+import com.example.coconote.api.channel.channel.repository.ChannelRepository;import com.example.coconote.common.IsDeleted;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
@@ -24,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)

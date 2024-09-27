@@ -1,6 +1,7 @@
 package com.example.coconote.api.canvas.block.controller;
 
 import com.example.coconote.api.canvas.block.dto.request.CreateBlockReqDto;
+import com.example.coconote.api.canvas.block.dto.request.UpdateBlockReqDto;
 import com.example.coconote.api.canvas.block.dto.response.BlockListResDto;
 import com.example.coconote.api.canvas.block.dto.response.CreateBlockResDto;
 import com.example.coconote.api.canvas.block.service.BlockService;

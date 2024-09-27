@@ -26,7 +26,10 @@ spring:
       ddl-auto: update
     show_sql: true
     open-in-view: false
-
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 100
   mail:
     host: ${MAIL_HOST}
     port: ${MAIL_PORT}
@@ -81,6 +84,11 @@ spring:
     consumer:
       group-id: websocket-group
       auto-offset-reset: earliest
+  opensearch:
+    host: ${local.opensearch.host}
+    username: ${local.opensearch.username}
+    password: ${local.opensearch.password}
+
 
 springdoc:
   api-docs:
@@ -101,3 +109,6 @@ aws:
   s3:
     region: ${local.s3.region}
     bucket: ${local.s3.bucket}
+
+jwt:
+  secret: ${local.jwt.secret}

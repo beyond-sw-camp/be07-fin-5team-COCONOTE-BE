@@ -1,6 +1,6 @@
 package com.example.coconote.api.drive.entity;
 
-import com.example.coconote.api.channel.entity.Channel;
+import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.common.BaseEntity;
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.*;
@@ -32,6 +32,7 @@ public class Folder extends BaseEntity {
     private List<Folder> childFolders;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "channel_id")
     private Channel channel;
 
     public void changeFolderName(String folderName) {

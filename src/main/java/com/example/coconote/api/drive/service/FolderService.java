@@ -1,19 +1,20 @@
 package com.example.coconote.api.drive.service;
 
-import com.example.coconote.api.channel.entity.Channel;
-import com.example.coconote.api.channel.repository.ChannelRepository;
+import com.example.coconote.api.channel.channel.entity.Channel;
+import com.example.coconote.api.channel.channel.repository.ChannelRepository;
+import com.example.coconote.api.channel.channelMember.repository.ChannelMemberRepository;
 import com.example.coconote.api.drive.dto.request.CreateFolderReqDto;
 import com.example.coconote.api.drive.dto.response.*;
 import com.example.coconote.api.drive.entity.Folder;
 import com.example.coconote.api.drive.repository.FolderRepository;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.workspace.workspace.entity.Workspace;
+import com.example.coconote.api.workspace.workspace.repository.WorkspaceRepository;
 import com.example.coconote.common.IsDeleted;
 import com.example.coconote.global.fileUpload.entity.FileEntity;
 import com.example.coconote.global.fileUpload.repository.FileRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,12 +28,17 @@ public class FolderService {
     private final ChannelRepository channelRepository;
     private final MemberRepository memberRepository;
     private final FileRepository fileRepository;
+    private final WorkspaceRepository workspaceRepository;
+    private final ChannelMemberRepository channelMemberRepository;
 
 
     @Transactional
     public FolderCreateResDto createFolder(CreateFolderReqDto createFolderReqDto, String email) {
-        Channel channel = channelRepository.findById(createFolderReqDto.getChannelId()).orElseThrow(() -> new IllegalArgumentException("채널이 존재하지 않습니다."));
-
+        Channel channel = getChannelByChannelId(createFolderReqDto.getChannelId());
+        Member member =  getMemberByEmail(email);
+        Workspace workspace = getWorkspaceByChannel(channel);
+//        채널 멤버인지 확인
+        checkChannelMember(member, channel);
         // 부모 폴더 조회 (parentFolderId가 null이 아닐 경우에만)
         Folder parentFolder = null;
         if (createFolderReqDto.getParentFolderId() != null) {
@@ -53,16 +59,31 @@ public class FolderService {
 
     @Transactional
     public FolderChangeNameResDto updateFolderName(Long folderId, String folderName, String email) {
-        Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더가 존재하지 않습니다."));
+        Member member = getMemberByEmail(email);
+        Folder folder = getFolderByFolderId(folderId);
+        Channel channel = getChannelByChannelId(folder.getChannel().getChannelId());
+        if(folder.getFolderName().equals("캔버스 자동업로드 폴더") || folder.getFolderName().equals("쓰레드 자동업로드 폴더")){
+            throw new IllegalArgumentException("이 폴더는 이름을 변경할 수 없습니다.");
+        }
+//        채널 멤버인지 확인
+        checkChannelMember(member, channel);
+
         folder.changeFolderName(folderName);
         return FolderChangeNameResDto.fromEntity(folder);
     }
 
     @Transactional
     public void deleteFolder(Long folderId, String email) {
-        Folder folder = folderRepository.findById(folderId)
-                .orElseThrow(() -> new IllegalArgumentException("폴더가 존재하지 않습니다."));
-//        todo  바꾸려는 유저가 채널에 속해있는지 확인
+        Member member = getMemberByEmail(email);
+        Folder folder = getFolderByFolderId(folderId);
+        Channel channel = getChannelByChannelId(folder.getChannel().getChannelId());
+
+        if(folder.getFolderName().equals("캔버스 자동업로드 폴더") || folder.getFolderName().equals("쓰레드 자동업로드 폴더")){
+            throw new IllegalArgumentException("이 폴더는 삭제할 수 없습니다.");
+        }
+
+//        채널 멤버인지 확인
+        checkChannelMember(member, channel);
 //        자식 폴더들도 재귀적으로 삭제 처리
         folderRepository.softDeleteChildFolders(IsDeleted.Y, LocalDateTime.now(), folder);
         fileRepository.softDeleteFilesInFolder(IsDeleted.Y, LocalDateTime.now(), folder);
@@ -72,13 +93,25 @@ public class FolderService {
 
     @Transactional
     public MoveFolderResDto moveFolder(Long folderId, Long parentId, String email) {
-        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
-        Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더가 존재하지 않습니다."));
-        Folder parentFolder = folderRepository.findById(parentId).orElseThrow(() -> new IllegalArgumentException("부모 폴더가 존재하지 않습니다."));
+        Member member = getMemberByEmail(email);
+        Folder folder = getFolderByFolderId(folderId);
+        Folder parentFolder = getFolderByFolderId(parentId);
+        Channel channel = getChannelByChannelId(folder.getChannel().getChannelId());
+//       폴더 두개가 같은 채널에 있는지 확인
+        Channel parentChannel = getChannelByChannelId(parentFolder.getChannel().getChannelId());
+        if (!channel.getChannelId().equals(parentChannel.getChannelId())) {
+            throw new IllegalArgumentException("폴더가 서로 다른 채널에 있습니다.");
+        }
+
+        if(folder.getFolderName().equals("캔버스 자동업로드 폴더") || folder.getFolderName().equals("쓰레드 자동업로드 폴더")){
+            throw new IllegalArgumentException("이 폴더는 삭제할 수 없습니다.");
+        }
+//        채널 멤버인지 확인
+        checkChannelMember(member, parentFolder.getChannel());
+
         if (!folder.getChannel().getChannelId().equals(parentFolder.getChannel().getChannelId())) {
             throw new IllegalArgumentException("폴더가 다른 채널에 있습니다.");
         }
-//        todo  바꾸려는 유저가 채널에 속해있는지 확인
 
         folder.moveParentFolder(parentFolder);
         return MoveFolderResDto.builder()
@@ -90,8 +123,16 @@ public class FolderService {
     }
 
     public FolderAllListResDto getAllFolderList(Long folderId, String email) {
-        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
-        Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더가 존재하지 않습니다."));
+        Member member = getMemberByEmail(email);
+        Folder folder = getFolderByFolderId(folderId);
+//        채널이 공개 채널인지 확인
+        Channel channel = getChannelByChannelId(folder.getChannel().getChannelId());
+//        체날 멤버인지 확인
+
+        if (!channel.getIsPublic()) {
+            throw new IllegalArgumentException("비공개 채널입니다.");
+        }
+
         List<Folder> folderList = folderRepository.findAllByParentFolderAndIsDeleted(folder, IsDeleted.N);
         List<FileEntity> fileEntityList = fileRepository.findAllByFolderAndIsDeleted(folder, IsDeleted.N);
 
@@ -105,7 +146,32 @@ public class FolderService {
                 .folderListDto(folderListDto)
                 .fileListDto(fileListDto)
                 .build();
-
-
     }
+
+    private Channel getChannelByChannelId(Long channelId) {
+        return channelRepository.findById(channelId).orElseThrow(() -> new IllegalArgumentException("채널이 존재하지 않습니다."));
+    }
+
+    private Member getMemberByEmail(String email) {
+        return memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
+    }
+
+    private Workspace getWorkspaceByChannel(Channel channel) {
+        return workspaceRepository.findById(channel.getSection().getWorkspace().getWorkspaceId())
+                .orElseThrow(() -> new IllegalArgumentException("워크스페이스가 존재하지 않습니다."));
+    }
+    private Folder getFolderByFolderId(Long folderId) {
+        return folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더가 존재하지 않습니다."));
+    }
+
+//    채널 멤버인지 확인
+    private void checkChannelMember(Member member, Channel channel) {
+        if (!channel.getChannelMembers().contains(member)) {
+            throw new IllegalArgumentException("채널 멤버가 아닙니다.");
+        }
+    }
+
+
+
+
 }
