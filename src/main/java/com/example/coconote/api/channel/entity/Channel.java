@@ -1,6 +1,5 @@
 package com.example.coconote.api.channel.entity;
 
-import com.example.coconote.api.canvas.entity.Canvas;
 import com.example.coconote.api.channel.dto.request.ChannelUpdateReqDto;
 import com.example.coconote.api.channel.dto.response.ChannelListResDto;
 import com.example.coconote.api.channel.dto.response.ChannelResDto;
