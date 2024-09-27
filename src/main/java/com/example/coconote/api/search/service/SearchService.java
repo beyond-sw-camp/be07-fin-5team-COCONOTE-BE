@@ -59,11 +59,13 @@ public class SearchService {
     }
 
     // 공통 검색 메서드
-    private <T> List<T> searchDocuments(String alias, String field1, String value1, String field2, String value2, Class<T> documentClass) {
+    private <T> List<T> searchDocuments(String alias, String field1, String value1, String field2, String value2, Class<T> documentClass, int from, int size) {
         List<T> results = new ArrayList<>();
         try {
             SearchResponse<T> searchResponse = openSearchClient.search(s -> s
                             .index(alias)
+                            .from(from) // 페이징 시작점
+                            .size(size) // 페이징 크기
                             .query(q -> q
                                     .bool(b -> b
                                             .should(sh -> sh.wildcard(w -> w
@@ -88,6 +90,21 @@ public class SearchService {
         return results;
     }
 
+    // 전체 검색 (모든 인덱스에서 검색)
+    public List<Object> searchAll(Long workspaceId, String keyword, int page, int size) {
+        List<Object> results = new ArrayList<>();
+        String alias = getAliasForWorkspace(workspaceId);
+
+        // 각 문서 유형에 대해 페이징 검색 수행
+        results.addAll(searchDocuments(alias, "email", keyword, "nickname", keyword, WorkspaceMemberDocument.class, page * size, size));
+        results.addAll(searchDocuments(alias, "fileName", keyword, "fileUrl", keyword, FileEntityDocument.class, page * size, size));
+        results.addAll(searchDocuments(alias, "channelName", keyword, "channelInfo", keyword, ChannelDocument.class, page * size, size));
+        results.addAll(searchDocuments(alias, "title", keyword, "content", keyword, ThreadDocument.class, page * size, size));
+        results.addAll(searchDocuments(alias, "canvasTitle", keyword, "blockContents", keyword, CanvasBlockDocument.class, page * size, size));
+
+        return results;
+    }
+
     // 워크스페이스 멤버 인덱스 저장
     public void indexWorkspaceMember(Long workspaceId, WorkspaceMember workspaceMember) {
         WorkspaceMemberDocument document = workspaceMemberMapper.toDocument(workspaceMember);
@@ -102,9 +119,10 @@ public class SearchService {
     }
 
     // 워크스페이스 멤버 검색
-    public List<WorkspaceMemberDocument> searchWorkspaceMembers(Long workspaceId, String keyword) {
+    public List<WorkspaceMemberDocument> searchWorkspaceMembers(Long workspaceId, String keyword, int page, int size) {
+
         String alias = getAliasForWorkspace(workspaceId);
-        return searchDocuments(alias, "email", keyword, "nickname", keyword, WorkspaceMemberDocument.class);
+        return searchDocuments(alias, "email", keyword, "nickname", keyword, WorkspaceMemberDocument.class, page * size, size);
     }
 
     // 파일 인덱스 저장
@@ -121,9 +139,9 @@ public class SearchService {
     }
 
     // 파일 검색
-    public List<FileEntityDocument> searchFiles(Long workspaceId, String keyword) {
+    public List<FileEntityDocument> searchFiles(Long workspaceId, String keyword, int page, int size) {
         String alias = getAliasForWorkspace(workspaceId);
-        return searchDocuments(alias, "fileName", keyword, "fileUrl", keyword, FileEntityDocument.class);
+        return searchDocuments(alias, "fileName", keyword, "fileUrl", keyword, FileEntityDocument.class, page * size, size);
     }
 
     // 채널 인덱스 저장
@@ -140,9 +158,9 @@ public class SearchService {
     }
 
     // 채널 검색
-    public List<ChannelDocument> searchChannels(Long workspaceId, String keyword) {
+    public List<ChannelDocument> searchChannels(Long workspaceId, String keyword, int page, int size) {
         String alias = getAliasForWorkspace(workspaceId);
-        return searchDocuments(alias, "channelName", keyword, "channelInfo", keyword, ChannelDocument.class);
+        return searchDocuments(alias, "channelName", keyword, "channelInfo", keyword, ChannelDocument.class, page * size, size);
     }
 //    쓰레드 인덱스 저장
     public void indexThread(Long workspaceId, Thread thread) {
@@ -159,9 +177,9 @@ public class SearchService {
 
 
     // 쓰레드 검색
-    public List<ThreadDocument> searchThreads(Long workspaceId, String keyword) {
+    public List<ThreadDocument> searchThreads(Long workspaceId, String keyword, int page, int size) {
         String alias = getAliasForWorkspace(workspaceId);
-        return searchDocuments(alias, "title", keyword, "content", keyword, ThreadDocument.class);
+        return searchDocuments(alias, "title", keyword, "content", keyword, ThreadDocument.class, page * size, size);
     }
 
 //     캔버스와 블록을 통합하여 워크스페이스 별로 인덱스에 저장
@@ -191,10 +209,10 @@ public class SearchService {
         deleteDocument(alias, blockId);
     }
 
-    // 캔버스 검색
-    public List<CanvasBlockDocument> searchCanvasAndBlocks(Long workspaceId, String keyword) {
+    // 캔버스블록 검색
+    public List<CanvasBlockDocument> searchCanvasAndBlocks(Long workspaceId, String keyword, int page, int size) {
         String alias = getAliasForWorkspace(workspaceId);
-        return searchDocuments(alias, "canvasTitle", keyword, "blockContents", keyword, CanvasBlockDocument.class);
+        return searchDocuments(alias, "canvasTitle", keyword, "blockContents", keyword, CanvasBlockDocument.class, page * size, size);
     }
 
 
