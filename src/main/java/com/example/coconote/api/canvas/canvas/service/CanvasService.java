@@ -141,6 +141,7 @@ public class CanvasService {
         Canvas canvas = canvasRepository.findById(canvasId)
                 .orElseThrow(() -> new IllegalArgumentException("캔버스가 존재하지 않습니다."));
         canvas.markAsDeleted(); // 실제 삭제 대신 소프트 삭제 처리
+        searchService.deleteCanvas(canvas.getChannel().getSection().getWorkspace().getWorkspaceId(), canvas.getId());
     }
 
 

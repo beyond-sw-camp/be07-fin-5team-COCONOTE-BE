@@ -186,9 +186,9 @@ public class SearchService {
     }
 
     // 블록 삭제
-    public void deleteBlock(Long workspaceId, String blockId) {
+    public void deleteBlock(Long workspaceId, Long blockId) {
         String alias = getAliasForWorkspace(workspaceId);
-        deleteDocument(alias, blockId);
+        deleteDocument(alias, String.valueOf(blockId));
     }
 
     // 캔버스 검색
