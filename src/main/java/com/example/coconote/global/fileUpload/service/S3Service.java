@@ -9,6 +9,8 @@ import com.example.coconote.api.drive.entity.Folder;
 import com.example.coconote.api.drive.repository.FolderRepository;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.search.service.SearchService;
+import com.example.coconote.api.workspace.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
 import com.example.coconote.common.IsDeleted;
@@ -55,6 +57,7 @@ public class S3Service {
     private final MemberRepository memberRepository;
     private final ChannelMemberRepository channelMemberRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
+    private final SearchService searchService;
 
     @Value("${aws.s3.region}")
     private String region;
@@ -143,6 +146,7 @@ public class S3Service {
 
         Channel channel = channelRepository.findById(fileMetadataDto.getChannelId())
                 .orElseThrow(() -> new IllegalArgumentException("채널을 찾을 수 없습니다."));
+        Workspace workspace = channel.getSection().getWorkspace();
 
         // 폴더 검증
         Folder folder;
@@ -165,6 +169,10 @@ public class S3Service {
                 .collect(Collectors.toList());
 
         List<FileEntity> savedEntities = fileRepository.saveAll(fileEntities);
+        savedEntities.forEach(fileEntity -> {
+            // OpenSearch에 인덱싱
+            searchService.indexFileEntity(workspace.getWorkspaceId(), fileEntity);
+        });
 
         return savedEntities.stream()
                 .map(FileMetadataResDto::fromEntity)
@@ -199,6 +207,9 @@ public class S3Service {
 
         fileEntity.markAsDeleted();
 
+        searchService.deleteFileEntity(channel.getSection().getWorkspace().getWorkspaceId(), fileEntity.getId().toString());
+
+
     }
 
     @Transactional
@@ -231,6 +242,8 @@ public class S3Service {
 
         fileEntity.moveFolder(folder);
         fileRepository.save(fileEntity);
+
+        searchService.indexFileEntity(folder.getChannel().getSection().getWorkspace().getWorkspaceId(), fileEntity);
 
         return MoveFileResDto.builder()
                 .fileId(fileEntity.getId())

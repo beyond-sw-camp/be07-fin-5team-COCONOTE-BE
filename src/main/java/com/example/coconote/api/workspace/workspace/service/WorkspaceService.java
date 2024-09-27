@@ -67,7 +67,7 @@ public class WorkspaceService {
         workspace.getWorkspaceMembers().add(workspaceMember);
         workspaceRepository.save(workspace);
 
-        searchService.indexWorkspaceMember(workspaceMember);
+        searchService.indexWorkspaceMember(workspace.getWorkspaceId(), workspaceMember);
         return workspace.fromEntity();
     }
 
