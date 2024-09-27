@@ -44,8 +44,8 @@ public class WorkspaceController {
 
     @Operation(summary= "워크스페이스 내 모든 섹션 및 채널 조회(워크스페이스 상세 조회)")
     @GetMapping("/workspace/detail/{workspaceId}")
-    public ResponseEntity<Object> workspaceRead(@PathVariable Long workspaceId) {
-        List<SectionListResDto> dtos = workspaceService.workspaceRead(workspaceId);
+    public ResponseEntity<Object> workspaceDetail(@PathVariable Long workspaceId, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        List<SectionListResDto> dtos = workspaceService.workspaceDetail(workspaceId, customPrincipal.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "workspace is successfully found", dtos);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
