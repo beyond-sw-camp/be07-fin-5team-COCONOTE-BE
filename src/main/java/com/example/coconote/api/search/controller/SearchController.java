@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -52,6 +53,26 @@ public class SearchController {
                 );
             };
         }
+    }
+
+    // 자동완성 API
+    @GetMapping("/autocomplete")
+    public ResponseEntity<?> autocomplete(@RequestParam Long workspaceId, @RequestParam String keyword, @RequestParam SearchTarget target) {
+        List<String> fields = getFieldsBySearchTarget(target);  // SearchTarget에 따른 필드 목록
+        List<String> suggestions = searchService.getAutocompleteSuggestions(workspaceId, keyword, fields);
+        return ResponseEntity.ok(new CommonResDto(HttpStatus.OK, "Autocomplete Successful", suggestions));
+    }
+
+    // SearchTarget에 따라 자동완성 필드를 선택하는 메서드
+    private List<String> getFieldsBySearchTarget(SearchTarget target) {
+        return switch (target) {
+            case MEMBER -> List.of("nickname" );  // 멤버는 nickname과 email 필드 둘 다 검색
+            case FILE -> List.of("fileName");  // 파일은 파일명 필드
+            case CHANNEL -> List.of("channelName");  // 채널은 채널명 필드
+            case THREAD -> List.of("title", "content");  // 쓰레드는 제목과 내용 필드 둘 다 검색
+            case CANVAS_BLOCK -> List.of("canvasTitle", "blockContents");  // 캔버스 & 블록은 제목과 블록 내용 둘 다 검색
+            default -> List.of("nickname","email","channelName", "title","content", "canvasTitle", "blockContents");  // 기본값으로 멤버의 닉네임
+        };
     }
 
     // 멤버 검색 API (이름, 이메일, 닉네임 검색)
