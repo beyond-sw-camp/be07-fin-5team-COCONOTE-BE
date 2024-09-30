@@ -14,6 +14,7 @@ import com.example.coconote.api.thread.threadFile.dto.request.ThreadFileDto;
 import com.example.coconote.api.thread.threadFile.entity.ThreadFile;
 import com.example.coconote.api.thread.threadFile.repository.ThreadFileRepository;
 import com.example.coconote.api.thread.threadTag.repository.ThreadTagRepository;
+import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -59,9 +60,9 @@ public class ThreadService {
 
     public Page<ThreadResDto> threadList(Long channelId, Pageable pageable) {
         Channel channel = channelRepository.findById(channelId).orElseThrow(()->new EntityNotFoundException("channel not found"));
-        Page<Thread> threads = threadRepository.findAllByChannelAndParentIsNullOrderByCreatedTimeDesc(channel,pageable);
+        Page<Thread> threads = threadRepository.findAllByChannelAndIsDeletedAndParentIsNullOrderByCreatedTimeDesc(channel, IsDeleted.N, pageable);
         Page<ThreadResDto> threadResDtos = threads.map(thread -> {
-            List<Thread> childThreads = threadRepository.findAllByParent(thread);
+            List<Thread> childThreads = threadRepository.findAllByParentAndIsDeleted(thread, IsDeleted.N);
             List<ThreadResDto> childThreadResDtos = childThreads.stream().map(Thread::fromEntity).toList();
             List<ThreadFileDto> threadFileDtos = thread.getThreadFiles().stream().map(ThreadFile::fromEntity).toList();
             return thread.fromEntity(childThreadResDtos,threadFileDtos);
