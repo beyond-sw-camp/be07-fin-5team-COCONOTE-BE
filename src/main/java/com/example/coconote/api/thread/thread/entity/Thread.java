@@ -29,6 +29,8 @@ public class Thread extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="thread_id")
     private Long id;
+
+    @Column(length = 3000)
     private String content;
 //    @ElementCollection(fetch = FetchType.EAGER)
 //    private List<String> files;

@@ -36,7 +36,7 @@ public class WebSocketController {
     private final MemberRepository memberRepository;
 
     @MessageMapping("/chat/message")
-    public void message(ThreadReqDto message, @Header("token") String token) {
+    public void message(ThreadReqDto message, @Header("Authorization") String token) {
         String email = jwtTokenProvider.getEmailFromToken(token);
         Member member = memberRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("이메일에 해당하는 멤버가 없습니다."));
         message.setSenderId(member.getId());
