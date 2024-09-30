@@ -1,6 +1,7 @@
 package com.example.coconote.api.thread.thread.entity;
 
 import com.example.coconote.api.channel.channel.entity.Channel;
+import com.example.coconote.api.channel.channelMember.entity.ChannelMember;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.thread.tag.dto.response.TagResDto;
 import com.example.coconote.api.thread.thread.dto.requset.ThreadReqDto;
@@ -8,6 +9,7 @@ import com.example.coconote.api.thread.thread.dto.response.ThreadResDto;
 import com.example.coconote.api.thread.threadFile.dto.request.ThreadFileDto;
 import com.example.coconote.api.thread.threadFile.entity.ThreadFile;
 import com.example.coconote.api.thread.threadTag.entity.ThreadTag;
+import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import com.example.coconote.common.BaseEntity;
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.*;
@@ -33,8 +35,12 @@ public class Thread extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private Thread parent;
     //TODO:추후 워크스페이스-유저로 변경
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    private Member member;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    private Member member;
+    private WorkspaceMember workspaceMember;
+
     @ManyToOne(fetch = FetchType.LAZY)
     private Channel channel;
     @Builder.Default
@@ -45,15 +51,16 @@ public class Thread extends BaseEntity {
     private List<ThreadFile> threadFiles = new ArrayList<>();
 
     public ThreadResDto fromEntity() {
-        List<TagResDto> tags = this.threadTags.stream().map(threadTag -> threadTag.fromEntity()).toList();
+//        List<TagResDto> tags = this.threadTags.stream().map(threadTag -> threadTag.fromEntity()).toList();
         List<ThreadFileDto> files = this.threadFiles.stream().map(ThreadFile::fromEntity).toList();
         return ThreadResDto.builder()
                 .id(this.id)
-                .memberName(this.member.getNickname())
+
+                .memberName(this.workspaceMember.getNickname())
                 .createdTime(this.getCreatedTime().toString())
                 .content(this.content)
                 .files(files)
-                .tags(tags)
+//                .tags(tags)
                 .build();
     }
 
@@ -63,7 +70,8 @@ public class Thread extends BaseEntity {
         return ThreadResDto.builder()
                 .id(this.id)
                 .type(type)
-                .memberName(this.member.getNickname())
+                .image(this.workspaceMember.getProfileImage())
+                .memberName(this.workspaceMember.getNickname())
                 .createdTime(this.getCreatedTime().toString())
                 .content(this.content)
                 .files(files)
@@ -75,7 +83,8 @@ public class Thread extends BaseEntity {
         List<TagResDto> tags = this.threadTags.stream().map(threadTag -> threadTag.fromEntity()).toList();
         return ThreadResDto.builder()
                 .id(this.id)
-                .memberName(this.member.getNickname())
+                .image(this.workspaceMember.getProfileImage())
+                .memberName(this.workspaceMember.getNickname())
                 .createdTime(this.getCreatedTime().toString())
                 .content(this.content)
                 .files(fileDtos)
