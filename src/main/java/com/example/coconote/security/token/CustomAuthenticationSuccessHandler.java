@@ -26,11 +26,17 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         String accessToken = jwtTokenProvider.generateAccessToken(email);
         String refreshToken = jwtTokenProvider.generateRefreshToken();
 
-        // 리디렉션 없이 JSON 형태로 응답 반환
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType("application/json");
+        // 클라이언트에 리다이렉트할 URL 에 토큰을 쿼리 파라미터로 추가
+        String redirectUrl = "http://localhost:8082/oauth2/success?accessToken=" + accessToken + "&refreshToken=" + refreshToken;
 
-        // Access Token 과 Refresh Token 을 JSON 으로 반환
-        response.getWriter().write("{\"accessToken\": \"" + accessToken + "\", \"refreshToken\": \"" + refreshToken + "\"}");
+        // 해당 URL 로 리다이렉트
+        response.sendRedirect(redirectUrl);
+//
+//        // 리디렉션 없이 JSON 형태로 응답 반환
+//        response.setStatus(HttpServletResponse.SC_OK);
+//        response.setContentType("application/json");
+//
+//        // Access Token 과 Refresh Token 을 JSON 으로 반환
+//        response.getWriter().write("{\"accessToken\": \"" + accessToken + "\", \"refreshToken\": \"" + refreshToken + "\"}");
     }
 }
