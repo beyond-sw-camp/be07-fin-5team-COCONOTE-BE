@@ -41,7 +41,7 @@ public class BlockService {
     private final BlockRepository blockRepository;
     private final SearchService searchService;
 
-    public BlockService(CanvasService canvasService, BlockRepository blockRepository, SearchService searchService, SimpMessageSendingOperations messagingTemplate, KafkaTemplate<String, Object> kafkaTemplate){
+    public BlockService(CanvasService canvasService, BlockRepository blockRepository, SearchService searchService, SimpMessageSendingOperations messagingTemplate, KafkaTemplate<String, Object> kafkaTemplate) {
         this.canvasService = canvasService;
         this.blockRepository = blockRepository;
         this.searchService = searchService;
@@ -50,7 +50,7 @@ public class BlockService {
     }
 
     @Transactional
-    public CreateBlockResDto createBlock(CreateBlockReqDto createBlockReqDto, String email){
+    public CreateBlockResDto createBlock(CreateBlockReqDto createBlockReqDto, String email) {
         Canvas canvas = canvasService.findByIdAndIsDeletedReturnRequired(createBlockReqDto.getCanvasId());
 
         Block parentBlock = null;
@@ -61,7 +61,7 @@ public class BlockService {
         }
 
         Block prevBlock = null;
-        if(createBlockReqDto.getPrevBlockId() != null){
+        if (createBlockReqDto.getPrevBlockId() != null) {
             prevBlock = blockRepository.findByFeId(createBlockReqDto.getPrevBlockId())
                     .orElseThrow(() -> new IllegalArgumentException("해당 이전 Block이 존재하지 않습니다."));
 
@@ -80,10 +80,10 @@ public class BlockService {
                 .build();
 
 //        prev block 존재 및 이전에 해당 prev block을 갖고있는 block 주소 업데이트
-        if(prevBlock != null){
+        if (prevBlock != null) {
             Block originalPrevBlockHolder = blockRepository.findByPrevBlockId(prevBlock.getId())
                     .orElse(null);
-            if(originalPrevBlockHolder != null){
+            if (originalPrevBlockHolder != null) {
                 originalPrevBlockHolder.changePrevBlock(block);
             }
         }
@@ -97,7 +97,7 @@ public class BlockService {
     }
 
     @Transactional
-    public Boolean updateBlock(UpdateBlockReqDto updateBlockReqDto, String email){
+    public Boolean updateBlock(UpdateBlockReqDto updateBlockReqDto, String email) {
         try {
             Block block = blockRepository.findByFeId(updateBlockReqDto.getFeId())
                     .orElseThrow(() -> new IllegalArgumentException("해당 Block이 존재하지 않습니다."));
@@ -120,23 +120,18 @@ public class BlockService {
                     .orElseThrow(() -> new IllegalArgumentException("해당 Parent Block이 존재하지 않습니다."))
                     : null;
 
-        block.updateAllInfo(prevBlock, parentBlock, updateBlockReqDto.getContents());
-        blockRepository.save(block);
-        searchService.indexBlock(block.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), block);
-            log.info(block.getContents());
-            log.info("@@@@@@@@@@@@@@@@@@@@@@@");
             block.updateAllInfo(prevBlock, parentBlock, updateBlockReqDto.getContents());
-            log.info(block.getContents());
             blockRepository.save(block);
-        }
-        catch (Exception e){
+            searchService.indexBlock(block.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), block);
+
+        } catch (Exception e) {
             log.info(e.getMessage());
         }
         return true;
     }
 
     @Transactional
-    public Boolean deleteBlock(String feId, String email){
+    public Boolean deleteBlock(String feId, String email) {
         Block block = blockRepository.findByFeId(feId)
                 .orElseThrow(() -> new IllegalArgumentException("블록이 존재하지 않습니다."));
         Block prevLinkedBlock = blockRepository.findByPrevBlockFeId(feId)
@@ -147,10 +142,12 @@ public class BlockService {
 
         List<Block> parentLinkedChildrenBlocks = blockRepository.findByParentBlockFeId(feId);
         block.markAsDeleted(parentLinkedChildrenBlocks); // 실제 삭제 대신 소프트 삭제 처리
+        searchService.deleteBlock(block.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), block.getId());
+
         return true;
     }
 
-    public List<BlockListResDto> getBlockListFromCanvas(Long canvasId){
+    public List<BlockListResDto> getBlockListFromCanvas(Long canvasId) {
         List<Block> blocks = blockRepository.findByCanvasIdAndIsDeleted(canvasId, IsDeleted.N);
 
         // 부모 블록을 기준으로 트리를 만들기 위한 Map 생성
@@ -181,7 +178,7 @@ public class BlockService {
                     String prevBlockId = block.getPrevBlock() != null ? block.getPrevBlock().getFeId() : null;
                     insertBlockInOrder(parentBlockDto.getChildBlock(), currentBlockDto,
                             prevBlockId != null ? blockMap.get(prevBlockId) : null);
-                }else{ // 부모블록이 있지만 map에선 존재하지 않을 때
+                } else { // 부모블록이 있지만 map에선 존재하지 않을 때
                     BlockListResDto tempParentBlockDto = BlockListResDto.builder()
                             .feId(block.getParentBlock().getFeId())
                             .build();
@@ -207,7 +204,7 @@ public class BlockService {
     }
 
 
-//    ================= 통신전용
+    //    ================= 통신전용
     private final SimpMessageSendingOperations messagingTemplate;
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private Map<String, String> topics;
@@ -227,34 +224,34 @@ public class BlockService {
     @Transactional
     @KafkaListener(topics = "block-topic", groupId = "websocket-group"
             , containerFactory = "kafkaListenerContainerFactory")
-    public void consumerProductQuantity(String message){ // return 시, string 형식으로 message가 들어옴
+    public void consumerProductQuantity(String message) { // return 시, string 형식으로 message가 들어옴
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             // ChatMessage 객채로 맵핑
-            ChatMessage roomMessage =  objectMapper.readValue(message,ChatMessage.class);
+            ChatMessage roomMessage = objectMapper.readValue(message, ChatMessage.class);
             messagingTemplate.convertAndSend("/sub/block/room/" + roomMessage.getRoomId(), roomMessage);
-            SendBlockReqDto sendBlockReqDto = objectMapper.readValue(roomMessage.getMessage(),SendBlockReqDto.class);
+            SendBlockReqDto sendBlockReqDto = objectMapper.readValue(roomMessage.getMessage(), SendBlockReqDto.class);
             editBlockInSocket(sendBlockReqDto);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
-        } catch (Exception e){
-    //            만약, 실패했을 때 코드 추가해야함
+        } catch (Exception e) {
+            //            만약, 실패했을 때 코드 추가해야함
         }
         System.out.println(message);
     }
 
-    public void editBlockInSocket(SendBlockReqDto sendBlockReqDto){
+    public void editBlockInSocket(SendBlockReqDto sendBlockReqDto) {
 //        생성, 수정, 삭제인지 type 구분해서 넣어주는 용도
-        if(sendBlockReqDto.getMethod() == Method.create){ // 생성블록
+        if (sendBlockReqDto.getMethod() == Method.create) { // 생성블록
             CreateBlockReqDto createBlockReqDto = sendBlockReqDto.buildCreateBlockReqDto();
             createBlock(createBlockReqDto, "");
-        }else if(sendBlockReqDto.getMethod() == Method.update){ // 수정블록
+        } else if (sendBlockReqDto.getMethod() == Method.update) { // 수정블록
             UpdateBlockReqDto updateBlockReqDto = sendBlockReqDto.buildUpdateBlockReqDto();
             updateBlock(updateBlockReqDto, "");
-        }else if(sendBlockReqDto.getMethod() == Method.delete){ // 삭제블록
+        } else if (sendBlockReqDto.getMethod() == Method.delete) { // 삭제블록
             deleteBlock(sendBlockReqDto.getFeId(), "");
 //            log.info("삭제블록 제작 진행 중");
-        }else{
+        } else {
             log.error("잘못된 block method");
         }
     }
