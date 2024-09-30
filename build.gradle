@@ -84,7 +84,7 @@ jib {
         image = 'openjdk:17-slim'
     }
     to {
-        image = 'jsangmin00/coconote' // 도커 허브 계정명/이미지명
+        image = 'coconote/coconote_be' // 도커 허브 계정명/이미지명
         tags = ['latest']
     }
     container {

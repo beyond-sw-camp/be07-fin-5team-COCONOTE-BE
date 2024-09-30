@@ -2,28 +2,97 @@ server:
   port: 8080
 
 spring:
+  devtools:
+    livereload:
+      enabled: true
+    restart:
+      enabled: false
+  freemarker:
+    cache: false
+    suffix: .ftl
   config:
     activate:
-      on-profile: local
+      on-profile: dev
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: ${local.datasource.url}
-    username: ${local.datasource.username}
-    password: ${local.datasource.password}
+    url: ${dev.datasource.url}  # dev 환경의 데이터베이스 URL
+    username: ${dev.datasource.username}
+    password: ${dev.datasource.password}
   jpa:
     database-platform: org.hibernate.dialect.MariaDBDialect
     database: mysql
     generate-ddl: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show_sql: true
     open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 100
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+    auth-code-expiration-millis: 300000
+
+  batch:
+    job:
+      enabled: false
+    jdbc:
+      initialize-schema: never
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${dev.google.client-id}
+            client-secret: ${dev.google.client-secret}
+            scope: profile, email
+            redirect-uri: "http://localhost:8080/login/oauth2/code/google"
+          kakao:
+            client-id: ${dev.kakao.client-id}
+            client-secret: ${dev.kakao.client-secret}
+            scope: profile_nickname, account_email
+            authorization-grant-type: authorization_code
+            redirect-uri: "http://localhost:8080/login/oauth2/code/kakao"
+            client-name: Kakao
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: websocket-group
+      auto-offset-reset: earliest
+  opensearch:
+    host: ${dev.opensearch.host}
+    username: ${dev.opensearch.username}
+    password: ${dev.opensearch.password}
 
 springdoc:
   api-docs:
     groups:
       enabled: true
-  #    path: /api-docs
   cache:
     disabled: true
   swagger-ui:
@@ -31,10 +100,12 @@ springdoc:
     display-request-duration: true
     groups-order: DESC
 
-
 aws:
-  access_key_id: ${local.s3.key}
-  secret_key: ${local.s3.secret}
+  access_key_id: ${dev.s3.key}
+  secret_key: ${dev.s3.secret}
   s3:
-    region: ${local.s3.region}
-    bucket: ${local.s3.bucket}
+    region: ${dev.s3.region}
+    bucket: ${dev.s3.bucket}
+
+jwt:
+  secret: ${dev.jwt.secret}
