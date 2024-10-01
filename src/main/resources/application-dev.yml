@@ -61,13 +61,13 @@ spring:
             client-id: ${dev.google.client-id}
             client-secret: ${dev.google.client-secret}
             scope: profile, email
-            redirect-uri: "http://localhost:8080/login/oauth2/code/google"
+            redirect-uri: "https://server.coconote.site/login/oauth2/code/google"
           kakao:
             client-id: ${dev.kakao.client-id}
             client-secret: ${dev.kakao.client-secret}
             scope: profile_nickname, account_email
             authorization-grant-type: authorization_code
-            redirect-uri: "http://localhost:8080/login/oauth2/code/kakao"
+            redirect-uri: "https://server.coconote.site/login/oauth2/code/kakao"
             client-name: Kakao
         provider:
           google:
