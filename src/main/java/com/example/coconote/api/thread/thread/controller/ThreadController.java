@@ -5,7 +5,7 @@ import com.example.coconote.api.thread.thread.dto.requset.ThreadReqDto;
 import com.example.coconote.api.thread.thread.dto.response.ThreadResDto;
 import com.example.coconote.api.thread.thread.service.ThreadService;
 import com.example.coconote.common.CommonResDto;
-import com.example.coconote.security.entity.CustomPrincipal;
+import com.example.coconote.security.util.CustomPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

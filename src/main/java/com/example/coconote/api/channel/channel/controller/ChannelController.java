@@ -7,7 +7,7 @@ import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channel.service.ChannelService;
 import com.example.coconote.api.drive.dto.response.FolderAllListResDto;
 import com.example.coconote.common.CommonResDto;
-import com.example.coconote.security.entity.CustomPrincipal;
+import com.example.coconote.security.util.CustomPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

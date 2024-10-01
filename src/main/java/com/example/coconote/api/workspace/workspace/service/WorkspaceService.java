@@ -2,6 +2,7 @@ package com.example.coconote.api.workspace.workspace.service;
 
 import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;
+import com.example.coconote.api.channel.channel.service.ChannelService;
 import com.example.coconote.api.channel.channelMember.dto.response.ChannelMemberListResDto;
 import com.example.coconote.api.channel.channelMember.service.ChannelMemberService;
 import com.example.coconote.api.member.entity.Member;
@@ -41,10 +42,11 @@ public class WorkspaceService {
     private final WorkspaceMemberRepository workspaceMemberRepository;
     private final ChannelMemberService channelMemberService;
     private final SearchService searchService;
+    private final ChannelService channelService;
 
 
+    @Transactional
     public WorkspaceListResDto workspaceCreate(WorkspaceCreateReqDto dto, String email) {
-
         // 이미지파일 저장하고 String 이미지URL로 바꾸는 코드
         String imgUrl = "";
         Workspace workspace = dto.toEntity(imgUrl);
@@ -72,6 +74,8 @@ public class WorkspaceService {
                 .channelInfo("공지사항 채널입니다.")
                 .isPublic(true)
                 .build();
+        channelService.createDefaultFolder(channelDefault);
+        channelService.createDefaultFolder(channelNotice);
         channelRepository.save(channelDefault);
         channelRepository.save(channelNotice);
         sectionDefault.getChannels().add(channelDefault);
