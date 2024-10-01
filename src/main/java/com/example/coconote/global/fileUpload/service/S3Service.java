@@ -158,7 +158,7 @@ public class S3Service {
                 folder = folderRepository.findByChannelAndFolderName(channel, "캔버스 자동업로드 폴더")
                         .orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
             } else {
-                folder = null;
+                throw new IllegalArgumentException("폴더 ID가 필요합니다.");
             }
         } else {
             folder = getFolderEntityById(fileMetadataDto.getFolderId());
@@ -201,7 +201,7 @@ public class S3Service {
 
         // 파일 삭제 권한 검증
 //        채널 매니저 이거나 파일을 업로드한 사람만 삭제 가능
-        if(channelMember.getChannelRole() != ChannelRole.MANAGER  || !channel.getChannelMembers().contains(member)){
+        if(channelMember.getChannelRole() != ChannelRole.MANAGER  || channel.getChannelMembers().stream().noneMatch(channelMember1 -> channelMember1.getWorkspaceMember().getMember().equals(member))) {
             throw new IllegalArgumentException("파일을 삭제할 권한이 없습니다.");
         }
 
@@ -235,8 +235,11 @@ public class S3Service {
         if (!folder.getChannel().getChannelId().equals(fileEntity.getFolder().getChannel().getChannelId())) {
             throw new IllegalArgumentException("다른 채널에 있는 폴더로 이동할수 없습니다.");
         }
-        if (!folder.getChannel().getChannelMembers().contains(member)) {
-            throw new IllegalArgumentException("파일을 이동할 권한이 없습니다.");
+        boolean hasPermission = fileEntity.getFolder().getChannel().getChannelMembers()
+                .stream().anyMatch(channelMember -> channelMember.getWorkspaceMember().getMember().equals(member));
+
+        if (!hasPermission) {
+            throw new IllegalArgumentException("파일을 이동시킬 권한이 없습니다.");
         }
 
 
@@ -255,12 +258,16 @@ public class S3Service {
     }
 
 
+    @Transactional(readOnly = true)
     public String getPresignedUrlToDownload(Long fileId, String email) {
         Member member = getMemberByEmail(email);
         FileEntity fileEntity = getFileEntityById(fileId);
 
 //        파일 다운로드 권한 검증
-        if (!fileEntity.getFolder().getChannel().getChannelMembers().contains(member)) {
+        boolean hasPermission = fileEntity.getFolder().getChannel().getChannelMembers()
+                .stream().anyMatch(channelMember -> channelMember.getWorkspaceMember().getMember().equals(member));
+
+        if (!hasPermission) {
             throw new IllegalArgumentException("파일을 다운로드할 권한이 없습니다.");
         }
 
