@@ -27,8 +27,6 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
         // Access Token 및 Refresh Token 생성
         String accessToken = jwtTokenProvider.generateAccessToken(email, memberId);
-        System.out.println("saved memberId : " + jwtTokenProvider.getMemberIdFromToken(accessToken));
-        System.out.println("saved email : " + jwtTokenProvider.getEmailFromToken(accessToken));
         String refreshToken = jwtTokenProvider.generateRefreshToken(email, memberId);
 
         // 클라이언트에 리다이렉트할 URL 에 토큰을 쿼리 파라미터로 추가
