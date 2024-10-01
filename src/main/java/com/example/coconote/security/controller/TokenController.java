@@ -24,7 +24,7 @@ public class TokenController {
     private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping("/token")
-    public ResponseEntity<String> generateToken( @AuthenticationPrincipal OAuth2User oAuth2User) {
+    public ResponseEntity<String> generateToken(@AuthenticationPrincipal OAuth2User oAuth2User) {
 
         // SecurityContext 에서 Authentication 객체 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

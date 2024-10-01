@@ -14,9 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
-public class TokenOAuth2UserService extends DefaultOAuth2UserService {
+public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final MemberRepository memberRepository;
     private final WorkspaceService workspaceService;
@@ -37,8 +38,10 @@ public class TokenOAuth2UserService extends DefaultOAuth2UserService {
             email = (String) attributes.get("email");
             name = (String) attributes.get("name");
         } else if ("kakao".equals(registrationId)) {
+            @SuppressWarnings("unchecked")
             Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
             email = (String) kakaoAccount.get("email");
+            @SuppressWarnings("unchecked")
             Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
             name = (String) profile.get("nickname");
         } else {
@@ -69,4 +72,3 @@ public class TokenOAuth2UserService extends DefaultOAuth2UserService {
         );
     }
 }
-
