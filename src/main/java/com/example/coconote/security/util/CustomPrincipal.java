@@ -1,4 +1,4 @@
-package com.example.coconote.security.entity;
+package com.example.coconote.security.util;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

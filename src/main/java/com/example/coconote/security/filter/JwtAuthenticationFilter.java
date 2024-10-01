@@ -2,7 +2,7 @@ package com.example.coconote.security.filter;
 
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
-import com.example.coconote.security.entity.CustomPrincipal;
+import com.example.coconote.security.util.CustomPrincipal;
 import com.example.coconote.security.token.JwtAuthenticationToken;
 import com.example.coconote.security.token.JwtTokenProvider;
 import jakarta.servlet.FilterChain;
@@ -46,7 +46,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // 이메일로 DB 에서 사용자 정보 조회
                 Member member = memberRepository.findByEmail(email).orElse(null);
                 if (member != null) {
-                    // CustomPrincipal 객체로 사용자 정보를 SecurityContextHolder에 저장
+                    // CustomPrincipal 객체로 사용자 정보를 SecurityContextHolder 에 저장
                     CustomPrincipal customPrincipal = new CustomPrincipal(email, member.getId(), member.getNickname());
                     JwtAuthenticationToken authentication = new JwtAuthenticationToken(customPrincipal); // 권한 설정은 나중에 추가
                     SecurityContextHolder.getContext().setAuthentication(authentication);

@@ -1,5 +1,6 @@
 package com.example.coconote.security.token;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.annotation.PostConstruct;
@@ -25,15 +26,16 @@ public class JwtTokenProvider {
         SECRET_KEY = new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), SignatureAlgorithm.HS512.getJcaName());
     }
 
-    private final long ACCESS_TOKEN_EXPIRATION_TIME =  3 * 24 * 60 * 60 * 1000;  // 7일
+    private final long ACCESS_TOKEN_EXPIRATION_TIME =  15 * 60 * 1000;  // 15분
     private final long REFRESH_TOKEN_EXPIRATION_TIME = 7 * 24 * 60 * 60 * 1000;  // 7일
 
-    public String generateAccessToken(String email) {
+    public String generateAccessToken(String email, Long memberId) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + ACCESS_TOKEN_EXPIRATION_TIME);
 
         return Jwts.builder()
                 .setSubject(email)
+                .claim("memberId", memberId)  // memberId 추가
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(SECRET_KEY)
@@ -41,11 +43,13 @@ public class JwtTokenProvider {
     }
 
     // 리프레시 토큰 생성
-    public String generateRefreshToken() {
+    public String generateRefreshToken(String email, Long memberId) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + REFRESH_TOKEN_EXPIRATION_TIME);
 
         return Jwts.builder()
+                .setSubject(email)  // 이메일을 subject 로 설정
+                .claim("memberId", memberId)  // memberId 추가
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(SECRET_KEY)
@@ -71,5 +75,15 @@ public class JwtTokenProvider {
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
+    }
+
+    public Long getMemberIdFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(SECRET_KEY)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.get("memberId", Long.class);  // memberId를 클레임에서 추출
     }
 }

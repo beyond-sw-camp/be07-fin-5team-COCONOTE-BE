@@ -26,36 +26,38 @@ public class TokenController {
     @GetMapping("/token")
     public ResponseEntity<String> generateToken( @AuthenticationPrincipal OAuth2User oAuth2User) {
 
-        // SecurityContext에서 Authentication 객체 가져오기
+        // SecurityContext 에서 Authentication 객체 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String registrationId = null;
+        String email = null;
+        Long memberId = null;
 
         if (authentication instanceof OAuth2AuthenticationToken oauthToken) {
             registrationId = oauthToken.getAuthorizedClientRegistrationId();  // 로그인 제공자 ID 가져오기
         }
 
-        String email = null;
-
         // 구글 사용자
         if ("google".equals(registrationId)) {
             email = oAuth2User.getAttribute("email");
+            memberId = (Long) oAuth2User.getAttribute("memberId");  // memberId 가져오기
         }
         // 카카오 사용자
         else if ("kakao".equals(registrationId)) {
             Map<String, Object> kakaoAccount = oAuth2User.getAttribute("kakao_account");
             if (kakaoAccount != null) {
                 email = (String) kakaoAccount.get("email");
+                memberId = (Long) oAuth2User.getAttribute("memberId");  // memberId 가져오기
             }
         }
 
         // OAuth2 로그인 성공 후 사용자의 이메일을 가져옴
-        if (email == null) {
+        if (email == null || memberId == null) {
             return ResponseEntity.badRequest().body("Failed to retrieve user information.");
         }
 
         // 액세스 토큰 및 리프레시 토큰 생성
-        String accessToken = jwtTokenProvider.generateAccessToken(email);
-        String refreshToken = jwtTokenProvider.generateRefreshToken();
+        String accessToken = jwtTokenProvider.generateAccessToken(email, memberId);
+        String refreshToken = jwtTokenProvider.generateRefreshToken(email, memberId);
 
         // 성공 응답 전송
         // JSON 형식으로 액세스 토큰과 리프레시 토큰 반환
@@ -77,8 +79,12 @@ public class TokenController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired refresh token");
         }
 
+        // 리프레시 토큰에서 이메일과 memberId 추출하여 새로운 액세스 토큰 발급
+        String email = jwtTokenProvider.getEmailFromToken(refreshToken);
+        Long memberId = jwtTokenProvider.getMemberIdFromToken(refreshToken);  // refreshToken에서 memberId 추출
+
         // 리프레시 토큰이 유효하다면 새로운 액세스 토큰 발급
-        String newAccessToken = jwtTokenProvider.generateAccessToken(jwtTokenProvider.getEmailFromToken(refreshToken));
+        String newAccessToken = jwtTokenProvider.generateAccessToken(email,memberId);
 
         // 새로 발급된 액세스 토큰을 클라이언트에게 반환
         return ResponseEntity.ok(newAccessToken);

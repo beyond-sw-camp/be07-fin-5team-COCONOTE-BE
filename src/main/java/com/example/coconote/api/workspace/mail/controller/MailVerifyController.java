@@ -3,7 +3,7 @@ package com.example.coconote.api.workspace.mail.controller;
 
 import com.example.coconote.api.workspace.mail.service.MailVerifyService;
 import com.example.coconote.common.CommonResDto;
-import com.example.coconote.security.entity.CustomPrincipal;
+import com.example.coconote.security.util.CustomPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
