@@ -77,7 +77,7 @@ public class ChannelService {
         return resDto;
     }
 
-    private void createDefaultFolder(Channel channel) {
+    public void createDefaultFolder(Channel channel) {
         Folder rootFolder = Folder.builder()
                 .folderName("root")
                 .channel(channel)
