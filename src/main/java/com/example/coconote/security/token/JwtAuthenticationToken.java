@@ -1,6 +1,6 @@
 package com.example.coconote.security.token;
 
-import com.example.coconote.security.entity.CustomPrincipal;
+import com.example.coconote.security.util.CustomPrincipal;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import java.util.Collections;

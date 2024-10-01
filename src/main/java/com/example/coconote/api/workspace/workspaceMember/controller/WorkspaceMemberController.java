@@ -4,7 +4,7 @@ import com.example.coconote.api.workspace.workspaceMember.dto.response.Workspace
 import com.example.coconote.api.workspace.workspaceMember.service.WorkspaceMemberService;
 import com.example.coconote.api.workspace.workspaceMember.dto.request.WorkspaceMemberUpdateReqDto;
 import com.example.coconote.common.CommonResDto;
-import com.example.coconote.security.entity.CustomPrincipal;
+import com.example.coconote.security.util.CustomPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

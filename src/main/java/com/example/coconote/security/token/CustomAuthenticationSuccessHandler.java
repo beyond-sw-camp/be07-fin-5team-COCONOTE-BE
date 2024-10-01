@@ -22,21 +22,19 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         DefaultOAuth2User oauth2User = (DefaultOAuth2User) authentication.getPrincipal();
         String email = (String) oauth2User.getAttribute("email");
 
+        // memberId 가져오기
+        Long memberId = (Long) oauth2User.getAttribute("memberId");  // CustomOAuth2UserService 에서 추가한 memberId 사용
+
         // Access Token 및 Refresh Token 생성
-        String accessToken = jwtTokenProvider.generateAccessToken(email);
-        String refreshToken = jwtTokenProvider.generateRefreshToken();
+        String accessToken = jwtTokenProvider.generateAccessToken(email, memberId);
+        System.out.println("saved memberId : " + jwtTokenProvider.getMemberIdFromToken(accessToken));
+        System.out.println("saved email : " + jwtTokenProvider.getEmailFromToken(accessToken));
+        String refreshToken = jwtTokenProvider.generateRefreshToken(email, memberId);
 
         // 클라이언트에 리다이렉트할 URL 에 토큰을 쿼리 파라미터로 추가
         String redirectUrl = "http://localhost:8082/oauth2/success?accessToken=" + accessToken + "&refreshToken=" + refreshToken;
 
         // 해당 URL 로 리다이렉트
         response.sendRedirect(redirectUrl);
-//
-//        // 리디렉션 없이 JSON 형태로 응답 반환
-//        response.setStatus(HttpServletResponse.SC_OK);
-//        response.setContentType("application/json");
-//
-//        // Access Token 과 Refresh Token 을 JSON 으로 반환
-//        response.getWriter().write("{\"accessToken\": \"" + accessToken + "\", \"refreshToken\": \"" + refreshToken + "\"}");
     }
 }

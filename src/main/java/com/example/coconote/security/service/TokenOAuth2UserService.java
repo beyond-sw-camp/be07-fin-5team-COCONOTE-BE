@@ -7,10 +7,12 @@ import com.example.coconote.api.workspace.workspace.service.WorkspaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.Map;
 @Service
 @RequiredArgsConstructor
@@ -27,7 +29,7 @@ public class TokenOAuth2UserService extends DefaultOAuth2UserService {
 
         // 로그인 제공자에 따른 사용자 정보 처리 로직
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
-        Map<String, Object> attributes = oAuth2User.getAttributes();
+        Map<String, Object> attributes = new HashMap<>(oAuth2User.getAttributes()); // 불변 Map을 수정 가능한 Map으로 복사
         String email;
         String name;
 
@@ -56,7 +58,15 @@ public class TokenOAuth2UserService extends DefaultOAuth2UserService {
                     return tempMember;
                 });
 
-        return oAuth2User;
+        attributes.put("email", email);  // email 속성 추가
+        attributes.put("memberId", member.getId()); // 사용자 정보에 memberId 추가
+
+        // memberId가 포함된 OAuth2User 반환
+        return new DefaultOAuth2User(
+                oAuth2User.getAuthorities(),
+                attributes,
+                "email"  // OAuth2User 의 식별자로 사용할 속성
+        );
     }
 }
 
