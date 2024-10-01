@@ -15,7 +15,7 @@ public class ThreadMapper {
         return ThreadDocument.builder()
                 .threadId(String.valueOf(thread.getId()))
                 .content(thread.getContent())
-                .memberName(thread.getMember().getNickname())
+                .memberName(thread.getWorkspaceMember().getNickname())
                 .channelId(thread.getChannel().getChannelId())
                 .createdTime(thread.getCreatedTime().toString())
                 .fileUrls(thread.getThreadFiles().stream()

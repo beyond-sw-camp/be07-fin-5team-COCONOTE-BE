@@ -14,6 +14,10 @@ import com.example.coconote.api.thread.threadFile.dto.request.ThreadFileDto;
 import com.example.coconote.api.thread.threadFile.entity.ThreadFile;
 import com.example.coconote.api.thread.threadFile.repository.ThreadFileRepository;
 import com.example.coconote.api.thread.threadTag.repository.ThreadTagRepository;
+import com.example.coconote.api.workspace.workspace.entity.Workspace;
+import com.example.coconote.api.workspace.workspace.repository.WorkspaceRepository;
+import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
+import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -31,21 +35,26 @@ public class ThreadService {
 
     private final ThreadRepository threadRepository;
     private final MemberRepository memberRepository;
+    private final WorkspaceRepository workspaceRepository;
+    private final WorkspaceMemberRepository workspaceMemberRepository;
     private final ChannelRepository channelRepository;
     private final ThreadTagRepository threadTagRepository;
     private final ThreadFileRepository threadFileRepository;
     private final SearchService searchService;
 
-    public ThreadResDto createThread(ThreadReqDto dto) {
+    public ThreadResDto createThread(ThreadReqDto dto, Long memberId) {
         //TODO: jwt토큰이 완성되면 memberId 는 불러오면됨
-        Member member = memberRepository.findById(dto.getSenderId()).orElseThrow(()-> new EntityNotFoundException("해당멤버가 없습니다."));
+        Member member = memberRepository.findById(memberId).orElseThrow(()-> new EntityNotFoundException("해당멤버가 없습니다."));
+        Workspace workspace = workspaceRepository.findById(dto.getWorkspaceId()).orElseThrow(()-> new EntityNotFoundException("해당 워크스페이스가 없습니다."));
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member,workspace,IsDeleted.N).orElseThrow(()->new EntityNotFoundException("해당 워크스페이스 멤버가 없습니다."));
+
         Thread parentThread = null;
         if(dto.getParentId() != null){
             parentThread = threadRepository.findById(dto.getParentId()).orElse(null);
         }
         Channel channel = channelRepository.findById(dto.getChannelId()).orElseThrow(()->new EntityNotFoundException("해당 채널이 없습니다."));
 
-        Thread thread = threadRepository.save(dto.toEntity(member,parentThread, channel));
+        Thread thread = threadRepository.save(dto.toEntity(workspaceMember,parentThread, channel));
 
 //        검색
         searchService.indexThread(channel.getSection().getWorkspace().getWorkspaceId(), thread);
