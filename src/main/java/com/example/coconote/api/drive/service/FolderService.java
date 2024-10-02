@@ -11,6 +11,8 @@ import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
 import com.example.coconote.api.workspace.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.workspace.repository.WorkspaceRepository;
+import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
+import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
 import com.example.coconote.common.IsDeleted;
 import com.example.coconote.global.fileUpload.entity.FileEntity;
 import com.example.coconote.global.fileUpload.repository.FileRepository;
@@ -30,15 +32,19 @@ public class FolderService {
     private final FileRepository fileRepository;
     private final WorkspaceRepository workspaceRepository;
     private final ChannelMemberRepository channelMemberRepository;
-
+    private final WorkspaceMemberRepository workspaceMemberRepository;
 
     @Transactional
     public FolderCreateResDto createFolder(CreateFolderReqDto createFolderReqDto, String email) {
         Channel channel = getChannelByChannelId(createFolderReqDto.getChannelId());
         Member member =  getMemberByEmail(email);
         Workspace workspace = getWorkspaceByChannel(channel);
+        WorkspaceMember workspaceMember = workspace.getWorkspaceMembers().stream()
+                .filter(wm -> wm.getMember().getEmail().equals(email))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("워크스페이스 멤버가 아닙니다."));
 //        채널 멤버인지 확인
-        checkChannelMember(member, channel);
+        checkChannelMember(workspaceMember, channel);
         // 부모 폴더 조회 (parentFolderId가 null이 아닐 경우에만)
         Folder parentFolder = null;
         if (createFolderReqDto.getParentFolderId() != null) {
@@ -62,8 +68,14 @@ public class FolderService {
         Member member = getMemberByEmail(email);
         Folder folder = getFolderByFolderId(folderId);
         Channel channel = getChannelByChannelId(folder.getChannel().getChannelId());
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspace(member, channel.getSection().getWorkspace())
+                .orElseThrow(() -> new IllegalArgumentException("워크스페이스 멤버가 아닙니다."));
+
+        if(folder.getFolderName().equals("캔버스 자동업로드 폴더") || folder.getFolderName().equals("쓰레드 자동업로드 폴더")){
+            throw new IllegalArgumentException("이 폴더는 이름을 변경할 수 없습니다.");
+        }
 //        채널 멤버인지 확인
-        checkChannelMember(member, channel);
+        checkChannelMember(workspaceMember, channel);
 
         folder.changeFolderName(folderName);
         return FolderChangeNameResDto.fromEntity(folder);
@@ -74,8 +86,15 @@ public class FolderService {
         Member member = getMemberByEmail(email);
         Folder folder = getFolderByFolderId(folderId);
         Channel channel = getChannelByChannelId(folder.getChannel().getChannelId());
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspace(member, channel.getSection().getWorkspace())
+                .orElseThrow(() -> new IllegalArgumentException("워크스페이스 멤버가 아닙니다."));
+
+        if(folder.getFolderName().equals("캔버스 자동업로드 폴더") || folder.getFolderName().equals("쓰레드 자동업로드 폴더")){
+            throw new IllegalArgumentException("이 폴더는 삭제할 수 없습니다.");
+        }
+
 //        채널 멤버인지 확인
-        checkChannelMember(member, channel);
+        checkChannelMember(workspaceMember, channel);
 //        자식 폴더들도 재귀적으로 삭제 처리
         folderRepository.softDeleteChildFolders(IsDeleted.Y, LocalDateTime.now(), folder);
         fileRepository.softDeleteFilesInFolder(IsDeleted.Y, LocalDateTime.now(), folder);
@@ -89,13 +108,20 @@ public class FolderService {
         Folder folder = getFolderByFolderId(folderId);
         Folder parentFolder = getFolderByFolderId(parentId);
         Channel channel = getChannelByChannelId(folder.getChannel().getChannelId());
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspace(member, channel.getSection().getWorkspace())
+                .orElseThrow(() -> new IllegalArgumentException("워크스페이스 멤버가 아닙니다."));
+
 //       폴더 두개가 같은 채널에 있는지 확인
         Channel parentChannel = getChannelByChannelId(parentFolder.getChannel().getChannelId());
         if (!channel.getChannelId().equals(parentChannel.getChannelId())) {
             throw new IllegalArgumentException("폴더가 서로 다른 채널에 있습니다.");
         }
+
+        if(folder.getFolderName().equals("캔버스 자동업로드 폴더") || folder.getFolderName().equals("쓰레드 자동업로드 폴더")){
+            throw new IllegalArgumentException("이 폴더는 삭제할 수 없습니다.");
+        }
 //        채널 멤버인지 확인
-        checkChannelMember(member, parentFolder.getChannel());
+        checkChannelMember(workspaceMember, parentFolder.getChannel());
 
         if (!folder.getChannel().getChannelId().equals(parentFolder.getChannel().getChannelId())) {
             throw new IllegalArgumentException("폴더가 다른 채널에 있습니다.");
@@ -153,8 +179,9 @@ public class FolderService {
     }
 
 //    채널 멤버인지 확인
-    private void checkChannelMember(Member member, Channel channel) {
-        if (!channel.getChannelMembers().contains(member)) {
+    private void checkChannelMember(WorkspaceMember workspaceMember, Channel channel) {
+        System.out.println(channel.getChannelMembers());
+        if (channel.getChannelMembers().stream().noneMatch(cm -> cm.getWorkspaceMember().equals(workspaceMember))) {
             throw new IllegalArgumentException("채널 멤버가 아닙니다.");
         }
     }

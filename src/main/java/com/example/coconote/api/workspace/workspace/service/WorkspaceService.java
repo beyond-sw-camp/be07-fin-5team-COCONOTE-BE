@@ -2,10 +2,12 @@ package com.example.coconote.api.workspace.workspace.service;
 
 import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;
+import com.example.coconote.api.channel.channel.service.ChannelService;
 import com.example.coconote.api.channel.channelMember.dto.response.ChannelMemberListResDto;
 import com.example.coconote.api.channel.channelMember.service.ChannelMemberService;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.api.section.dto.response.SectionListResDto;
 import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.section.entity.SectionType;
@@ -20,6 +22,7 @@ import com.example.coconote.api.workspace.workspaceMember.entity.WsRole;
 import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +32,7 @@ import java.util.List;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class WorkspaceService {
 
     private final WorkspaceRepository workspaceRepository;
@@ -37,19 +41,12 @@ public class WorkspaceService {
     private final MemberRepository memberRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
     private final ChannelMemberService channelMemberService;
+    private final SearchService searchService;
+    private final ChannelService channelService;
 
-    @Autowired
-    public WorkspaceService(WorkspaceRepository workspaceRepository, SectionRepository sectionRepository, ChannelRepository channelRepository, MemberRepository memberRepository, WorkspaceMemberRepository workspaceMemberRepository, ChannelMemberService channelMemberService) {
-        this.workspaceRepository = workspaceRepository;
-        this.sectionRepository = sectionRepository;
-        this.channelRepository = channelRepository;
-        this.memberRepository = memberRepository;
-        this.workspaceMemberRepository = workspaceMemberRepository;
-        this.channelMemberService = channelMemberService;
-    }
 
+    @Transactional
     public WorkspaceListResDto workspaceCreate(WorkspaceCreateReqDto dto, String email) {
-
         // 이미지파일 저장하고 String 이미지URL로 바꾸는 코드
         String imgUrl = "";
         Workspace workspace = dto.toEntity(imgUrl);
@@ -77,6 +74,8 @@ public class WorkspaceService {
                 .channelInfo("공지사항 채널입니다.")
                 .isPublic(true)
                 .build();
+        channelService.createDefaultFolder(channelDefault);
+        channelService.createDefaultFolder(channelNotice);
         channelRepository.save(channelDefault);
         channelRepository.save(channelNotice);
         sectionDefault.getChannels().add(channelDefault);
@@ -98,6 +97,10 @@ public class WorkspaceService {
         channelMemberService.channelMemberChangeRole(channelMemberDefault.getId());
         ChannelMemberListResDto channelMemberNotice = channelMemberService.channelMemberCreate(channelNotice.getChannelId(), email);
         channelMemberService.channelMemberChangeRole(channelMemberNotice.getId());
+
+        workspaceRepository.save(workspace);
+
+        searchService.indexWorkspaceMember(workspace.getWorkspaceId(), workspaceMember);
 
         return workspace.fromEntity();
     }

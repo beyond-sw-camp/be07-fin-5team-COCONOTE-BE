@@ -1,6 +1,7 @@
 server:
   port: 8080
-
+redirect:
+  url: http://localhost:8082
 spring:
   devtools:
     livereload:
@@ -28,6 +29,7 @@ spring:
     open-in-view: false
     properties:
       hibernate:
+        default_batch_fetch_size: 500
         jdbc:
           batch_size: 100
   mail:
@@ -84,6 +86,11 @@ spring:
     consumer:
       group-id: websocket-group
       auto-offset-reset: earliest
+  opensearch:
+    host: ${local.opensearch.host}
+    username: ${local.opensearch.username}
+    password: ${local.opensearch.password}
+
 
 springdoc:
   api-docs:

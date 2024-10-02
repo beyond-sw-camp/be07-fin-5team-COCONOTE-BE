@@ -15,7 +15,7 @@ import com.example.coconote.api.drive.entity.Folder;
 import com.example.coconote.api.drive.repository.FolderRepository;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
-import com.example.coconote.api.section.dto.response.SectionListResDto;
+import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.section.repository.SectionRepository;
 import com.example.coconote.api.workspace.workspace.entity.Workspace;
@@ -47,6 +47,7 @@ public class ChannelService {
     private final FileRepository fileRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
     private final ChannelMemberRepository channelMemberRepository;
+    private final SearchService searchService;
 
     @Transactional
     public ChannelDetailResDto channelCreate(ChannelCreateReqDto dto, String email) {
@@ -69,24 +70,33 @@ public class ChannelService {
         channel.getChannelMembers().add(channelMember);
         workspaceMember.getChannelMembers().add(channelMember);
         channelRepository.save(channel);
+
+        searchService.indexChannel(section.getWorkspace().getWorkspaceId(), channel);
+
         createDefaultFolder(channel);
         ChannelDetailResDto resDto = channel.fromEntity(section);
 
         return resDto;
     }
 
-    private void createDefaultFolder(Channel channel) {
+    public void createDefaultFolder(Channel channel) {
         Folder rootFolder = Folder.builder()
                 .folderName("root")
                 .channel(channel)
                 .build();
         Folder folder = Folder.builder()
-                .folderName("자동업로드 폴더")
+                .folderName("캔버스 자동업로드 폴더")
+                .channel(channel)
+                .parentFolder(rootFolder)
+                .build();
+        Folder folder2 = Folder.builder()
+                .folderName("쓰레드 자동업로드 폴더")
                 .channel(channel)
                 .parentFolder(rootFolder)
                 .build();
         folderRepository.save(rootFolder);
         folderRepository.save(folder);
+        folderRepository.save(folder2);
     }
 
     public List<ChannelDetailResDto> channelList(Long sectionId, String email) {
@@ -113,6 +123,8 @@ public class ChannelService {
         return dtos;
     }
 
+
+    @Transactional
     public Channel channelUpdate(Long id, ChannelUpdateReqDto dto, String email) {
         Channel channel = channelRepository.findById(id).orElseThrow(()->new EntityNotFoundException("존재하지 않는 채널입니다."));
         if(!checkChannelAuthorization(id, email)) {
@@ -122,9 +134,13 @@ public class ChannelService {
             throw new IllegalArgumentException("이미 삭제된 채널입니다.");
         }
         channel.updateEntity(dto);
+
+        channelRepository.save(channel);
+        searchService.indexChannel(channel.getSection().getWorkspace().getWorkspaceId(), channel);
         return channel;
     }
 
+    @Transactional
     public void channelDelete(Long id, String email) {
         Channel channel = channelRepository.findById(id).orElseThrow(()->new EntityNotFoundException("존재하지 않는 채널입니다."));
         if(!checkChannelAuthorization(id, email)) {
@@ -134,6 +150,7 @@ public class ChannelService {
             throw new IllegalArgumentException("이미 삭제된 채널입니다.");
         }
         channel.deleteEntity();
+        searchService.deleteChannel(channel.getSection().getWorkspace().getWorkspaceId(), channel.getChannelId().toString());
     }
 
     public FolderAllListResDto channelDrive(Long channelId, String email) {

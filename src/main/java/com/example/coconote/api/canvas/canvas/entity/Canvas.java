@@ -35,7 +35,7 @@ public class Canvas extends BaseEntity {
     @JoinColumn(name = "parent_canvas_id")
     private Canvas parentCanvas;
 
-    @OneToMany(mappedBy = "parentCanvas", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "parentCanvas", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Canvas> childCanvasList;
 
     @ManyToOne(fetch = FetchType.LAZY)
