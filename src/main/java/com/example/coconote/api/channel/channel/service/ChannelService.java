@@ -77,6 +77,7 @@ public class ChannelService {
         createDefaultFolder(channel);
         ChannelDetailResDto resDto = channel.fromEntity(section);
 
+
         return resDto;
     }
 
