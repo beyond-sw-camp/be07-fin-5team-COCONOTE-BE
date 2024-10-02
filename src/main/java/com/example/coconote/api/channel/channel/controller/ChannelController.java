@@ -43,18 +43,19 @@ public class ChannelController {
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
+
     @Operation(summary= "채널 수정")
     @PatchMapping("/channel/update/{id}")
-    public ResponseEntity<Object> channelUpdate(@PathVariable Long id, @RequestBody ChannelUpdateReqDto dto) {
-        Channel channel = channelService.channelUpdate(id, dto);
+    public ResponseEntity<Object> channelUpdate(@PathVariable Long id, @RequestBody ChannelUpdateReqDto dto, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        Channel channel = channelService.channelUpdate(id, dto, customPrincipal.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "channel is successfully updated", channel);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
     @Operation(summary= "채널 삭제")
     @DeleteMapping("/channel/delete/{id}") // 댓글 삭제
-    public ResponseEntity<Object> channelDelete(@PathVariable Long id) {
-        channelService.channelDelete(id);
+    public ResponseEntity<Object> channelDelete(@PathVariable Long id, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        channelService.channelDelete(id, customPrincipal.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "channel is successfully deleted", null);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
@@ -66,4 +67,13 @@ public class ChannelController {
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "channel is successfully moved to drive", resDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
+
+    @Operation(summary = "워크스페이스 내 즐겨찾기 채널 목록 조회")
+    @GetMapping("/bookmark/{workspaceId}")
+    public ResponseEntity<Object> bookmarkList(@PathVariable Long workspaceId, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        List<ChannelDetailResDto> dtos = channelService.bookmarkList(workspaceId, customPrincipal.getEmail());
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "list is successfully found", dtos);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
 }

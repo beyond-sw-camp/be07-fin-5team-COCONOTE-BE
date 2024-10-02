@@ -15,9 +15,12 @@ import com.example.coconote.api.drive.entity.Folder;
 import com.example.coconote.api.drive.repository.FolderRepository;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.section.dto.response.SectionListResDto;
 import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.section.repository.SectionRepository;
+import com.example.coconote.api.workspace.workspace.entity.Workspace;
+import com.example.coconote.api.workspace.workspace.repository.WorkspaceRepository;
 import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
 import com.example.coconote.common.IsDeleted;
@@ -39,6 +42,7 @@ public class ChannelService {
 
     private final ChannelRepository channelRepository;
     private final SectionRepository sectionRepository;
+    private final WorkspaceRepository workspaceRepository;
     private final FolderRepository folderRepository;
     private final MemberRepository memberRepository;
     private final FileRepository fileRepository;
@@ -72,7 +76,6 @@ public class ChannelService {
 
         createDefaultFolder(channel);
         ChannelDetailResDto resDto = channel.fromEntity(section);
-
 
         return resDto;
     }
@@ -121,9 +124,13 @@ public class ChannelService {
         return dtos;
     }
 
+
     @Transactional
-    public Channel channelUpdate(Long id, ChannelUpdateReqDto dto) {
+    public Channel channelUpdate(Long id, ChannelUpdateReqDto dto, String email) {
         Channel channel = channelRepository.findById(id).orElseThrow(()->new EntityNotFoundException("존재하지 않는 채널입니다."));
+        if(!checkChannelAuthorization(id, email)) {
+            throw new IllegalArgumentException("채널을 수정할 권한이 없습니다.");
+        }
         if(channel.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 삭제된 채널입니다.");
         }
@@ -134,9 +141,13 @@ public class ChannelService {
         return channel;
     }
 
+
     @Transactional
-    public void channelDelete(Long id) {
+    public void channelDelete(Long id, String email) {
         Channel channel = channelRepository.findById(id).orElseThrow(()->new EntityNotFoundException("존재하지 않는 채널입니다."));
+        if(!checkChannelAuthorization(id, email)) {
+            throw new IllegalArgumentException("채널을 삭제할 권한이 없습니다.");
+        }
         if(channel.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 삭제된 채널입니다.");
         }
@@ -167,4 +178,40 @@ public class ChannelService {
                 .fileListDto(fileListDto)
                 .build();
     }
+
+    public List<ChannelDetailResDto> bookmarkList(Long workspaceId, String email) {
+        Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 워크스페이스입니다."));
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("존재하지 않는 회원입니다."));
+
+        if (workspace.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("이미 삭제된 워크스페이스입니다.");
+        }
+        List<Section> sections = sectionRepository.findByWorkspaceAndIsDeleted(workspace, IsDeleted.N);
+        List<ChannelDetailResDto> bookmarkChannels = new ArrayList<>();
+        for (Section s : sections) {
+            if (s.getChannels() != null) {
+                for (Channel c : s.getChannels()) {
+                  ChannelMember channelMember = channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(c, workspaceMember, IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("채널 회원을 찾을 수 없습니다."));
+                  if(channelMember.getIsBookmark()){
+                      bookmarkChannels.add(c.fromEntity(s));
+                  }
+                }
+            }
+        }
+        return bookmarkChannels;
+    }
+
+
+
+    private Boolean checkChannelAuthorization(Long channelId, String email){
+        Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+        Channel channel = channelRepository.findById(channelId).orElseThrow(()->new EntityNotFoundException("채널을 찾을 수 없습니다."));
+        Section section = sectionRepository.findById(channel.getSection().getSectionId()).orElseThrow(()->new EntityNotFoundException("섹션을 찾을 수 없습니다."));
+        Workspace workspace = workspaceRepository.findById(section.getWorkspace().getWorkspaceId()).orElseThrow(()-> new EntityNotFoundException("존재하지 않는 워크스페이스입니다."));
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("워크스페이스 회원을 찾을 수 없습니다."));
+        ChannelMember channelMember = channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, workspaceMember, IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("채널 회원을 찾을 수 없습니다."));
+        return channelMember.getChannelRole().equals(ChannelRole.MANAGER);
+    }
+
 }
