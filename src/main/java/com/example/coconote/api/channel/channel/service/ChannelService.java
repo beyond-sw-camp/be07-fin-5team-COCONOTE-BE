@@ -15,6 +15,7 @@ import com.example.coconote.api.drive.entity.Folder;
 import com.example.coconote.api.drive.repository.FolderRepository;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.section.dto.response.SectionListResDto;
 import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.section.repository.SectionRepository;
@@ -75,6 +76,7 @@ public class ChannelService {
 
         createDefaultFolder(channel);
         ChannelDetailResDto resDto = channel.fromEntity(section);
+
 
         return resDto;
     }
@@ -139,6 +141,7 @@ public class ChannelService {
         searchService.indexChannel(channel.getSection().getWorkspace().getWorkspaceId(), channel);
         return channel;
     }
+
 
     @Transactional
     public void channelDelete(Long id, String email) {
