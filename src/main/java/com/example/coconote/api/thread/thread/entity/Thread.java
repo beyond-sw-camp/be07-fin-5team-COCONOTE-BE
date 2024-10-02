@@ -14,11 +14,13 @@ import com.example.coconote.common.BaseEntity;
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Getter
 @Builder
 @AllArgsConstructor
@@ -57,7 +59,17 @@ public class Thread extends BaseEntity {
         List<ThreadFileDto> files = this.threadFiles.stream().map(ThreadFile::fromEntity).toList();
         return ThreadResDto.builder()
                 .id(this.id)
+                .memberName(this.workspaceMember.getNickname())
+                .createdTime(this.getCreatedTime().toString())
+                .content(this.content)
+                .files(files)
+//                .tags(tags)
+                .build();
+    }
 
+    public ThreadResDto fromEntity(List<ThreadFileDto> files) {
+        return ThreadResDto.builder()
+                .id(this.id)
                 .memberName(this.workspaceMember.getNickname())
                 .createdTime(this.getCreatedTime().toString())
                 .content(this.content)

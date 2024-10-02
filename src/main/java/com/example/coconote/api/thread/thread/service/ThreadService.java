@@ -43,19 +43,17 @@ public class ThreadService {
     private final SearchService searchService;
 
     public ThreadResDto createThread(ThreadReqDto dto, Long memberId) {
-        //TODO: jwt토큰이 완성되면 memberId 는 불러오면됨
+        //TODO: jwt토큰이 완성되면 memberId 는 불러오면됨 완료
         Member member = memberRepository.findById(memberId).orElseThrow(()-> new EntityNotFoundException("해당멤버가 없습니다."));
         Workspace workspace = workspaceRepository.findById(dto.getWorkspaceId()).orElseThrow(()-> new EntityNotFoundException("해당 워크스페이스가 없습니다."));
         WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member,workspace,IsDeleted.N).orElseThrow(()->new EntityNotFoundException("해당 워크스페이스 멤버가 없습니다."));
 
         Thread parentThread = null;
-        if(dto.getParentId() != null){
-            parentThread = threadRepository.findById(dto.getParentId()).orElse(null);
-        }
+        if(dto.getParentId() != null) parentThread = threadRepository.findById(dto.getParentId()).orElse(null);
+
         Channel channel = channelRepository.findById(dto.getChannelId()).orElseThrow(()->new EntityNotFoundException("해당 채널이 없습니다."));
 
         Thread thread = threadRepository.save(dto.toEntity(workspaceMember,parentThread, channel));
-
 //        검색
         searchService.indexThread(channel.getSection().getWorkspace().getWorkspaceId(), thread);
 
@@ -63,6 +61,7 @@ public class ThreadService {
             for (ThreadFileDto threadFileDto : dto.getFiles()){
                 threadFileRepository.save(threadFileDto.toEntity(thread));
             }
+            return thread.fromEntity(dto.getFiles());
         }
         return thread.fromEntity();
     }
