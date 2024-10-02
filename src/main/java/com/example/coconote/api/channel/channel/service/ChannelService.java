@@ -216,9 +216,10 @@ public class ChannelService {
         return channelMember.getChannelRole().equals(ChannelRole.MANAGER);
     }
 
-    public ChannelDetailResDto channelFirst(String email) {
+    public ChannelDetailResDto channelFirst(Long workspaceId, String email) {
         Member member = memberRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다."));
-        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndIsDeleted(member, IsDeleted.N).get(0);
+        Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(()-> new EntityNotFoundException("존재하지 않는 워크스페이스입니다."));
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("존재하지 않는 워크스페이스멤버입니다."));
         List<ChannelMember> channelMembers = channelMemberRepository.findByWorkspaceMemberAndIsDeleted(workspaceMember, IsDeleted.N);
         return channelMembers.get(0).getChannel().fromEntity(channelMembers.get(0).getChannel().getSection());
     }

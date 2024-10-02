@@ -78,9 +78,9 @@ public class ChannelController {
     }
 
     @Operation(summary= "사이트 첫 접속시 첫번째 채널")
-    @GetMapping("/channel/first")
-    public ResponseEntity<Object> channelFirst(@AuthenticationPrincipal CustomPrincipal customPrincipal) {
-        ChannelDetailResDto dto = channelService.channelFirst(customPrincipal.getEmail());
+    @GetMapping("/{workspaceId}/channel/first")
+    public ResponseEntity<Object> channelFirst(@PathVariable Long workspaceId, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        ChannelDetailResDto dto = channelService.channelFirst(workspaceId, customPrincipal.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "channel is successfully found", dto);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
