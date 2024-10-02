@@ -19,6 +19,7 @@ import com.example.coconote.api.section.dto.response.SectionListResDto;
 import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.section.repository.SectionRepository;
+import com.example.coconote.api.workspace.workspace.dto.response.WorkspaceListResDto;
 import com.example.coconote.api.workspace.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.workspace.repository.WorkspaceRepository;
 import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
@@ -215,4 +216,10 @@ public class ChannelService {
         return channelMember.getChannelRole().equals(ChannelRole.MANAGER);
     }
 
+    public ChannelDetailResDto channelFirst(String email) {
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndIsDeleted(member, IsDeleted.N).get(0);
+        List<ChannelMember> channelMembers = channelMemberRepository.findByWorkspaceMemberAndIsDeleted(workspaceMember, IsDeleted.N);
+        return channelMembers.get(0).getChannel().fromEntity(channelMembers.get(0).getChannel().getSection());
+    }
 }
