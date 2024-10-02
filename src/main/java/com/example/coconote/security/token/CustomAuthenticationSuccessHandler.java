@@ -14,6 +14,7 @@ import java.io.IOException;
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final String frontUrl;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -30,7 +31,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         String refreshToken = jwtTokenProvider.generateRefreshToken(email, memberId);
 
         // 클라이언트에 리다이렉트할 URL 에 토큰을 쿼리 파라미터로 추가
-        String redirectUrl = "http://localhost:8082/oauth2/success?accessToken=" + accessToken + "&refreshToken=" + refreshToken;
+        String redirectUrl = frontUrl + "/oauth2/success?accessToken=" + accessToken + "&refreshToken=" + refreshToken;
 
         // 해당 URL 로 리다이렉트
         response.sendRedirect(redirectUrl);

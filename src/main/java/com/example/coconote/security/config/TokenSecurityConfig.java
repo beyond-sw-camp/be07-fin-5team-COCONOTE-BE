@@ -7,6 +7,7 @@ import com.example.coconote.security.token.CustomAuthenticationSuccessHandler;
 import com.example.coconote.security.token.JwtTokenProvider;
 import com.example.coconote.security.util.HttpCookieOAuth2AuthorizationRequestRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -21,9 +22,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class TokenSecurityConfig {
 
-    private final CustomOAuth2UserService customOAuth2UserService;
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberRepository memberRepository;
+    private final CustomOAuth2UserService customOAuth2UserService;
+
+    @Value("${redirect.url}")  // application.yml 파일의 redirect.url 읽기
+    private String frontUrl;
 
     @Bean
     public AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
@@ -65,7 +69,7 @@ public class TokenSecurityConfig {
                                         .userInfoEndpoint(userInfoEndpoint ->
                                                 userInfoEndpoint .userService(customOAuth2UserService)  // CustomOAuth2UserService 등록
                                         )
-                                        .successHandler(new CustomAuthenticationSuccessHandler(jwtTokenProvider))  // 직접 만든 SuccessHandler 설정
+                                        .successHandler(new CustomAuthenticationSuccessHandler(jwtTokenProvider, frontUrl))  // 직접 만든 SuccessHandler 설정, Bean 으로 등록한 SuccessHandler 사용
                 )
 
                 // 4. JWT 인증 필터 (모든 요청에서 JWT 토큰을 확인하고 인증 처리)
