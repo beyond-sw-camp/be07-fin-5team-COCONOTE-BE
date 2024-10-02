@@ -49,13 +49,11 @@ public class ThreadService {
         WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member,workspace,IsDeleted.N).orElseThrow(()->new EntityNotFoundException("해당 워크스페이스 멤버가 없습니다."));
 
         Thread parentThread = null;
-        if(dto.getParentId() != null){
-            parentThread = threadRepository.findById(dto.getParentId()).orElse(null);
-        }
+        if(dto.getParentId() != null) parentThread = threadRepository.findById(dto.getParentId()).orElse(null);
+
         Channel channel = channelRepository.findById(dto.getChannelId()).orElseThrow(()->new EntityNotFoundException("해당 채널이 없습니다."));
 
         Thread thread = threadRepository.save(dto.toEntity(workspaceMember,parentThread, channel));
-
 //        검색
         searchService.indexThread(channel.getSection().getWorkspace().getWorkspaceId(), thread);
 
@@ -64,7 +62,7 @@ public class ThreadService {
                 threadFileRepository.save(threadFileDto.toEntity(thread));
             }
         }
-        return thread.fromEntity();
+        return thread.fromEntity(dto.getFiles());
     }
 
     public Page<ThreadResDto> threadList(Long channelId, Pageable pageable) {
