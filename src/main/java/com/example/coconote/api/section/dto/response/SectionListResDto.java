@@ -1,6 +1,6 @@
 package com.example.coconote.api.section.dto.response;
 
-import com.example.coconote.api.channel.channel.dto.response.ChannelResDto;
+import com.example.coconote.api.channel.channel.dto.response.ChannelDetailResDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,5 +15,5 @@ import java.util.List;
 public class SectionListResDto {
     private Long sectionId;
     private String sectionName;
-    private List<String> channelNameList;
+    private List<ChannelDetailResDto> channelList;
 }

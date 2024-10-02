@@ -48,14 +48,14 @@ public class Section extends BaseEntity {
 //    private Boolean isExpanded = false;
 
     public SectionListResDto fromEntity(Member member) {
-        List<String> cList = new ArrayList<>();
+        List<ChannelDetailResDto> cList = new ArrayList<>();
 //        List<ChannelDetailResDto> dtos = new ArrayList<>();
         if(this.channels != null) {
             for(Channel c : this.channels) {
                 List<ChannelMember> cMembers = c.getChannelMembers();
                 for (ChannelMember cm : cMembers) {
                     if (c.getIsPublic() || cm.getWorkspaceMember().getMember().equals(member)) { // 비공개채널이고 내가 채널멤버도 아님 -> continue
-                        cList.add(c.fromEntity(this).getChannelName());
+                        cList.add(c.fromEntity(this));
                     }
                 }
             }
@@ -64,7 +64,7 @@ public class Section extends BaseEntity {
         return SectionListResDto.builder()
                 .sectionId(this.sectionId)
                 .sectionName(this.sectionName)
-                .channelNameList(cList)
+                .channelList(cList)
                 .build();
     }
 
