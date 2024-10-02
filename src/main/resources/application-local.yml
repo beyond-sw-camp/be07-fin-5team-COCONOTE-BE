@@ -1,7 +1,14 @@
 server:
   port: 8080
+  servlet:
+    session:
+      tracking-mode: none
+      cookie:
+        name: none
+        
 redirect:
   url: http://localhost:8082
+  
 spring:
   devtools:
     livereload:
