@@ -61,8 +61,9 @@ public class ThreadService {
             for (ThreadFileDto threadFileDto : dto.getFiles()){
                 threadFileRepository.save(threadFileDto.toEntity(thread));
             }
+            return thread.fromEntity(dto.getFiles());
         }
-        return thread.fromEntity(dto.getFiles());
+        return thread.fromEntity();
     }
 
     public Page<ThreadResDto> threadList(Long channelId, Pageable pageable) {
