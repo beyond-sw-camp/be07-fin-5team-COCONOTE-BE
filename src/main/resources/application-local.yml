@@ -1,6 +1,7 @@
 server:
   port: 8080
-
+redirect:
+  url: http://localhost:8082
 spring:
   devtools:
     livereload:
