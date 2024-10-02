@@ -37,11 +37,10 @@ public class WebSocketController {
 
     @MessageMapping("/chat/message")
     public void message(ThreadReqDto message, @Header("Authorization") String token) {
-        String email = jwtTokenProvider.getEmailFromToken(token);
-        Member member = memberRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("이메일에 해당하는 멤버가 없습니다."));
-        message.setSenderId(member.getId());
+        Long id = jwtTokenProvider.getMemberIdFromToken(token);
+        message.setSenderId(id);
         if (MessageType.ENTER.equals(message.getType()))
-            message.setContent(member.getId() + "님이 입장하셨습니다.");
+            message.setContent(id + "님이 입장하셨습니다.");
 
         kafkaTemplate.send("chat_topic", message.getChannelId().toString(), message);
 
