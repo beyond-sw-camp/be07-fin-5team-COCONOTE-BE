@@ -1,5 +1,6 @@
 package com.example.coconote.api.workspace.workspaceMember.controller;
 
+import com.example.coconote.api.workspace.workspace.dto.response.WorkspaceListResDto;
 import com.example.coconote.api.workspace.workspaceMember.dto.response.WorkspaceMemberResDto;
 import com.example.coconote.api.workspace.workspaceMember.service.WorkspaceMemberService;
 import com.example.coconote.api.workspace.workspaceMember.dto.request.WorkspaceMemberUpdateReqDto;
@@ -69,5 +70,7 @@ public class WorkspaceMemberController {
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "member is successfully deleted", null);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
+
+
 
 }
