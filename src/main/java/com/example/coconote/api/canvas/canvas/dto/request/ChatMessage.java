@@ -6,7 +6,7 @@ import lombok.Data;
 public class ChatMessage {
     // 메시지 타입 : 입장, 채팅
     public enum MessageType {
-        ENTER, TALK
+        ENTER, TALK, CANVAS
     }
     private MessageType type; // 메시지 타입
     private String roomId; // 방번호

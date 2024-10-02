@@ -2,13 +2,18 @@ package com.example.coconote.security.config;
 
 import com.example.coconote.api.member.repository.MemberRepository;
 import com.example.coconote.security.filter.JwtAuthenticationFilter;
-import com.example.coconote.security.service.TokenOAuth2UserService;
+import com.example.coconote.security.service.CustomOAuth2UserService;
+import com.example.coconote.security.token.CustomAuthenticationSuccessHandler;
 import com.example.coconote.security.token.JwtTokenProvider;
+import com.example.coconote.security.util.HttpCookieOAuth2AuthorizationRequestRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -16,41 +21,57 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class TokenSecurityConfig {
 
-    private final TokenOAuth2UserService tokenOAuth2UserService;
+    private final CustomOAuth2UserService customOAuth2UserService;
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberRepository memberRepository;
+
+    @Bean
+    public AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
+        return new HttpCookieOAuth2AuthorizationRequestRepository();
+    }
 
     @Bean
     // 스프링 시큐리티는 이 **SecurityFilterChain**을 통해 필터를 실행하고, 모든 요청에 대해 인증과 인가 규칙을 적용합니다.
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // 1. CSRF 보호 비활성화 (필터 순서에서 첫 번째로 설정됨)
-                .csrf(AbstractHttpConfigurer::disable)  // 새로운 방식으로 CSRF 비활성화
+                // 1. 비활성화 (필터 순서에서 첫 번째로 설정됨)
+                .csrf(AbstractHttpConfigurer::disable)  // CSRF 비활성화
+                .securityContext(context -> context.requireExplicitSave(false))  // 기본 보안 컨텍스트 관리 비활성화
+                .httpBasic(AbstractHttpConfigurer::disable)  // HTTP Basic 비활성화
+                .formLogin(AbstractHttpConfigurer::disable)  // Form Login 비활성화
+                .logout(AbstractHttpConfigurer::disable)  // Logout 비활성화
+                // 서버가 세션을 생성하고 관리하는 기능이 완전히 비활성화. 세션 상태를 Stateless 로 설정
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        .sessionFixation().none()  // 세션 고정 공격 방지 및 세션 설정 제거
+                )
 
                 // 2. 요청 인가 처리 (리소스에 접근하기 전에 인증된 사용자만 접근 허용)
                 .authorizeHttpRequests(authorizeRequests ->
-                        authorizeRequests
-//                                .requestMatchers("/**").permitAll()
-                                .requestMatchers("/" , "/login**" , "/error", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**", "/api/v1/workspace/list").permitAll()
-                                .anyRequest().authenticated()
+                                authorizeRequests
+                                        .requestMatchers("/**").permitAll()
+//                                .requestMatchers("/" , "/login**" , "/error", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**").permitAll()
+                                        .anyRequest().authenticated()
                 )
 
                 // 3. OAuth2 로그인 필터 (OAuth2 기반 로그인 처리)
                 .oauth2Login(oauth2Login ->
-                        oauth2Login
+                                oauth2Login
 //                                .loginPage("/login")
 //                                .defaultSuccessUrl("/", false)  // 로그인 전 마지막에 접근했던 페이지로 이동
 //                                .failureUrl("/login?error=true")  // 로그인 실패 시 이동할 URL 설정
-                                .defaultSuccessUrl("/token", true) // 로그인 성공 시 JWT 발급 처리
-                                .userInfoEndpoint(userInfoEndpoint ->
-                                        userInfoEndpoint .userService(tokenOAuth2UserService)  // CustomOAuth2UserService 등록
-                                )
+                                        .authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint
+                                                .authorizationRequestRepository(authorizationRequestRepository())
+                                        ) // 세션을 사용하지 않도록 null 설정, 쿠키 기반 OAuth2 상태 관리
+                                        .userInfoEndpoint(userInfoEndpoint ->
+                                                userInfoEndpoint .userService(customOAuth2UserService)  // CustomOAuth2UserService 등록
+                                        )
+                                        .successHandler(new CustomAuthenticationSuccessHandler(jwtTokenProvider))  // 직접 만든 SuccessHandler 설정
                 )
 
                 // 4. JWT 인증 필터 (모든 요청에서 JWT 토큰을 확인하고 인증 처리)
                 // 스프링 시큐리티의 필터 체인에 **JwtAuthenticationFilter**를 추가하는 역할
                 // JWT 인증 필터가 UsernamePasswordAuthenticationFilter 앞에 위치하도록 설정
-                // UsernamePasswordAuthenticationFilter는 **폼 기반 로그인(아이디/비밀번호)**을 처리하는 필터
+                // UsernamePasswordAuthenticationFilter 는 **폼 기반 로그인(아이디/비밀번호)**을 처리하는 필터
                 // 모든 요청에서 JWT 인증을 우선 처리한 후, 폼 기반 인증(Username/Password)이 필요하면 이를 처리합니다.
                 // JWT 토큰이 유효하다면 폼 로그인을 거치지 않고 바로 인증을 완료할 수 있습니다.
                 // JWT 토큰이 유효하다면, 스프링 시큐리티는 JWT 토큰을 기반으로 사용자를 인증하고, **UsernamePasswordAuthenticationFilter**를 거치지 않고 요청을 처리합니다.

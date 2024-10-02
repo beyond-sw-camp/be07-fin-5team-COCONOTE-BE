@@ -4,6 +4,8 @@ import com.example.coconote.api.thread.thread.entity.MessageType;
 import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.thread.thread.entity.Thread;
+import com.example.coconote.api.thread.threadFile.dto.request.ThreadFileDto;
+import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,16 +22,16 @@ public class ThreadReqDto {
     private MessageType type;
     private Long senderId;
     private String content;
-    private List<String> files;
+    private List<ThreadFileDto> files;
     private Long threadId;
     private Long parentId;
     private Long channelId;
+    private Long workspaceId;
 
-    public Thread toEntity(Member member, Thread thread, Channel channel) {
+    public Thread toEntity(WorkspaceMember member, Thread thread, Channel channel) {
         return Thread.builder()
-                .member(member)
+                .workspaceMember(member)
                 .content(this.content)
-                .files(this.getFiles())
                 .parent(thread)
                 .channel(channel)
                 .build();

@@ -7,7 +7,7 @@ import com.example.coconote.api.section.dto.request.SectionUpdateReqDto;
 import com.example.coconote.api.section.dto.response.SectionListResDto;
 import com.example.coconote.api.section.service.SectionService;
 import com.example.coconote.common.CommonResDto;
-import com.example.coconote.security.entity.CustomPrincipal;
+import com.example.coconote.security.util.CustomPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

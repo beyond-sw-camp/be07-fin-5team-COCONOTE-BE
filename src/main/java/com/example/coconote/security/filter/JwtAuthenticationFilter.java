@@ -2,7 +2,7 @@ package com.example.coconote.security.filter;
 
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
-import com.example.coconote.security.entity.CustomPrincipal;
+import com.example.coconote.security.util.CustomPrincipal;
 import com.example.coconote.security.token.JwtAuthenticationToken;
 import com.example.coconote.security.token.JwtTokenProvider;
 import jakarta.servlet.FilterChain;
@@ -27,7 +27,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         // Authorization 헤더에서 JWT 토큰을 가져옴
         String token = request.getHeader("Authorization");
-        System.out.println("token : " + token);
         if (token != null && token.startsWith("Bearer ")) {
             // 'Bearer ' 부분을 제거하고 토큰만 추출
             String jwt = token.substring(7);
@@ -44,10 +43,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 //                JwtAuthenticationToken authentication = new JwtAuthenticationToken(email);
 //                SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                // 이메일로 DB에서 사용자 정보 조회
+                // 이메일로 DB 에서 사용자 정보 조회
                 Member member = memberRepository.findByEmail(email).orElse(null);
                 if (member != null) {
-                    // CustomPrincipal 객체로 사용자 정보를 SecurityContextHolder에 저장
+                    // CustomPrincipal 객체로 사용자 정보를 SecurityContextHolder 에 저장
                     CustomPrincipal customPrincipal = new CustomPrincipal(email, member.getId(), member.getNickname());
                     JwtAuthenticationToken authentication = new JwtAuthenticationToken(customPrincipal); // 권한 설정은 나중에 추가
                     SecurityContextHolder.getContext().setAuthentication(authentication);

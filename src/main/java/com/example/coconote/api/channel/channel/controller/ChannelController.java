@@ -7,7 +7,7 @@ import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channel.service.ChannelService;
 import com.example.coconote.api.drive.dto.response.FolderAllListResDto;
 import com.example.coconote.common.CommonResDto;
-import com.example.coconote.security.entity.CustomPrincipal;
+import com.example.coconote.security.util.CustomPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -62,8 +62,8 @@ public class ChannelController {
 
     @Operation(summary= "채널 에 속한 드라이브로 이동")
     @GetMapping("/channel/{id}/drive")
-    public ResponseEntity<Object> channelDrive(@PathVariable Long id, String email) {
-        FolderAllListResDto resDto = channelService.channelDrive(id, email);
+    public ResponseEntity<Object> channelDrive(@PathVariable Long id, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        FolderAllListResDto resDto = channelService.channelDrive(id, customPrincipal.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "channel is successfully moved to drive", resDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }

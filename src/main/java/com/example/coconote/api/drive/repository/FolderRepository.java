@@ -26,4 +26,5 @@ public interface FolderRepository extends JpaRepository<Folder, Long> {
 
     Optional<Folder> findByChannelAndParentFolderIsNull(Channel channel);
 
+    Optional<Folder> findByChannelAndFolderName(Channel channel, String folderName);
 }

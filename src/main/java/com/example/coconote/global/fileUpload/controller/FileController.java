@@ -5,7 +5,7 @@ import com.example.coconote.global.fileUpload.dto.request.*;
 import com.example.coconote.global.fileUpload.dto.response.FileMetadataResDto;
 import com.example.coconote.global.fileUpload.dto.response.MoveFileResDto;
 import com.example.coconote.global.fileUpload.service.S3Service;
-import com.example.coconote.security.entity.CustomPrincipal;
+import com.example.coconote.security.util.CustomPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
