@@ -1,8 +1,11 @@
 package com.example.coconote.api.section.service;
 
+import com.example.coconote.api.channel.channel.dto.response.ChannelDetailResDto;
+import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
 import com.example.coconote.api.section.dto.request.SectionCreateReqDto;
+import com.example.coconote.api.section.dto.request.SectionSwitchReqDto;
 import com.example.coconote.api.section.dto.request.SectionUpdateReqDto;
 import com.example.coconote.api.section.dto.response.SectionListResDto;
 import com.example.coconote.api.section.entity.Section;
@@ -98,6 +101,35 @@ public class SectionService {
         section.deleteEntity();
     }
 
+//    public SectionListResDto switchIndex(SectionSwitchReqDto dto, String email) {
+//        Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+//        Section section = sectionRepository.findById(dto.getSectionId()).orElseThrow(()->new EntityNotFoundException("섹션을 찾을 수 없습니다."));
+//        List<Channel> channels = section.getChannels();
+//        Long fromIndex = dto.getFromIndex();
+//        Long toIndex = dto.getToIndex();
+//
+//        if (fromIndex < 0 || fromIndex >= channels.size() || toIndex < 0 || toIndex >= channels.size() || fromIndex == toIndex) {
+//            throw new IllegalArgumentException("잘못된 접근입니다.");
+//        }
+//        Channel channelToMove = channels.get(Math.toIntExact(fromIndex));
+//
+//        // 이동할 요소를 원래 위치에서 빈 자리를 만든 후 이동
+//        if (fromIndex < toIndex) {
+//            for (int i = Math.toIntExact(fromIndex); i < toIndex; i++) {
+//                channels.set(i, channels.get(i + 1));
+//            }
+//        } else {
+//            for (int i = Math.toIntExact(fromIndex); i > toIndex; i--) {
+//                channels.set(i, channels.get(i - 1));
+//            }
+//        }
+//
+//        channels.set(Math.toIntExact(toIndex), channelToMove); // 새로운 위치에 요소 추가
+//
+//        return section.fromEntity(member);
+//
+//    }
+
     private Boolean checkWorkspaceAuthorization(Long SectionId, String email){
         Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("회원을 찾을 수 없습니다."));
         Section section = sectionRepository.findById(SectionId).orElseThrow(()->new EntityNotFoundException("섹션을 찾을 수 없습니다."));
@@ -105,4 +137,5 @@ public class SectionService {
         WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("워크스페이스 회원을 찾을 수 없습니다."));
         return !workspaceMember.getWsRole().equals(WsRole.USER);
     }
+
 }

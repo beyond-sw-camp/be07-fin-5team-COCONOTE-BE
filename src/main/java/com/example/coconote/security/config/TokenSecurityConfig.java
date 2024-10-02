@@ -31,7 +31,7 @@ public class TokenSecurityConfig {
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
 //                                .requestMatchers("/**").permitAll()
-                                .requestMatchers("/" , "/login**" , "/error", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**").permitAll()
+                                .requestMatchers("/" , "/login**" , "/error", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**", "/api/v1/workspace/list").permitAll()
                                 .anyRequest().authenticated()
                 )
 

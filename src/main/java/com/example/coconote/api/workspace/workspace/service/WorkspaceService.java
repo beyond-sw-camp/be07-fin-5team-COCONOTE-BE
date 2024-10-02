@@ -57,7 +57,7 @@ public class WorkspaceService {
 
         // 기본섹션 생성
         Section sectionDefault = Section.builder()
-                .sectionName("")
+                .sectionName("기본")
                 .workspace(workspace)
                 .sectionType(SectionType.DEFAULT)
                 .build();

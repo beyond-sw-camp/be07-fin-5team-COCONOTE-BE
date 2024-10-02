@@ -1,6 +1,8 @@
 package com.example.coconote.api.section.controller;
 
+import com.example.coconote.api.channel.channel.dto.response.ChannelDetailResDto;
 import com.example.coconote.api.section.dto.request.SectionCreateReqDto;
+import com.example.coconote.api.section.dto.request.SectionSwitchReqDto;
 import com.example.coconote.api.section.dto.request.SectionUpdateReqDto;
 import com.example.coconote.api.section.dto.response.SectionListResDto;
 import com.example.coconote.api.section.service.SectionService;
@@ -57,5 +59,13 @@ public class SectionController {
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "section is successfully deleted", null);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
+
+//    @Operation(summary = "한 섹션 내 채널 순서 바꾸기")
+//    @PatchMapping("/channel/switch")
+//    public ResponseEntity<Object> switchIndex(@RequestBody SectionSwitchReqDto dto, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+//        SectionListResDto resDto = sectionService.switchIndex(dto, customPrincipal.getEmail());
+//        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "list is successfully found", resDto);
+//        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+//    }
 
 }

@@ -66,8 +66,8 @@ public class ChannelMemberController {
 
     @Operation(summary= "채널 회원 강퇴/탈퇴")
     @DeleteMapping("/channel/member/delete/{id}") // 채널 강퇴
-    public ResponseEntity<Object> channelMemberDelete(@PathVariable Long id) {
-        channelMemberService.channelMemberDelete(id);
+    public ResponseEntity<Object> channelMemberDelete(@PathVariable Long id, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        channelMemberService.channelMemberDelete(id, customPrincipal.getEmail()); // 1번 파라미터는 삭제당하는 사람, 2번은 삭제하는 사람
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "channelMember is successfully deleted", null);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
