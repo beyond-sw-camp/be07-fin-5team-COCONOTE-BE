@@ -3,14 +3,15 @@ package com.example.coconote.api.search.service;
 import com.example.coconote.api.canvas.block.entity.Block;
 import com.example.coconote.api.canvas.canvas.entity.Canvas;
 import com.example.coconote.api.channel.channel.entity.Channel;
+import com.example.coconote.api.search.dto.*;
 import com.example.coconote.api.search.entity.*;
 import com.example.coconote.api.search.mapper.*;
 import com.example.coconote.api.thread.thread.entity.Thread;
 import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import com.example.coconote.global.fileUpload.entity.FileEntity;
 import lombok.RequiredArgsConstructor;
-import org.opensearch.client.json.jackson.JacksonJsonpMapper;
 import org.opensearch.client.opensearch.OpenSearchClient;
+import org.opensearch.client.opensearch._types.query_dsl.TextQueryType;
 import org.opensearch.client.opensearch.core.SearchResponse;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -53,27 +55,27 @@ public class SearchService {
     }
 
     // 여러 필드를 대상으로 한 공통 검색 메서드
-    private <T> List<T> searchDocumentsForMultipleFields(String alias, String keyword, List<String> fields, Class<T> documentClass, int from, int size) {
-        List<T> results = new ArrayList<>();
+    private <T> SearchResponse<T> searchDocumentsForMultipleFields(String alias, String keyword, List<String> fields, Class<T> documentClass, int page, int size) {
         try {
+            // OpenSearch에서 검색 수행
             SearchResponse<T> searchResponse = openSearchClient.search(s -> s
                             .index(alias)
-                            .from(from)
-                            .size(size)
+                            .from(page * size) // 페이징 처리 (시작 위치)
+                            .size(size) // 한 페이지에 반환할 결과 개수
                             .query(q -> q
                                     .bool(b -> {
                                         fields.forEach(field -> b.should(sh -> sh.wildcard(w -> w.field(field).value("*" + keyword + "*"))));
-                                        return b.minimumShouldMatch(String.valueOf(1));
+                                        return b.minimumShouldMatch("1");
                                     })
                             ),
                     documentClass
             );
-            searchResponse.hits().hits().forEach(hit -> results.add(hit.source()));
+            return searchResponse; // 검색 결과와 총 개수 반환
         } catch (IOException e) {
             throw new IllegalArgumentException("OpenSearch 검색 중 오류가 발생했습니다.", e);
         }
-        return results;
     }
+
 
     // 자동완성 기능 추가 (여러 필드를 동시에 검색)
 // 자동완성 기능 수정
@@ -82,26 +84,23 @@ public class SearchService {
         String alias = getAliasForWorkspace(workspaceId);
 
         try {
-            // OpenSearch에서 자동완성 검색을 수행
             SearchResponse<Map> searchResponse = openSearchClient.search(s -> s
                             .index(alias)
                             .query(q -> q
-                                    .bool(b -> {
-                                        fields.forEach(field -> b.should(sh -> sh.wildcard(w -> w
-                                                .field(field)
-                                                .value("*" + keyword + "*"))));
-                                        return b.minimumShouldMatch("1");  // 최소 1개의 조건을 만족하는 결과 반환
-                                    })
+                                    .multiMatch(m -> m
+                                            .fields(fields)
+                                            .query(keyword)
+                                            .type(TextQueryType.PhrasePrefix)  // PHRASE_PREFIX로 프리픽스 검색
+                                    )
                             )
-                            .size(10),  // 최대 10개의 제안어 반환
-                    Map.class // 검색 결과를 Map<String, Object>로 처리
+                            .size(10),
+                    Map.class
             );
 
-            // 검색 결과에서 각 필드에 해당하는 값 추출
             searchResponse.hits().hits().forEach(hit -> {
                 fields.forEach(field -> {
                     Object fieldValue = hit.source().get(field);
-                    if (fieldValue instanceof String && !suggestions.contains(fieldValue)) {  // 중복 제거
+                    if (fieldValue instanceof String && !suggestions.contains(fieldValue)) {
                         suggestions.add((String) fieldValue);
                     }
                 });
@@ -113,49 +112,173 @@ public class SearchService {
 
         return suggestions;
     }
-    // 워크스페이스 멤버 검색
-    public List<WorkspaceMemberDocument> searchWorkspaceMembers(Long workspaceId, String keyword, int page, int size) {
+    // 워크스페이스 멤버 검색 (총 결과 수 포함)
+    public SearchResultWithTotal<WorkspaceMemberSearchResultDto> searchWorkspaceMembers(Long workspaceId, String keyword, int page, int size) {
         String alias = getAliasForWorkspace(workspaceId);
-        return searchDocumentsForMultipleFields(alias, keyword, List.of("email", "nickname"), WorkspaceMemberDocument.class, page * size, size);
+        SearchResponse<WorkspaceMemberDocument> response = searchDocumentsForMultipleFields(alias, keyword, List.of("email", "nickname"), WorkspaceMemberDocument.class, page, size);
+
+        // DTO로 변환
+        List<WorkspaceMemberSearchResultDto> workspaceMembers = response.hits().hits().stream()
+                .map(document -> WorkspaceMemberSearchResultDto.builder()
+                        .workspaceMemberId(document.source().getWorkspaceMemberId())
+                        .memberName(document.source().getMemberName())
+                        .email(document.source().getEmail())
+                        .profileImage(document.source().getProfileImage())
+                        .build())
+                .collect(Collectors.toList());
+
+        // 총 검색 결과 수와 함께 반환
+        return new SearchResultWithTotal<>(workspaceMembers, response.hits().total().value());
     }
 
     // 파일 검색
-    public List<FileEntityDocument> searchFiles(Long workspaceId, String keyword, int page, int size) {
+//    public List<FileSearchResultDto> searchFiles(Long workspaceId, String keyword, int page, int size) {
+//        String alias = getAliasForWorkspace(workspaceId);
+//        List<FileEntityDocument> documents = searchDocumentsForMultipleFields(alias, keyword, List.of("fileName"), FileEntityDocument.class, page * size, size);
+//
+//        return documents.stream().map(document -> FileSearchResultDto.builder()
+//                        .fileId(document.getFileId())
+//                        .fileName(document.getFileName())
+//                        .fileUrl(document.getFileUrl())
+//                        .folderId(document.getFolderId())
+//                        .build())
+//                .collect(Collectors.toList());
+//    }
+    // 파일 검색 (총 결과 수 포함)
+    public SearchResultWithTotal<FileSearchResultDto> searchFiles(Long workspaceId, String keyword, int page, int size) {
         String alias = getAliasForWorkspace(workspaceId);
-        return searchDocumentsForMultipleFields(alias, keyword, List.of("fileName"), FileEntityDocument.class, page * size, size);
+        SearchResponse<FileEntityDocument> response = searchDocumentsForMultipleFields(alias, keyword, List.of("fileName"), FileEntityDocument.class, page, size);
+
+        // DTO로 변환
+        List<FileSearchResultDto> files = response.hits().hits().stream()
+                .map(document -> FileSearchResultDto.builder()
+                        .fileId(document.source().getFileId())
+                        .fileName(document.source().getFileName())
+                        .fileUrl(document.source().getFileUrl())
+                        .folderId(document.source().getFolderId())
+                        .build())
+                .collect(Collectors.toList());
+
+        return new SearchResultWithTotal<>(files, response.hits().total().value());
     }
 
     // 채널 검색
-    public List<ChannelDocument> searchChannels(Long workspaceId, String keyword, int page, int size) {
+//    public List<ChannelSearchResultDto> searchChannels(Long workspaceId, String keyword, int page, int size) {
+//        String alias = getAliasForWorkspace(workspaceId);
+//        List<ChannelDocument> documents = searchDocumentsForMultipleFields(alias, keyword, List.of("channelName"), ChannelDocument.class, page * size, size);
+//
+//        return documents.stream().map(document -> ChannelSearchResultDto.builder()
+//                        .channelId(document.getChannelId())
+//                        .channelName(document.getChannelName())
+//                        .channelInfo(document.getChannelInfo())
+//                        .isPublic(document.getIsPublic())
+//                        .build())
+//                .collect(Collectors.toList());
+//    }
+
+    // 채널 검색 (총 결과 수 포함)
+    public SearchResultWithTotal<ChannelSearchResultDto> searchChannels(Long workspaceId, String keyword, int page, int size) {
         String alias = getAliasForWorkspace(workspaceId);
-        return searchDocumentsForMultipleFields(alias, keyword, List.of("channelName"), ChannelDocument.class, page * size, size);
+        SearchResponse<ChannelDocument> response = searchDocumentsForMultipleFields(alias, keyword, List.of("channelName"), ChannelDocument.class, page, size);
+
+        // DTO로 변환
+        List<ChannelSearchResultDto> channels = response.hits().hits().stream()
+                .map(document -> ChannelSearchResultDto.builder()
+                        .channelId(document.source().getChannelId())
+                        .channelName(document.source().getChannelName())
+                        .channelInfo(document.source().getChannelInfo())
+                        .isPublic(document.source().getIsPublic())
+                        .build())
+                .collect(Collectors.toList());
+
+        return new SearchResultWithTotal<>(channels, response.hits().total().value());
     }
 
     // 쓰레드 검색
-    public List<ThreadDocument> searchThreads(Long workspaceId, String keyword, int page, int size) {
+//    public List<ThreadSearchResultDto> searchThreads(Long workspaceId, String keyword, int page, int size) {
+//        String alias = getAliasForWorkspace(workspaceId);
+//        List<ThreadDocument> documents = searchDocumentsForMultipleFields(alias, keyword, List.of("title", "content"), ThreadDocument.class, page * size, size);
+//
+//        return documents.stream().map(document -> ThreadSearchResultDto.builder()
+//                        .threadId(document.getThreadId())
+//                        .content(document.getContent())
+//                        .memberName(document.getMemberName())
+//                        .channelId(document.getChannelId())
+//                        .createdTime(document.getCreatedTime())
+//                        .build())
+//                .collect(Collectors.toList());
+//    }
+
+    // 쓰레드 검색 (총 결과 수 포함)
+    public SearchResultWithTotal<ThreadSearchResultDto> searchThreads(Long workspaceId, String keyword, int page, int size) {
         String alias = getAliasForWorkspace(workspaceId);
-        return searchDocumentsForMultipleFields(alias, keyword, List.of("title", "content"), ThreadDocument.class, page * size, size);
+        SearchResponse<ThreadDocument> response = searchDocumentsForMultipleFields(alias, keyword, List.of("title", "content"), ThreadDocument.class, page, size);
+
+        // DTO로 변환
+        List<ThreadSearchResultDto> threads = response.hits().hits().stream()
+                .map(document -> ThreadSearchResultDto.builder()
+                        .threadId(document.source().getThreadId())
+                        .content(document.source().getContent())
+                        .memberName(document.source().getMemberName())
+                        .channelId(document.source().getChannelId())
+                        .createdTime(document.source().getCreatedTime())
+                        .build())
+                .collect(Collectors.toList());
+
+        return new SearchResultWithTotal<>(threads, response.hits().total().value());
     }
 
     // 캔버스 & 블록 검색
-    public List<CanvasBlockDocument> searchCanvasAndBlocks(Long workspaceId, String keyword, int page, int size) {
+//    public List<CanvasBlockSearchResultDto> searchCanvasAndBlocks(Long workspaceId, String keyword, int page, int size) {
+//        String alias = getAliasForWorkspace(workspaceId);
+//        List<CanvasBlockDocument> documents = searchDocumentsForMultipleFields(alias, keyword, List.of("canvasTitle", "blockContents"), CanvasBlockDocument.class, page * size, size);
+//
+//        return documents.stream().map(document -> CanvasBlockSearchResultDto.builder()
+//                        .id(document.getId())
+//                        .canvasTitle(document.getCanvasTitle())
+//                        .blockContents(document.getBlockContents())
+//                        .build())
+//                .collect(Collectors.toList());
+//    }
+
+    // 캔버스 & 블록 검색 (총 결과 수 포함)
+    public SearchResultWithTotal<CanvasBlockSearchResultDto> searchCanvasAndBlocks(Long workspaceId, String keyword, int page, int size) {
         String alias = getAliasForWorkspace(workspaceId);
-        return searchDocumentsForMultipleFields(alias, keyword, List.of("canvasTitle", "blockContents"), CanvasBlockDocument.class, page * size, size);
+        SearchResponse<CanvasBlockDocument> response = searchDocumentsForMultipleFields(alias, keyword, List.of("canvasTitle", "blockContents"), CanvasBlockDocument.class, page, size);
+
+        // DTO로 변환
+        List<CanvasBlockSearchResultDto> canvasBlocks = response.hits().hits().stream()
+                .map(document -> CanvasBlockSearchResultDto.builder()
+                        .id(document.source().getId())
+                        .canvasTitle(document.source().getCanvasTitle())
+                        .blockContents(document.source().getBlockContents())
+                        .build())
+                .collect(Collectors.toList());
+
+        return new SearchResultWithTotal<>(canvasBlocks, response.hits().total().value());
     }
 
     // 전체 검색 (모든 인덱스에서 검색)
-    public List<Object> searchAll(Long workspaceId, String keyword, int page, int size) {
-        List<Object> results = new ArrayList<>();
-        String alias = getAliasForWorkspace(workspaceId);
-        int from = page * size;
+    public CombinedSearchResultDto searchAll(Long workspaceId, String keyword, int page, int size) {
+        SearchResultWithTotal<WorkspaceMemberSearchResultDto> memberResult = searchWorkspaceMembers(workspaceId, keyword, page, size);
+        SearchResultWithTotal<FileSearchResultDto> fileResult = searchFiles(workspaceId, keyword, page, size);
+        SearchResultWithTotal<ChannelSearchResultDto> channelResult = searchChannels(workspaceId, keyword, page, size);
+        SearchResultWithTotal<ThreadSearchResultDto> threadResult = searchThreads(workspaceId, keyword, page, size);
+        SearchResultWithTotal<CanvasBlockSearchResultDto> canvasBlockResult = searchCanvasAndBlocks(workspaceId, keyword, page, size);
 
-        results.addAll(searchWorkspaceMembers(workspaceId, keyword, from, size));
-        results.addAll(searchFiles(workspaceId, keyword, from, size));
-        results.addAll(searchChannels(workspaceId, keyword, from, size));
-        results.addAll(searchThreads(workspaceId, keyword, from, size));
-        results.addAll(searchCanvasAndBlocks(workspaceId, keyword, from, size));
 
-        return results;
+        return CombinedSearchResultDto.builder()
+                .workspaceMembers(memberResult.getResults())
+                .files(fileResult.getResults())
+                .channels(channelResult.getResults())
+                .threads(threadResult.getResults())
+                .canvasBlocks(canvasBlockResult.getResults())
+                .totalMembers(memberResult.getTotal())
+                .totalFiles(fileResult.getTotal())
+                .totalChannels(channelResult.getTotal())
+                .totalThreads(threadResult.getTotal())
+                .totalCanvasBlocks(canvasBlockResult.getTotal())
+                .build();
     }
 
     // 워크스페이스 멤버 인덱스 저장
