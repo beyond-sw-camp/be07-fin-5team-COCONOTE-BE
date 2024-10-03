@@ -6,6 +6,7 @@ import com.example.coconote.api.channel.channel.dto.response.ChannelDetailResDto
 import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channel.service.ChannelService;
 import com.example.coconote.api.drive.dto.response.FolderAllListResDto;
+import com.example.coconote.api.workspace.workspace.dto.response.WorkspaceListResDto;
 import com.example.coconote.common.CommonResDto;
 import com.example.coconote.security.util.CustomPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
@@ -73,6 +74,14 @@ public class ChannelController {
     public ResponseEntity<Object> bookmarkList(@PathVariable Long workspaceId, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
         List<ChannelDetailResDto> dtos = channelService.bookmarkList(workspaceId, customPrincipal.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "list is successfully found", dtos);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
+    @Operation(summary= "사이트 첫 접속시 첫번째 채널")
+    @GetMapping("/{workspaceId}/channel/first")
+    public ResponseEntity<Object> channelFirst(@PathVariable Long workspaceId, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        ChannelDetailResDto dto = channelService.channelFirst(workspaceId, customPrincipal.getEmail());
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "channel is successfully found", dto);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 

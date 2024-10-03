@@ -15,6 +15,6 @@ public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember
     List<WorkspaceMember> findByWorkspaceAndIsDeleted(Workspace workspace, IsDeleted isDeleted);
     Optional<WorkspaceMember> findByMemberAndWorkspaceAndIsDeleted(Member member, Workspace workspace, IsDeleted isDeleted);
     List<WorkspaceMember> findByMemberAndIsDeleted(Member member, IsDeleted isDeleted);
-
     Optional<WorkspaceMember> findByMemberAndWorkspace(Member member, Workspace workspace);
+
 }

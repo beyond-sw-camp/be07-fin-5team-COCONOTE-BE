@@ -13,4 +13,5 @@ import java.util.Optional;
 public interface ChannelMemberRepository extends JpaRepository<ChannelMember, Long> {
     List<ChannelMember> findByChannelAndIsDeleted(Channel channel, IsDeleted isDeleted);
     Optional<ChannelMember> findByChannelAndWorkspaceMemberAndIsDeleted(Channel channel, WorkspaceMember workspaceMember, IsDeleted isDeleted);
+    List<ChannelMember> findByWorkspaceMemberAndIsDeleted(WorkspaceMember workspaceMember, IsDeleted isDeleted);
 }

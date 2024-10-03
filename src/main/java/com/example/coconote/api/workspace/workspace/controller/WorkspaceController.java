@@ -66,6 +66,14 @@ public class WorkspaceController {
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
+    @Operation(summary= "사이트 첫 접속시 첫번째 워크스페이스")
+    @GetMapping("/workspace/first")
+    public ResponseEntity<Object> workspaceFirst(@AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        WorkspaceListResDto dto = workspaceService.workspaceFirst(customPrincipal.getEmail());
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "workspace is successfully found", dto);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
 
 
 

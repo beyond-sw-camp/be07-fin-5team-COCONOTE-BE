@@ -18,7 +18,7 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI customOpenAPI() {
             Server server = new Server();
-            server.setUrl("https://coconote.jsangmin.co.kr");
+            server.setUrl("https://server.coconote.site");
             server.description("coconote-dev");
 
             Server localServer = new Server();

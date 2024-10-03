@@ -152,4 +152,9 @@ public class WorkspaceService {
         workspace.deleteEntity();
     }
 
+    public WorkspaceListResDto workspaceFirst(String email) {
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+        List<WorkspaceMember> workspaceMembers = workspaceMemberRepository.findByMemberAndIsDeleted(member, IsDeleted.N);
+        return workspaceMembers.get(0).getWorkspace().fromEntity();
+    }
 }
