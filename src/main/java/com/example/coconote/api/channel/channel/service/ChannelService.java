@@ -225,4 +225,16 @@ public class ChannelService {
         }
         return channelMembers.get(0).getChannel().fromEntity(channelMembers.get(0).getChannel().getSection());
     }
+
+    public boolean channelIsJoin(Long id, String email) {
+        Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+        Channel channel = channelRepository.findById(id).orElseThrow(()-> new EntityNotFoundException("채널을 찾을 수 없습니다."));
+        Section section = sectionRepository.findById(channel.getSection().getSectionId()).orElseThrow(()-> new EntityNotFoundException("섹션을 찾을 수 없습니다."));
+        Workspace workspace = workspaceRepository.findById(section.getWorkspace().getWorkspaceId()).orElseThrow(()-> new EntityNotFoundException("워크스페이스를 찾을 수 없습니다."));
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("워크스페이스멤버를 찾을 수 없습니다."));
+
+//        채널멤버가 존재하면 true, 존재하지 않으면 false
+        ChannelMember channelMember = channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, workspaceMember, IsDeleted.N).orElse(null);
+        return channelMember != null;
+    }
 }

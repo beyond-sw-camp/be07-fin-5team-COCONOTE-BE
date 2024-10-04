@@ -17,6 +17,9 @@ import org.springframework.security.oauth2.client.web.AuthorizationRequestReposi
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @RequiredArgsConstructor
@@ -38,6 +41,7 @@ public class TokenSecurityConfig {
     // 스프링 시큐리티는 이 **SecurityFilterChain**을 통해 필터를 실행하고, 모든 요청에 대해 인증과 인가 규칙을 적용합니다.
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))  // Spring Security에서 CORS 설정 추가
                 // 1. 비활성화 (필터 순서에서 첫 번째로 설정됨)
                 .csrf(AbstractHttpConfigurer::disable)  // CSRF 비활성화
                 .securityContext(context -> context.requireExplicitSave(false))  // 기본 보안 컨텍스트 관리 비활성화
@@ -88,5 +92,21 @@ public class TokenSecurityConfig {
         // build() 메서드는 HttpSecurity 객체에 설정된 모든 보안 규칙을 적용하고, 이를 통해 **필터 체인(SecurityFilterChain)**을 구성
         // http.build()는 설정된 **HttpSecurity**를 **SecurityFilterChain**으로 빌드한 후 반환합니다.
         return http.build();
+    }
+
+    // CORS 설정을 정의하는 메서드
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.addAllowedOrigin("http://localhost:3000");
+        configuration.addAllowedOrigin("http://localhost:8082");
+        configuration.addAllowedOrigin("https://coconote.site");
+        configuration.addAllowedMethod("*");  // 모든 HTTP 메서드를 허용
+        configuration.addAllowedHeader("*");  // 모든 헤더를 허용
+        configuration.setAllowCredentials(true);  // 자격 증명 허용
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/api/**", configuration);  // CORS 규칙을 "/api/**" 경로에 적용
+        return source;
     }
 }

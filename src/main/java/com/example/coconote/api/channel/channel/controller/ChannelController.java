@@ -85,4 +85,12 @@ public class ChannelController {
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
+    @Operation(summary= "채널 가입이 되어있는지 아닌지 확인")
+    @GetMapping("/channel/{channelId}/isjoin")
+    public ResponseEntity<Object> channelIsJoin(@PathVariable Long channelId, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        boolean isJoin = channelService.channelIsJoin(channelId, customPrincipal.getEmail());
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "channel is successfully found", isJoin);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
 }
