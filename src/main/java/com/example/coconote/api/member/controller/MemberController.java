@@ -1,7 +1,12 @@
 package com.example.coconote.api.member.controller;
 
+import com.example.coconote.api.channel.channelMember.dto.response.ChannelMemberListResDto;
+import com.example.coconote.api.member.service.MemberService;
+import com.example.coconote.api.workspace.workspaceMember.dto.response.WorkspaceMemberResDto;
+import com.example.coconote.common.CommonResDto;
 import com.example.coconote.security.util.CustomPrincipal;
 import com.example.coconote.security.token.JwtTokenProvider;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,11 +19,25 @@ import org.springframework.web.bind.annotation.*;
 public class MemberController {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final MemberService memberService;
 
-    @GetMapping("/me")
-    public String getMemberInfo(@AuthenticationPrincipal CustomPrincipal customPrincipal) {
-        return "Logged in user: " + customPrincipal.getEmail() + ", Member ID: " + customPrincipal.getMemberId() + ", Member Nickname: " + customPrincipal.getNickname();
+    @Operation(summary= "나의 워크스페이스 내에서의 정보 반환")
+    @GetMapping("/me/workspace/{workspaceId}")
+    public ResponseEntity<Object> getWorkspaceMemberInfo(@PathVariable Long workspaceId, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        WorkspaceMemberResDto workspaceMemberResDto = memberService.getWorkspaceMemberInfo(workspaceId, customPrincipal.getEmail());
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "member is successfully found", workspaceMemberResDto);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
+
+
+    @Operation(summary= "나의 채널 내에서의 정보 반환")
+    @GetMapping("/me/channel/{channelId}")
+    public ResponseEntity<Object> getChannelMemberInfo(@PathVariable Long channelId, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        ChannelMemberListResDto channelMemberListResDto = memberService.getChannelMemberInfo(channelId, customPrincipal.getEmail());
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "member is successfully found", channelMemberListResDto);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
 
     // 토큰에서 memberId와 email 확인하는 API 추가
     @GetMapping("/check-token")

@@ -41,6 +41,16 @@ public class WorkspaceMemberController {
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
+    @Operation(summary= "웤스 회원 상세 조회")
+    @GetMapping("/workspace/member/{workspaceMemberId}")
+    public ResponseEntity<Object> workspaceMemberDetail(@PathVariable Long workspaceMemberId) {
+        WorkspaceMemberResDto dto = workspaceMemberService.workspaceMemberDetail(workspaceMemberId);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "member is successfully found", dto);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
+
+
     @Operation(summary= "웤스 회원 정보 수정")
     @PatchMapping("/workspace/member/update/{id}")
     public ResponseEntity<Object> workspaceMemberUpdate(@PathVariable Long id, WorkspaceMemberUpdateReqDto dto) {

@@ -46,6 +46,7 @@ public class Channel extends BaseEntity {
     @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL)
     private List<Folder> folders;
 
+
     // 캔버스 관계
 //    @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL)
 //    private List<Canvas> canvas;
