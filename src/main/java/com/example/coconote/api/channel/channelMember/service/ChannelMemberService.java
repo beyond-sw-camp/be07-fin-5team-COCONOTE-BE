@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Transactional
@@ -120,5 +121,40 @@ public class ChannelMemberService {
         WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("워크스페이스 회원을 찾을 수 없습니다."));
         ChannelMember channelMember = channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, workspaceMember, IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("채널 회원을 찾을 수 없습니다."));
         return channelMember.getChannelRole().equals(ChannelRole.MANAGER);
+    }
+
+    @Transactional
+    public ChannelMemberListResDto channelMemberInvite(Long channelId, Long workspaceMemberId, String email) {
+//        자기 자신 검증
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 회원입니다."));
+        Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 채널입니다."));
+        if(channel.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("이미 삭제된 채널입니다.");
+        }
+        WorkspaceMember selfWorkspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, channel.getSection().getWorkspace(), IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 회원입니다."));
+        if(selfWorkspaceMember.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("이미 탈퇴한 회원입니다.");
+        }
+        if(channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, selfWorkspaceMember, IsDeleted.N).isEmpty()) {
+            throw new IllegalArgumentException("채널에 가입되어 있지 않은 회원입니다.");
+        }
+//        초대할 회원 검증
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findById(workspaceMemberId).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 회원입니다."));
+        if(workspaceMember.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("이미 탈퇴한 회원입니다.");
+        }
+        if(channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, workspaceMember, IsDeleted.N).isPresent()) {
+            throw new IllegalArgumentException("이미 채널에 가입되어 있는 회원입니다.");
+        }
+//        같은 워크스페이스의 회원만 초대 가능
+        if (!Objects.equals(selfWorkspaceMember.getWorkspace().getWorkspaceId(), workspaceMember.getWorkspace().getWorkspaceId())) {
+            throw new IllegalArgumentException("같은 워크스페이스의 회원만 초대할 수 있습니다.");
+        }
+        ChannelMember channelMember = ChannelMember.builder()
+                .channel(channel)
+                .workspaceMember(workspaceMember)
+                .build();
+        channelMemberRepository.save(channelMember);
+        return channelMember.fromEntity();
     }
 }

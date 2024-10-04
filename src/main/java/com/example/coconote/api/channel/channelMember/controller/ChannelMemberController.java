@@ -22,11 +22,19 @@ public class ChannelMemberController {
         this.channelMemberService = channelMemberService;
     }
 
-    @Operation(summary= "채널 회원 생성(초대/가입)")
+    @Operation(summary= "채널 회원 생성(가입)")
     @PostMapping("/channel/member/create/{channelId}") // 채널 가입
     public ResponseEntity<Object> channelMemberCreate(@PathVariable Long channelId, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
         ChannelMemberListResDto resDto = channelMemberService.channelMemberCreate(channelId, customPrincipal.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "member is successfully created", resDto);
+        return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
+    }
+
+    @Operation(summary= "채널 회원 생성 (초대)")
+    @PostMapping("/channel/member/invite/{channelId}") // 채널 초대
+    public ResponseEntity<Object> channelMemberInvite(@PathVariable Long channelId, @RequestParam Long workspaceMemberId, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        ChannelMemberListResDto resDto = channelMemberService.channelMemberInvite(channelId, workspaceMemberId, customPrincipal.getEmail());
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "member is successfully invited", resDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }
 
