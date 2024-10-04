@@ -56,8 +56,8 @@ public class TokenSecurityConfig {
                 // 2. 요청 인가 처리 (리소스에 접근하기 전에 인증된 사용자만 접근 허용)
                 .authorizeHttpRequests(authorizeRequests ->
                                 authorizeRequests
-//                                        .requestMatchers("/**").permitAll()
-                                .requestMatchers("/" , "/login**" , "/error", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**").permitAll()
+                                        .requestMatchers("/**").permitAll()
+//                                .requestMatchers("/" , "/login**" , "/error", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**").permitAll()
                                         .anyRequest().authenticated()
                 )
 
