@@ -30,7 +30,7 @@ public class MemberController {
     }
 
 
-    @Operation(summary= "나의 워크스페이스 내에서의 정보 반환")
+    @Operation(summary= "나의 채널 내에서의 정보 반환")
     @GetMapping("/me/channel/{channelId}")
     public ResponseEntity<Object> getChannelMemberInfo(@PathVariable Long channelId, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
         ChannelMemberListResDto channelMemberListResDto = memberService.getChannelMemberInfo(channelId, customPrincipal.getEmail());
