@@ -1,7 +1,10 @@
 package com.example.coconote.api.member.controller;
 
+import com.example.coconote.api.workspace.workspaceMember.dto.response.WorkspaceMemberResDto;
+import com.example.coconote.common.CommonResDto;
 import com.example.coconote.security.util.CustomPrincipal;
 import com.example.coconote.security.token.JwtTokenProvider;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +18,11 @@ public class MemberController {
 
     private final JwtTokenProvider jwtTokenProvider;
 
+    @Operation(summary= "내 멤버 아이디 반환")
     @GetMapping("/me")
-    public String getMemberInfo(@AuthenticationPrincipal CustomPrincipal customPrincipal) {
-        return "Logged in user: " + customPrincipal.getEmail() + ", Member ID: " + customPrincipal.getMemberId() + ", Member Nickname: " + customPrincipal.getNickname();
+    public ResponseEntity<Object> getMemberInfo(@AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "member is successfully found", customPrincipal.getMemberId());
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
     // 토큰에서 memberId와 email 확인하는 API 추가
