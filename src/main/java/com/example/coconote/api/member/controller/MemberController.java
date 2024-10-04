@@ -1,5 +1,7 @@
 package com.example.coconote.api.member.controller;
 
+import com.example.coconote.api.channel.channelMember.dto.response.ChannelMemberListResDto;
+import com.example.coconote.api.member.service.MemberService;
 import com.example.coconote.api.workspace.workspaceMember.dto.response.WorkspaceMemberResDto;
 import com.example.coconote.common.CommonResDto;
 import com.example.coconote.security.util.CustomPrincipal;
@@ -17,13 +19,25 @@ import org.springframework.web.bind.annotation.*;
 public class MemberController {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final MemberService memberService;
 
-    @Operation(summary= "내 멤버 아이디 반환")
-    @GetMapping("/me")
-    public ResponseEntity<Object> getMemberInfo(@AuthenticationPrincipal CustomPrincipal customPrincipal) {
-        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "member is successfully found", customPrincipal.getMemberId());
+    @Operation(summary= "나의 워크스페이스 내에서의 정보 반환")
+    @GetMapping("/me/workspace/{workspaceId}")
+    public ResponseEntity<Object> getWorkspaceMemberInfo(@PathVariable Long workspaceId, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        WorkspaceMemberResDto workspaceMemberResDto = memberService.getWorkspaceMemberInfo(workspaceId, customPrincipal.getEmail());
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "member is successfully found", workspaceMemberResDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
+
+
+    @Operation(summary= "나의 워크스페이스 내에서의 정보 반환")
+    @GetMapping("/me/channel/{channelId}")
+    public ResponseEntity<Object> getChannelMemberInfo(@PathVariable Long channelId, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        ChannelMemberListResDto channelMemberListResDto = memberService.getChannelMemberInfo(channelId, customPrincipal.getEmail());
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "member is successfully found", channelMemberListResDto);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
 
     // 토큰에서 memberId와 email 확인하는 API 추가
     @GetMapping("/check-token")
