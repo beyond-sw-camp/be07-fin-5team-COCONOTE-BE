@@ -133,4 +133,9 @@ public class WorkspaceMemberService {
     private Member getMemberByEmail(String email){
         return memberRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
     }
+
+    public WorkspaceMemberResDto workspaceMemberDetail(Long workspaceMemberId) {
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findById(workspaceMemberId).orElseThrow(()-> new EntityNotFoundException("회원을 조회할 수 없습니다."));
+        return workspaceMember.fromEntity();
+    }
 }
