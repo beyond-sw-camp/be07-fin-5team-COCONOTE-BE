@@ -18,6 +18,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.search.Search;
 import jakarta.annotation.PostConstruct;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -149,128 +150,33 @@ public class BlockService {
 
 
     public List<BlockListResDto> getBlockListFromCanvas(Long canvasId) {
-        List<Block> blocks = blockRepository.findByCanvasIdAndIsDeleted(canvasId, IsDeleted.N);
-
-        List<BlockListResDto> result = new ArrayList<>();
-        Map<Long, BlockListResDto> idToDtoMap = new HashMap<>();
-        Map<String, Integer> siblingPlaceholders = new HashMap<>();
-
-        for (Block block : blocks) {
-            BlockListResDto dto = convertToDto(block);
-            addBlockToResult(dto, result, idToDtoMap, siblingPlaceholders);
-        }
-
-        return result;
-    }
-
-    private static BlockListResDto convertToDto(Block block) {
-        return BlockListResDto.builder()
-                .id(block.getId())
-                .content(block.getContents())
-                .feId(block.getFeId())
-                .type(block.getType())
-                .member(block.getMember())
-                .prevBlockFeId(block.getPrevBlock() != null ? block.getPrevBlock().getFeId() : null)
-                .build();
-    }
-
-    private static void addBlockToResult(BlockListResDto dto, List<BlockListResDto> result,
-                                         Map<Long, BlockListResDto> idToDtoMap,
-                                         Map<String, Integer> siblingPlaceholders) {
-        // 부모가 존재할 경우 형제 블록 자리 마련
-        if (dto.getPrevBlockFeId() != null) {
-            // 참조 ID가 결과에 이미 존재하지 않다면 자리를 마련
-            if (!idToDtoMap.containsKey(dto.getPrevBlockFeId())) {
-                siblingPlaceholders.putIfAbsent(dto.getPrevBlockFeId(), result.size());
-                // 결과 리스트에 자리만 만들어 놓음 (placeholder)
-                result.add(null); // 자리 마련
-            }
-        }
-
-        // 현재 블록을 추가
-        if (!idToDtoMap.containsKey(dto.getId())) {
-            idToDtoMap.put(dto.getId(), dto);
-            if (dto.getPrevBlockFeId() != null && siblingPlaceholders.containsKey(dto.getPrevBlockFeId())) {
-                // 형제 블록 자리에 현재 블록을 추가
-                result.set(siblingPlaceholders.get(dto.getPrevBlockFeId()), dto);
-            } else {
-                // 일반 추가
-                result.add(dto);
-            }
-        }
-    }
-
-
-//    public List<BlockListResDto> getBlockListFromCanvas(Long canvasId) {
 //        List<Block> blocks = blockRepository.findByCanvasIdAndIsDeleted(canvasId, IsDeleted.N);
-//
-//        // 블록을 매핑할 Map
-//        Map<String, BlockListResDto> blockDtoMap = blocks.stream()
-//                .collect(Collectors.toMap(Block::getFeId, Block::fromEntity));
-//
-//        // 부모 블록을 기준으로 그룹화
-//        Map<String, List<Block>> parentBlockMap = blocks.stream()
-//                .collect(Collectors.groupingBy(block -> block.getParentBlock() != null
-//                        ? block.getParentBlock().getFeId()
-//                        : "root"));
-//
-//        List<BlockListResDto> rootBlocks = new ArrayList<>();
-//
-//        // 각 부모 블록 그룹별로 처리
-//        for (String parentFeId : parentBlockMap.keySet()) {
-//            List<Block> groupedBlocks = parentBlockMap.get(parentFeId);
-//
-//            // prevBlock을 기준으로 정렬 (null은 맨 앞)
-//            groupedBlocks.sort(Comparator.comparing(block -> block.getPrevBlock() != null
-//                    ? block.getPrevBlock().getFeId()
-//                    : null, Comparator.nullsFirst(String::compareTo)));
-//
-//            for (Block block : groupedBlocks) {
-//                BlockListResDto currentBlockDto = blockDtoMap.get(block.getFeId());
-//
-//                if (parentFeId.equals("root")) {
-//                    // 루트 블록 처리
-//                    rootBlocks.add(currentBlockDto);
-//                } else {
-//                    // 부모 블록이 존재할 때 자식 블록 리스트에 추가
-//                    BlockListResDto parentBlockDto = blockDtoMap.get(parentFeId);
-//                    String prevBlockId = block.getPrevBlock() != null ? block.getPrevBlock().getFeId() : null;
-//                    insertBlockInOrder(parentBlockDto.getChildBlock(), currentBlockDto,
-//                            prevBlockId != null ? blockDtoMap.get(prevBlockId).getPrevBlockFeId() : null);
-//                }
-//            }
-//        }
-//
-//        return rootBlocks;
-//    }
 
+        List<BlockListResDto> blockResult = new ArrayList<>();
 
-    // 형제 블록 사이의 올바른 위치에 삽입하는 메서드
-//    private void insertBlockInOrder(List<BlockListResDto> childBlocks, BlockListResDto newBlock, String prevBlockFeId) {
-//        if (prevBlockFeId == null) {
-//            // 이전 블록이 없으면 맨 앞에 삽입
-//            childBlocks.add(0, newBlock);
-//        } else {
-//            // 이전 블록이 존재할 때
-//            boolean inserted = false; // 삽입 여부를 추적하는 플래그
-//
-//            for (int i = 0; i < childBlocks.size(); i++) {
-//                BlockListResDto block = childBlocks.get(i);
-//                if (block.getFeId().equals(prevBlockFeId)) {
-//                    // 이전 블록 뒤에 삽입
-//                    childBlocks.add(i + 1, newBlock);
-//                    inserted = true;
-//                    break;
-//                }
-//            }
-//
-//            if (!inserted) {
-//                // 이전 블록이 존재하지 않으면 맨 뒤에 추가
-//                childBlocks.add(newBlock);
-//            }
-//        }
-//    }
+        Block firstBlock = blockRepository.findByCanvasIdAndIsDeletedAndPrevBlock_FeIdAndParentBlock_FeId(
+                canvasId,
+                IsDeleted.N,
+                null,
+                null
+        ).orElseThrow(() -> new EntityNotFoundException("첫번째 순서의 블록을 찾을 수 없습니다."));
 
+        blockResult.add(firstBlock.fromEntity());
+
+        Boolean isWhile = true;
+        Block prevTargetBlock = firstBlock.copy();
+        while (isWhile) {
+            Block block = blockRepository.findByPrevBlockFeIdAndIsDeleted(prevTargetBlock.getFeId(), IsDeleted.N).orElse(null);
+            if(block == null){ // 더이상 넣을 값이 없음 (마지막 순서의 block
+                isWhile = false;
+                break;
+            }
+            prevTargetBlock = block.copy();
+            blockResult.add(block.fromEntity());
+        }
+
+        return blockResult;
+    }
 
     //    ================= 통신전용
     private final SimpMessageSendingOperations messagingTemplate;
