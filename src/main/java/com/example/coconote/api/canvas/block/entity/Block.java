@@ -91,6 +91,7 @@ public class Block extends BaseEntity {
                 .type(this.getType())
                 .content(this.contents)
                 .member(this.member)
+                .prevBlockFeId(this.prevBlock != null ? this.prevBlock.getFeId() : null) // 이전 블록의 feId 설정
                 .build();
     }
 }

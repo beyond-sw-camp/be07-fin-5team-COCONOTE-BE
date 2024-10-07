@@ -26,10 +26,8 @@ import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -81,7 +79,7 @@ public class BlockService {
 
 //        prev block 존재 및 이전에 해당 prev block을 갖고있는 block 주소 업데이트
         if (prevBlock != null) {
-            Block originalPrevBlockHolder = blockRepository.findByPrevBlockId(prevBlock.getId())
+            Block originalPrevBlockHolder = blockRepository.findByPrevBlockIdAndIsDeleted(prevBlock.getId(), IsDeleted.N)
                     .orElse(null);
             if (originalPrevBlockHolder != null) {
                 originalPrevBlockHolder.changePrevBlock(block);
@@ -138,7 +136,7 @@ public class BlockService {
                 .orElse(null);
 
         // 삭제하는 block을 참조하고 있던 block의 prev 값을 현 삭제 block의 prev 값으로 수정
-        if(prevLinkedBlock != null){
+        if (prevLinkedBlock != null) {
             prevLinkedBlock.changePrevBlock(block.getPrevBlock());
         }
 
@@ -149,61 +147,129 @@ public class BlockService {
         return true;
     }
 
+
     public List<BlockListResDto> getBlockListFromCanvas(Long canvasId) {
         List<Block> blocks = blockRepository.findByCanvasIdAndIsDeleted(canvasId, IsDeleted.N);
 
-        // 부모 블록을 기준으로 트리를 만들기 위한 Map 생성
-        Map<String, BlockListResDto> blockMap = blocks.stream()
-                .collect(Collectors.toMap(Block::getFeId, Block::fromEntity));
+        List<BlockListResDto> result = new ArrayList<>();
+        Map<Long, BlockListResDto> idToDtoMap = new HashMap<>();
+        Map<String, Integer> siblingPlaceholders = new HashMap<>();
 
-        // 부모-자식 관계 설정
-        List<BlockListResDto> rootBlocks = new ArrayList<>();
         for (Block block : blocks) {
-            BlockListResDto currentBlockDto = blockMap.get(block.getFeId());
+            BlockListResDto dto = convertToDto(block);
+            addBlockToResult(dto, result, idToDtoMap, siblingPlaceholders);
+        }
 
-            // rootBlocks 에서 block이 이미 존재하는지 확인
-//            for (BlockListResDto rootBlock : rootBlocks) {
-//                if (rootBlock.getFeId().equals(block.getFeId())) {
-//                    // 이미 존재하면 해당 블록의 content만 업데이트
-//                    rootBlock.setContent(currentBlockDto.getContent());
-//                    continue; // 현재 루프를 끝내고 다음 블록으로
-//                }
-//            }
+        return result;
+    }
 
-            if (block.getParentBlock() == null) {
-                // 부모 블록이 없는 경우 루트 블록으로 간주
-                rootBlocks.add(currentBlockDto);
-            } else {
-                // 부모 블록이 있는 경우 해당 부모의 자식 블록 리스트에 추가
-                BlockListResDto parentBlockDto = blockMap.get(block.getParentBlock().getFeId());
-                if (parentBlockDto != null) { // 부모블록이 있을 때
-                    String prevBlockId = block.getPrevBlock() != null ? block.getPrevBlock().getFeId() : null;
-                    insertBlockInOrder(parentBlockDto.getChildBlock(), currentBlockDto,
-                            prevBlockId != null ? blockMap.get(prevBlockId) : null);
-                } else { // 부모블록이 있지만 map에선 존재하지 않을 때
-                    BlockListResDto tempParentBlockDto = BlockListResDto.builder()
-                            .feId(block.getParentBlock().getFeId())
-                            .build();
+    private static BlockListResDto convertToDto(Block block) {
+        return BlockListResDto.builder()
+                .id(block.getId())
+                .content(block.getContents())
+                .feId(block.getFeId())
+                .type(block.getType())
+                .member(block.getMember())
+                .prevBlockFeId(block.getPrevBlock() != null ? block.getPrevBlock().getFeId() : null)
+                .build();
+    }
 
-                    rootBlocks.add(tempParentBlockDto);
-                }
+    private static void addBlockToResult(BlockListResDto dto, List<BlockListResDto> result,
+                                         Map<Long, BlockListResDto> idToDtoMap,
+                                         Map<String, Integer> siblingPlaceholders) {
+        // 부모가 존재할 경우 형제 블록 자리 마련
+        if (dto.getPrevBlockFeId() != null) {
+            // 참조 ID가 결과에 이미 존재하지 않다면 자리를 마련
+            if (!idToDtoMap.containsKey(dto.getPrevBlockFeId())) {
+                siblingPlaceholders.putIfAbsent(dto.getPrevBlockFeId(), result.size());
+                // 결과 리스트에 자리만 만들어 놓음 (placeholder)
+                result.add(null); // 자리 마련
             }
         }
 
-        return rootBlocks;
-    }
-
-    // 형제 블록 사이의 올바른 위치에 삽입하는 메서드
-    private void insertBlockInOrder(List<BlockListResDto> childBlocks, BlockListResDto newBlock, BlockListResDto prevBlock) {
-        if (prevBlock == null) {
-            // 이전 블록이 없으면 맨 앞에 삽입
-            childBlocks.add(0, newBlock);
-        } else {
-            // 이전 블록이 있으면 그 뒤에 삽입
-            int prevIndex = childBlocks.indexOf(prevBlock);
-            childBlocks.add(prevIndex + 1, newBlock);
+        // 현재 블록을 추가
+        if (!idToDtoMap.containsKey(dto.getId())) {
+            idToDtoMap.put(dto.getId(), dto);
+            if (dto.getPrevBlockFeId() != null && siblingPlaceholders.containsKey(dto.getPrevBlockFeId())) {
+                // 형제 블록 자리에 현재 블록을 추가
+                result.set(siblingPlaceholders.get(dto.getPrevBlockFeId()), dto);
+            } else {
+                // 일반 추가
+                result.add(dto);
+            }
         }
     }
+
+
+//    public List<BlockListResDto> getBlockListFromCanvas(Long canvasId) {
+//        List<Block> blocks = blockRepository.findByCanvasIdAndIsDeleted(canvasId, IsDeleted.N);
+//
+//        // 블록을 매핑할 Map
+//        Map<String, BlockListResDto> blockDtoMap = blocks.stream()
+//                .collect(Collectors.toMap(Block::getFeId, Block::fromEntity));
+//
+//        // 부모 블록을 기준으로 그룹화
+//        Map<String, List<Block>> parentBlockMap = blocks.stream()
+//                .collect(Collectors.groupingBy(block -> block.getParentBlock() != null
+//                        ? block.getParentBlock().getFeId()
+//                        : "root"));
+//
+//        List<BlockListResDto> rootBlocks = new ArrayList<>();
+//
+//        // 각 부모 블록 그룹별로 처리
+//        for (String parentFeId : parentBlockMap.keySet()) {
+//            List<Block> groupedBlocks = parentBlockMap.get(parentFeId);
+//
+//            // prevBlock을 기준으로 정렬 (null은 맨 앞)
+//            groupedBlocks.sort(Comparator.comparing(block -> block.getPrevBlock() != null
+//                    ? block.getPrevBlock().getFeId()
+//                    : null, Comparator.nullsFirst(String::compareTo)));
+//
+//            for (Block block : groupedBlocks) {
+//                BlockListResDto currentBlockDto = blockDtoMap.get(block.getFeId());
+//
+//                if (parentFeId.equals("root")) {
+//                    // 루트 블록 처리
+//                    rootBlocks.add(currentBlockDto);
+//                } else {
+//                    // 부모 블록이 존재할 때 자식 블록 리스트에 추가
+//                    BlockListResDto parentBlockDto = blockDtoMap.get(parentFeId);
+//                    String prevBlockId = block.getPrevBlock() != null ? block.getPrevBlock().getFeId() : null;
+//                    insertBlockInOrder(parentBlockDto.getChildBlock(), currentBlockDto,
+//                            prevBlockId != null ? blockDtoMap.get(prevBlockId).getPrevBlockFeId() : null);
+//                }
+//            }
+//        }
+//
+//        return rootBlocks;
+//    }
+
+
+    // 형제 블록 사이의 올바른 위치에 삽입하는 메서드
+//    private void insertBlockInOrder(List<BlockListResDto> childBlocks, BlockListResDto newBlock, String prevBlockFeId) {
+//        if (prevBlockFeId == null) {
+//            // 이전 블록이 없으면 맨 앞에 삽입
+//            childBlocks.add(0, newBlock);
+//        } else {
+//            // 이전 블록이 존재할 때
+//            boolean inserted = false; // 삽입 여부를 추적하는 플래그
+//
+//            for (int i = 0; i < childBlocks.size(); i++) {
+//                BlockListResDto block = childBlocks.get(i);
+//                if (block.getFeId().equals(prevBlockFeId)) {
+//                    // 이전 블록 뒤에 삽입
+//                    childBlocks.add(i + 1, newBlock);
+//                    inserted = true;
+//                    break;
+//                }
+//            }
+//
+//            if (!inserted) {
+//                // 이전 블록이 존재하지 않으면 맨 뒤에 추가
+//                childBlocks.add(newBlock);
+//            }
+//        }
+//    }
 
 
     //    ================= 통신전용
