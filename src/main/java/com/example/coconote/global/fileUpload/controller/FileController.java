@@ -1,5 +1,6 @@
 package com.example.coconote.global.fileUpload.controller;
 
+import com.example.coconote.api.workspace.workspaceMember.dto.response.WorkspaceMemberResDto;
 import com.example.coconote.common.CommonResDto;
 import com.example.coconote.global.fileUpload.dto.request.*;
 import com.example.coconote.global.fileUpload.dto.response.FileMetadataResDto;
@@ -37,6 +38,14 @@ public class FileController {
     public ResponseEntity<?> saveFileMetadata(@RequestBody FileMetadataReqDto fileMetadataList, @AuthenticationPrincipal CustomPrincipal member) {
         List<FileMetadataResDto> savedMetadata = s3Service.saveFileMetadata(fileMetadataList, member.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "File metadata saved successfully", savedMetadata);
+        return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
+    }
+
+    @Operation(summary = "프로필 이미지 URL 저장 API")
+    @PostMapping("/profile")
+    public ResponseEntity<?> saveProfileImage(@RequestBody ProfileImageReqDto profileImageReqDto, @AuthenticationPrincipal CustomPrincipal member) {
+        WorkspaceMemberResDto savedMetadata = s3Service.saveProfileImage(profileImageReqDto, member.getEmail());
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "Profile image saved successfully", savedMetadata);
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }
 
