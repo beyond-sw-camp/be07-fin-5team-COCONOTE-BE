@@ -53,7 +53,7 @@ public class WorkspaceMemberController {
 
     @Operation(summary= "웤스 회원 정보 수정")
     @PatchMapping("/workspace/member/update/{id}")
-    public ResponseEntity<Object> workspaceMemberUpdate(@PathVariable Long id, WorkspaceMemberUpdateReqDto dto) {
+    public ResponseEntity<Object> workspaceMemberUpdate(@PathVariable Long id, @RequestBody WorkspaceMemberUpdateReqDto dto) {
         WorkspaceMemberResDto resDto = workspaceMemberService.workspaceMemberUpdate(id, dto);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "member is successfully updated", resDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);

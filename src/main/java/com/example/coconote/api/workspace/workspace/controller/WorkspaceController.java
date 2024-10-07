@@ -42,6 +42,16 @@ public class WorkspaceController {
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
+
+    @Operation(summary= "특정 워크스페이스 정보 조회")
+    @GetMapping("/workspace/info/{workspaceId}")
+    public ResponseEntity<Object> workspaceInfo(@PathVariable Long workspaceId, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        WorkspaceListResDto dto = workspaceService.workspaceInfo(workspaceId, customPrincipal.getEmail());
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "workspace is successfully found", dto);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
+
     @Operation(summary= "워크스페이스 내 모든 섹션 및 채널 조회(워크스페이스 상세 조회)")
     @GetMapping("/workspace/detail/{workspaceId}")
     public ResponseEntity<Object> workspaceDetail(@PathVariable Long workspaceId, @AuthenticationPrincipal CustomPrincipal customPrincipal) {

@@ -120,6 +120,16 @@ public class WorkspaceService {
         return dtos;
     }
 
+    public WorkspaceListResDto workspaceInfo(Long workspaceId, String email) {
+        Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+        Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(()->new EntityNotFoundException("워크스페이스를 찾을 수 없습니다."));
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("워크스페이스 정보를 볼 수 있는 권한이 없습니다."));
+        if(workspace.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("이미 삭제된 워크스페이스입니다.");
+        }
+        return workspace.fromEntity();
+    }
+
     public List<SectionListResDto> workspaceDetail(Long workspaceId, String email) {
         Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("회원을 찾을 수 없습니다."));
         Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(()->new EntityNotFoundException("워크스페이스를 찾을 수 없습니다."));
@@ -157,4 +167,6 @@ public class WorkspaceService {
         List<WorkspaceMember> workspaceMembers = workspaceMemberRepository.findByMemberAndIsDeleted(member, IsDeleted.N);
         return workspaceMembers.get(0).getWorkspace().fromEntity();
     }
+
+
 }
