@@ -42,7 +42,7 @@ public class WebSocketController {
         if (MessageType.ENTER.equals(message.getType()))
             message.setContent(id + "님이 입장하셨습니다.");
 
-        kafkaTemplate.send("chat_topic", message.getChannelId().toString(), message);
+        kafkaTemplate.send("chat_topic", message);
 
 //        kafka 안거치고 바로 보낼때 사용
 //        ThreadResDto threadResDto = threadService.createThread(message);
