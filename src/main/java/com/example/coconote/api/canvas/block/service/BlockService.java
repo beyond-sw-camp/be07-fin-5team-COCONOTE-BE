@@ -158,16 +158,19 @@ public class BlockService {
 
         // 3. 블록을 저장할 최종 리스트
         List<BlockListResDto> result = new ArrayList<>();
+        Set<Long> visitedBlocks = new HashSet<>(); // 중복 방지를 위한 Set
 
-        // 4. 루트 블록 찾기: prev_block_fe_id와 parent_block_fe_id가 모두 null인 블록
+        // 4. 루트 블록 찾기: prev_block_fe_id가 null인 블록
         for (Block block : blocks) {
-            if (block.getPrevBlock() == null && block.getParentBlock() == null) {
+            if (block.getPrevBlock() == null) {
                 // 루트 블록이면 리스트에 추가
                 BlockListResDto rootBlockDto = convertToDto(block);
                 result.add(rootBlockDto);
+                visitedBlocks.add(block.getId());
 
-                // 루트 블록을 기반으로 자식과 형제 블록 추가
-                addChildAndSiblingBlocks(block, result, blockMap);
+                // 루트 블록을 기준으로 자식과 형제 블록 추가
+                addChildBlocks(block, result, blockMap, visitedBlocks);
+                addSiblingBlocks(block, result, blockMap, visitedBlocks);
             }
         }
 
@@ -185,32 +188,52 @@ public class BlockService {
                 .build();
     }
 
-    // 재귀적으로 자식 블록과 형제 블록을 추가하는 메서드
-    private void addChildAndSiblingBlocks(Block currentBlock, List<BlockListResDto> result, Map<Long, Block> blockMap) {
-        // 1. 현재 블록의 자식 블록 처리
+    // 재귀적으로 자식 블록을 추가하는 메서드
+    private void addChildBlocks(Block parentBlock, List<BlockListResDto> result, Map<Long, Block> blockMap, Set<Long> visitedBlocks) {
         for (Block block : blockMap.values()) {
-            if (block.getParentBlock() != null && block.getParentBlock().getId().equals(currentBlock.getId())) {
+            if (block.getParentBlock() != null && block.getParentBlock().getId().equals(parentBlock.getId())) {
+                // 이미 방문한 블록이면 건너뜀
+                if (visitedBlocks.contains(block.getId())) {
+                    continue;
+                }
+
                 // 부모가 현재 블록인 자식 블록을 찾고 리스트에 추가
                 BlockListResDto childBlockDto = convertToDto(block);
                 result.add(childBlockDto);
+                visitedBlocks.add(block.getId());
 
-                // 자식 블록을 기반으로 다시 자식 및 형제 블록을 처리 (재귀 호출)
-                addChildAndSiblingBlocks(block, result, blockMap);
-            }
-        }
+                // 자식 블록을 기준으로 다시 자식 블록을 추가 (재귀 호출)
+                addChildBlocks(block, result, blockMap, visitedBlocks);
 
-        // 2. 형제 블록 처리: prev_block_fe_id가 현재 블록 ID인 블록들을 처리
-        for (Block block : blockMap.values()) {
-            if (block.getPrevBlock() != null && block.getPrevBlock().getId().equals(currentBlock.getId())) {
-                // 현재 블록을 prev_block_fe_id로 가진 형제 블록을 리스트에 추가
-                BlockListResDto siblingBlockDto = convertToDto(block);
-                result.add(siblingBlockDto);
-
-                // 형제 블록을 기준으로 다시 자식 및 형제 블록을 처리 (재귀 호출)
-                addChildAndSiblingBlocks(block, result, blockMap);
+                // 자식 블록의 형제 블록을 추가 (재귀 호출)
+                addSiblingBlocks(block, result, blockMap, visitedBlocks);
             }
         }
     }
+
+    // 재귀적으로 형제 블록을 prev_block_fe_id에 따라 추가하는 메서드
+    private void addSiblingBlocks(Block currentBlock, List<BlockListResDto> result, Map<Long, Block> blockMap, Set<Long> visitedBlocks) {
+        for (Block block : blockMap.values()) {
+            if (block.getPrevBlock() != null && block.getPrevBlock().getId().equals(currentBlock.getId())) {
+                // 이미 방문한 블록이면 건너뜀
+                if (visitedBlocks.contains(block.getId())) {
+                    continue;
+                }
+
+                // prev_block_fe_id가 현재 블록인 형제 블록을 리스트에 추가
+                BlockListResDto siblingBlockDto = convertToDto(block);
+                result.add(siblingBlockDto);
+                visitedBlocks.add(block.getId());
+
+                // 형제 블록을 기준으로 다시 자식 블록 추가 (재귀 호출)
+                addChildBlocks(block, result, blockMap, visitedBlocks);
+
+                // 형제 블록의 형제 블록을 추가 (재귀 호출)
+                addSiblingBlocks(block, result, blockMap, visitedBlocks);
+            }
+        }
+    }
+
 
 
 
