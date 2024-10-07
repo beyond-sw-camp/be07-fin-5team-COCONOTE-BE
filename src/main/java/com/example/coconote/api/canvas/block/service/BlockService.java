@@ -149,21 +149,32 @@ public class BlockService {
 
 
     public List<BlockListResDto> getBlockListFromCanvas(Long canvasId) {
+        // 1. 데이터베이스에서 모든 블록을 가져옴
         List<Block> blocks = blockRepository.findByCanvasIdAndIsDeleted(canvasId, IsDeleted.N);
 
-        List<BlockListResDto> result = new ArrayList<>();
-        Map<Long, BlockListResDto> idToDtoMap = new HashMap<>();
-        Map<String, Integer> siblingPlaceholders = new HashMap<>();
+        // 2. 블록들을 Map에 저장 (id -> Block)
+        Map<Long, Block> blockMap = blocks.stream()
+                .collect(Collectors.toMap(Block::getId, block -> block));
 
+        // 3. 블록을 저장할 최종 리스트
+        List<BlockListResDto> result = new ArrayList<>();
+
+        // 4. 루트 블록 찾기: prev_block_fe_id와 parent_block_fe_id가 모두 null인 블록
         for (Block block : blocks) {
-            BlockListResDto dto = convertToDto(block);
-            addBlockToResult(dto, result, idToDtoMap, siblingPlaceholders);
+            if (block.getPrevBlock() == null && block.getParentBlock() == null) {
+                // 루트 블록이면 리스트에 추가
+                BlockListResDto rootBlockDto = convertToDto(block);
+                result.add(rootBlockDto);
+
+                // 루트 블록을 기반으로 자식과 형제 블록 추가
+                addChildAndSiblingBlocks(block, result, blockMap);
+            }
         }
 
         return result;
     }
 
-    private static BlockListResDto convertToDto(Block block) {
+    private BlockListResDto convertToDto(Block block) {
         return BlockListResDto.builder()
                 .id(block.getId())
                 .content(block.getContents())
@@ -174,31 +185,33 @@ public class BlockService {
                 .build();
     }
 
-    private static void addBlockToResult(BlockListResDto dto, List<BlockListResDto> result,
-                                         Map<Long, BlockListResDto> idToDtoMap,
-                                         Map<String, Integer> siblingPlaceholders) {
-        // 부모가 존재할 경우 형제 블록 자리 마련
-        if (dto.getPrevBlockFeId() != null) {
-            // 참조 ID가 결과에 이미 존재하지 않다면 자리를 마련
-            if (!idToDtoMap.containsKey(dto.getPrevBlockFeId())) {
-                siblingPlaceholders.putIfAbsent(dto.getPrevBlockFeId(), result.size());
-                // 결과 리스트에 자리만 만들어 놓음 (placeholder)
-                result.add(null); // 자리 마련
+    // 재귀적으로 자식 블록과 형제 블록을 추가하는 메서드
+    private void addChildAndSiblingBlocks(Block currentBlock, List<BlockListResDto> result, Map<Long, Block> blockMap) {
+        // 1. 현재 블록의 자식 블록 처리
+        for (Block block : blockMap.values()) {
+            if (block.getParentBlock() != null && block.getParentBlock().getId().equals(currentBlock.getId())) {
+                // 부모가 현재 블록인 자식 블록을 찾고 리스트에 추가
+                BlockListResDto childBlockDto = convertToDto(block);
+                result.add(childBlockDto);
+
+                // 자식 블록을 기반으로 다시 자식 및 형제 블록을 처리 (재귀 호출)
+                addChildAndSiblingBlocks(block, result, blockMap);
             }
         }
 
-        // 현재 블록을 추가
-        if (!idToDtoMap.containsKey(dto.getId())) {
-            idToDtoMap.put(dto.getId(), dto);
-            if (dto.getPrevBlockFeId() != null && siblingPlaceholders.containsKey(dto.getPrevBlockFeId())) {
-                // 형제 블록 자리에 현재 블록을 추가
-                result.set(siblingPlaceholders.get(dto.getPrevBlockFeId()), dto);
-            } else {
-                // 일반 추가
-                result.add(dto);
+        // 2. 형제 블록 처리: prev_block_fe_id가 현재 블록 ID인 블록들을 처리
+        for (Block block : blockMap.values()) {
+            if (block.getPrevBlock() != null && block.getPrevBlock().getId().equals(currentBlock.getId())) {
+                // 현재 블록을 prev_block_fe_id로 가진 형제 블록을 리스트에 추가
+                BlockListResDto siblingBlockDto = convertToDto(block);
+                result.add(siblingBlockDto);
+
+                // 형제 블록을 기준으로 다시 자식 및 형제 블록을 처리 (재귀 호출)
+                addChildAndSiblingBlocks(block, result, blockMap);
             }
         }
     }
+
 
 
 //    public List<BlockListResDto> getBlockListFromCanvas(Long canvasId) {
