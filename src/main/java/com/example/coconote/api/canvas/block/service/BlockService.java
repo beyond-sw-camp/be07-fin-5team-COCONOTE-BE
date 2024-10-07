@@ -56,13 +56,13 @@ public class BlockService {
         Block parentBlock = null;
         if (createBlockReqDto.getParentBlockId() != null) {
             // parentBlockId가 null이 아니면 findById 호출
-            parentBlock = blockRepository.findByFeId(createBlockReqDto.getParentBlockId())
+            parentBlock = blockRepository.findByFeIdAndIsDeleted(createBlockReqDto.getParentBlockId(), IsDeleted.N)
                     .orElseThrow(() -> new IllegalArgumentException("해당 부모 Block이 존재하지 않습니다."));
         }
 
         Block prevBlock = null;
         if (createBlockReqDto.getPrevBlockId() != null) {
-            prevBlock = blockRepository.findByFeId(createBlockReqDto.getPrevBlockId())
+            prevBlock = blockRepository.findByFeIdAndIsDeleted(createBlockReqDto.getPrevBlockId(), IsDeleted.N)
                     .orElseThrow(() -> new IllegalArgumentException("해당 이전 Block이 존재하지 않습니다."));
 
 
@@ -99,16 +99,16 @@ public class BlockService {
     @Transactional
     public Boolean updateBlock(UpdateBlockReqDto updateBlockReqDto, String email) {
         try {
-            Block block = blockRepository.findByFeId(updateBlockReqDto.getFeId())
+            Block block = blockRepository.findByFeIdAndIsDeleted(updateBlockReqDto.getFeId(), IsDeleted.N)
                     .orElseThrow(() -> new IllegalArgumentException("해당 Block이 존재하지 않습니다."));
             Block prevBlock = updateBlockReqDto.getPrevBlockId() != null
-                    ? blockRepository.findByFeId(updateBlockReqDto.getPrevBlockId())
+                    ? blockRepository.findByFeIdAndIsDeleted(updateBlockReqDto.getPrevBlockId(), IsDeleted.N)
                     .orElseThrow(() -> new IllegalArgumentException("해당 Prev Block이 존재하지 않습니다."))
                     : null;
 
             //        prev block 존재 및 이전에 해당 prev block을 갖고있는 block 주소 업데이트
             if (prevBlock != null) {
-                Block originalPrevBlockHolder = blockRepository.findByPrevBlockFeId(prevBlock.getFeId())
+                Block originalPrevBlockHolder = blockRepository.findByPrevBlockFeIdAndIsDeleted(prevBlock.getFeId(), IsDeleted.N)
                         .orElse(null);
                 if (originalPrevBlockHolder != null) {
                     originalPrevBlockHolder.changePrevBlock(block);
@@ -116,7 +116,7 @@ public class BlockService {
             }
 
             Block parentBlock = updateBlockReqDto.getParentBlockId() != null
-                    ? blockRepository.findByFeId(updateBlockReqDto.getParentBlockId())
+                    ? blockRepository.findByFeIdAndIsDeleted(updateBlockReqDto.getParentBlockId(), IsDeleted.N)
                     .orElseThrow(() -> new IllegalArgumentException("해당 Parent Block이 존재하지 않습니다."))
                     : null;
 
@@ -132,15 +132,17 @@ public class BlockService {
 
     @Transactional
     public Boolean deleteBlock(String feId, String email) {
-        Block block = blockRepository.findByFeId(feId)
+        Block block = blockRepository.findByFeIdAndIsDeleted(feId, IsDeleted.N)
                 .orElseThrow(() -> new IllegalArgumentException("블록이 존재하지 않습니다."));
-        Block prevLinkedBlock = blockRepository.findByPrevBlockFeId(feId)
-                .orElseThrow(null);
+        Block prevLinkedBlock = blockRepository.findByPrevBlockFeIdAndIsDeleted(feId, IsDeleted.N)
+                .orElse(null);
 
         // 삭제하는 block을 참조하고 있던 block의 prev 값을 현 삭제 block의 prev 값으로 수정
-        prevLinkedBlock.changePrevBlock(block.getPrevBlock());
+        if(prevLinkedBlock != null){
+            prevLinkedBlock.changePrevBlock(block.getPrevBlock());
+        }
 
-        List<Block> parentLinkedChildrenBlocks = blockRepository.findByParentBlockFeId(feId);
+        List<Block> parentLinkedChildrenBlocks = blockRepository.findByParentBlockFeIdAndIsDeleted(feId, IsDeleted.N);
         block.markAsDeleted(parentLinkedChildrenBlocks); // 실제 삭제 대신 소프트 삭제 처리
         searchService.deleteBlock(block.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), block.getId());
 
@@ -242,13 +244,13 @@ public class BlockService {
 
     public void editBlockInSocket(SendBlockReqDto sendBlockReqDto) {
 //        생성, 수정, 삭제인지 type 구분해서 넣어주는 용도
-        if (sendBlockReqDto.getMethod() == Method.create) { // 생성블록
+        if (sendBlockReqDto.getMethod().equals(Method.create)) { // 생성블록
             CreateBlockReqDto createBlockReqDto = sendBlockReqDto.buildCreateBlockReqDto();
             createBlock(createBlockReqDto, "");
-        } else if (sendBlockReqDto.getMethod() == Method.update) { // 수정블록
+        } else if (sendBlockReqDto.getMethod().equals(Method.update)) { // 수정블록
             UpdateBlockReqDto updateBlockReqDto = sendBlockReqDto.buildUpdateBlockReqDto();
             updateBlock(updateBlockReqDto, "");
-        } else if (sendBlockReqDto.getMethod() == Method.delete) { // 삭제블록
+        } else if (sendBlockReqDto.getMethod().equals(Method.delete)) { // 삭제블록
             deleteBlock(sendBlockReqDto.getFeId(), "");
 //            log.info("삭제블록 제작 진행 중");
         } else {
