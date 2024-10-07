@@ -94,7 +94,7 @@ public class Thread extends BaseEntity {
     }
 
     public ThreadResDto fromEntity(List<ThreadResDto> childThreadList, List<ThreadFileDto> fileDtos) {
-        List<TagResDto> tags = this.threadTags.stream().map(threadTag -> threadTag.fromEntity()).toList();
+        List<TagResDto> tags = this.threadTags.stream().map(ThreadTag::fromEntity).toList();
         return ThreadResDto.builder()
                 .id(this.id)
                 .image(this.workspaceMember.getProfileImage())
