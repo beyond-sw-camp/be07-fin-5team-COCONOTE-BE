@@ -2,6 +2,7 @@ package com.example.coconote.api.thread.thread.controller;
 
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.thread.threadFile.service.ThreadFileService;
 import com.example.coconote.security.token.JwtTokenProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,6 +31,7 @@ public class WebSocketController {
 
     private final SimpMessageSendingOperations messagingTemplate;
     private final ThreadService threadService;
+    private final ThreadFileService threadFileService;
 //    private final KafkaTemplate<String, ThreadReqDto> kafkaThreadTemplate;
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final JwtTokenProvider jwtTokenProvider;
@@ -42,7 +44,7 @@ public class WebSocketController {
         if (MessageType.ENTER.equals(message.getType()))
             message.setContent(id + "님이 입장하셨습니다.");
 
-        kafkaTemplate.send("chat_topic", message.getChannelId().toString(), message);
+        kafkaTemplate.send("chat_topic", message);
 
 //        kafka 안거치고 바로 보낼때 사용
 //        ThreadResDto threadResDto = threadService.createThread(message);
@@ -66,6 +68,8 @@ public class WebSocketController {
             threadResDto = threadService.updateThread(threadReqDto);
         } else if (MessageType.DELETE.equals(threadReqDto.getType())) {
             threadResDto = threadService.deleteThread(threadReqDto.getThreadId());
+        } else if (MessageType.DELETE_FILE.equals(threadReqDto.getType())) {
+            threadResDto = threadFileService.deleteThreadFile(threadReqDto);
         } else {
             threadResDto = threadService.createThread(threadReqDto,threadReqDto.getSenderId());
         }

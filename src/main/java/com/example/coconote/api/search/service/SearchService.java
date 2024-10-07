@@ -64,7 +64,15 @@ public class SearchService {
                             .size(size) // 한 페이지에 반환할 결과 개수
                             .query(q -> q
                                     .bool(b -> {
-                                        fields.forEach(field -> b.should(sh -> sh.wildcard(w -> w.field(field).value("*" + keyword + "*"))));
+                                        fields.forEach(field -> {
+                                            if (field.equals("email")) {
+                                                // 이메일 필드에 match 쿼리 사용
+                                                b.should(sh -> sh.matchPhrasePrefix(m -> m.field(field).query(keyword)));
+                                            } else {
+                                                // 다른 필드는 여전히 wildcard 검색 사용
+                                                b.should(sh -> sh.wildcard(w -> w.field(field).value("*" + keyword + "*")));
+                                            }
+                                        });
                                         return b.minimumShouldMatch("1");
                                     })
                             ),
@@ -112,24 +120,29 @@ public class SearchService {
 
         return suggestions;
     }
+
+    private String escapeSpecialChars(String keyword) {
+        return keyword.replaceAll("([+\\-!(){}\\[\\]^\"~*?:\\\\/@])", "\\\\$1");
+    }
     // 워크스페이스 멤버 검색 (총 결과 수 포함)
     public SearchResultWithTotal<WorkspaceMemberSearchResultDto> searchWorkspaceMembers(Long workspaceId, String keyword, int page, int size) {
         String alias = getAliasForWorkspace(workspaceId);
+
+        // 검색어에 특수문자 이스케이프 처리 추가
+//        String escapedKeyword = escapeSpecialChars(keyword);
+//
+        // OpenSearch로 검색
         SearchResponse<WorkspaceMemberDocument> response = searchDocumentsForMultipleFields(alias, keyword, List.of("email", "nickname"), WorkspaceMemberDocument.class, page, size);
 
         // DTO로 변환
         List<WorkspaceMemberSearchResultDto> workspaceMembers = response.hits().hits().stream()
-                .map(document -> WorkspaceMemberSearchResultDto.builder()
-                        .workspaceMemberId(document.source().getWorkspaceMemberId())
-                        .memberName(document.source().getMemberName())
-                        .email(document.source().getEmail())
-                        .profileImage(document.source().getProfileImage())
-                        .build())
+                .map(document -> WorkspaceMemberSearchResultDto.fromDocument(document.source()))
                 .collect(Collectors.toList());
 
         // 총 검색 결과 수와 함께 반환
         return new SearchResultWithTotal<>(workspaceMembers, response.hits().total().value());
     }
+
 
     // 파일 검색
 //    public List<FileSearchResultDto> searchFiles(Long workspaceId, String keyword, int page, int size) {

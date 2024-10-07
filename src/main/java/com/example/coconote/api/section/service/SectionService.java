@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -66,8 +67,18 @@ public class SectionService {
         }
         List<Section> sections = sectionRepository.findByWorkspaceAndIsDeleted(workspace, IsDeleted.N);
         List<SectionListResDto> dtos = new ArrayList<>();
-        for(Section s : sections) {
-            dtos.add(s.fromEntity(member));
+        for (Section s : sections) {
+            // 삭제되지 않은 채널만 리스트에 추가
+            List<ChannelDetailResDto> filteredChannels = s.getChannels().stream()
+                    .filter(channel -> channel.getIsDeleted().equals(IsDeleted.N))
+                    .map(channel -> channel.fromEntity(s))  // DTO 변환
+                    .collect(Collectors.toList());
+
+            dtos.add(SectionListResDto.builder()
+                    .sectionId(s.getSectionId())
+                    .sectionName(s.getSectionName())
+                    .channelList(filteredChannels)
+                    .build());
         }
         return dtos;
     }
