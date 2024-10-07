@@ -136,12 +136,7 @@ public class SearchService {
 
         // DTO로 변환
         List<WorkspaceMemberSearchResultDto> workspaceMembers = response.hits().hits().stream()
-                .map(document -> WorkspaceMemberSearchResultDto.builder()
-                        .workspaceMemberId(document.source().getWorkspaceMemberId())
-                        .memberName(document.source().getMemberName())
-                        .email(document.source().getEmail())
-                        .profileImage(document.source().getProfileImage())
-                        .build())
+                .map(document -> WorkspaceMemberSearchResultDto.fromDocument(document.source()))
                 .collect(Collectors.toList());
 
         // 총 검색 결과 수와 함께 반환
