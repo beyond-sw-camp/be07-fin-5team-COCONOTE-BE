@@ -24,4 +24,5 @@ public class ThreadResDto {
     private List<ThreadFileDto> files;
     private List<ThreadResDto> childThreads;
     private List<TagResDto> tags;
+    private Long fileId;
 }

@@ -27,6 +27,7 @@ public class ThreadReqDto {
     private Long parentId;
     private Long channelId;
     private Long workspaceId;
+    private Long fileId;
 
     public Thread toEntity(WorkspaceMember member, Thread thread, Channel channel) {
         return Thread.builder()

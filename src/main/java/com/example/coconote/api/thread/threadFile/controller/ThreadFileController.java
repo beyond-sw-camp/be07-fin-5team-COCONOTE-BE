@@ -18,7 +18,7 @@ public class ThreadFileController {
 
     @DeleteMapping("/delete/{fileId}")
     public ResponseEntity<?> deleteThreadFile(@PathVariable Long fileId) {
-        threadFileService.deleteThreadFile(fileId);
+        threadFileService.deleteFile(fileId);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "파일이 성공적으로 삭제되었습니다.", null);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
