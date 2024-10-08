@@ -127,11 +127,74 @@ public class BlockService {
     }
 
     @Transactional
-    public Boolean changeOrderBlock(ChangeOrderBlockReqDto changeOrderBlockReqDto){
-//        순서변경 진행 함수
+    public Boolean changeOrderBlock(ChangeOrderBlockReqDto changeOrderBlockReqDto) {
         log.info("순서 변경!! ChangeOrderBlockReqDto {}", changeOrderBlockReqDto);
-        return false;
+
+        // 1. feId로 현재 블록 찾기
+        Block currentBlock = blockRepository.findByFeIdAndIsDeleted(changeOrderBlockReqDto.getFeId(), IsDeleted.N)
+                .orElseThrow(() -> new IllegalArgumentException("해당 Block이 존재하지 않습니다."));
+
+        // 2. 새로운 prevBlockId와 nextBlockId로 블록 찾기 (없으면 null 허용)
+        Block newPrevBlock = null;
+        if (changeOrderBlockReqDto.getPrevBlockId() != null) {
+            newPrevBlock = blockRepository.findByFeIdAndIsDeleted(changeOrderBlockReqDto.getPrevBlockId(), IsDeleted.N)
+                    .orElse(null); // null 허용 (맨 앞 블록일 수 있음)
+        }
+
+        Block newNextBlock = null;
+        if (changeOrderBlockReqDto.getNextBlockId() != null) {
+            newNextBlock = blockRepository.findByFeIdAndIsDeleted(changeOrderBlockReqDto.getNextBlockId(), IsDeleted.N)
+                    .orElse(null); // null 허용 (맨 뒤 블록일 수 있음)
+        }
+
+        // 3. 기존 prevBlock과 nextBlock 연결 끊기
+            Block originalPrevBlock = currentBlock.getPrevBlock();
+            Block originalNextBlock = blockRepository.findByPrevBlockFeIdAndIsDeleted(currentBlock.getFeId(), IsDeleted.N)
+                    .orElse(null);
+
+            // 기존 prevBlock이 연결한 nextBlock을 업데이트
+            if (originalNextBlock != null) {
+                originalNextBlock.changePrevBlock(originalPrevBlock);
+                blockRepository.save(originalNextBlock);
+                searchService.indexBlock(currentBlock.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), originalNextBlock);
+
+            }
+
+        // 4. 새로운 prevBlock과의 연결 설정
+        if (newPrevBlock != null) {
+            Block nextOfNewPrevBlock = blockRepository.findByPrevBlockFeIdAndIsDeleted(newPrevBlock.getFeId(), IsDeleted.N)
+                    .orElse(null);
+
+            // 새 prevBlock이 가지고 있던 nextBlock의 prevBlock을 currentBlock으로 설정
+            if (nextOfNewPrevBlock != null && !nextOfNewPrevBlock.equals(currentBlock)) {
+                nextOfNewPrevBlock.changePrevBlock(currentBlock);
+                blockRepository.save(nextOfNewPrevBlock);
+                searchService.indexBlock(currentBlock.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), nextOfNewPrevBlock);
+
+            }
+
+            // 현재 블록의 prevBlock을 새로운 prevBlock으로 설정
+            currentBlock.changePrevBlock(newPrevBlock);
+        } else {
+            // 새 prevBlock이 없다면, 현재 블록을 첫 번째 블록으로 만듭니다.
+            currentBlock.changePrevBlock(null);
+        }
+
+        // 5. 새로운 nextBlock과의 연결 설정
+        if (newNextBlock != null) {
+            newNextBlock.changePrevBlock(currentBlock);
+            blockRepository.save(newNextBlock);
+            searchService.indexBlock(currentBlock.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), newNextBlock);
+
+        }
+
+        // 6. 현재 블록을 저장하여 순서 변경 적용
+        blockRepository.save(currentBlock);
+        searchService.indexBlock(currentBlock.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), currentBlock);
+        log.info("블록 순서가 성공적으로 변경되었습니다.");
+        return true;
     }
+
 
     @Transactional
     public Boolean deleteBlock(String feId, String email) {
