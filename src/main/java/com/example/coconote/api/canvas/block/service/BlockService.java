@@ -16,10 +16,7 @@ import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.common.IsDeleted;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.micrometer.core.instrument.search.Search;
 import jakarta.annotation.PostConstruct;
-import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -28,12 +25,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@Transactional
+@Transactional(readOnly = true)
 public class BlockService {
 
     private final CanvasService canvasService;
@@ -98,78 +94,33 @@ public class BlockService {
     @Transactional
     public Boolean updateBlock(UpdateBlockReqDto updateBlockReqDto, String email) {
         try {
-            // 1. 업데이트하려는 Block을 조회
-//            로딩때문에 안되니, sql 넣어서 내일 다시 하기~ ⭐⭐⭐⭐
-            Block block = blockRepository.findByFeIdAndIsDeleted(updateBlockReqDto.getFeId(), IsDeleted.N).map(b -> {
-                Block prevBlock = b.getPrevBlock();
-                // prevBlock을 강제로 로딩
-                if (prevBlock != null) {
-                    prevBlock.getFeId();
-                }
-                return b;
-            }).orElseThrow(() -> new IllegalArgumentException("해당 Block이 존재하지 않습니다."));
-//            block은 55가 나와야 함
-
-
-            log.info("block.getPrevBlock().getFeId() : {}", block.getPrevBlock().getFeId());
-            Block blockOriginPrevBlock = blockRepository.findByFeIdAndIsDeleted(block.getPrevBlock().getFeId(), IsDeleted.N).orElse(null);
-            log.info("blockOriginPrevBlock: {}", blockOriginPrevBlock);
-//            blockOriginPrevBlock 은 44가 나와야 함
-
-            // 2. 새로운 prevBlock을 조회 : newPrevBlock
-            Block newPrevBlock = updateBlockReqDto.getPrevBlockId() != null
+            Block block = blockRepository.findByFeIdAndIsDeleted(updateBlockReqDto.getFeId(), IsDeleted.N)
+                    .orElseThrow(() -> new IllegalArgumentException("해당 Block이 존재하지 않습니다."));
+            Block prevBlock = updateBlockReqDto.getPrevBlockId() != null
                     ? blockRepository.findByFeIdAndIsDeleted(updateBlockReqDto.getPrevBlockId(), IsDeleted.N)
                     .orElseThrow(() -> new IllegalArgumentException("해당 Prev Block이 존재하지 않습니다."))
                     : null;
-//            newPrevBlock은 11이 나와야 함
 
-
-            // 3. 업데이트하려는 블록을 prevBlock으로 참조하고 있던 블록을 찾아 기존 prevBlock으로 변경
-            // >> 현 update 블록의 뒷 순서
-            log.info("Looking for block with prevBlock_FeId: {}", updateBlockReqDto.getFeId());
-            Block originalUpdateBlockPrevHolder = blockRepository.findByPrevBlock_FeIdAndIsDeleted(updateBlockReqDto.getFeId(), IsDeleted.N)
-                    .orElse(null);
-//            originalUpdateBlockPrevHolder은 66이 나와야 함
-
-            if (originalUpdateBlockPrevHolder != null) {
-                originalUpdateBlockPrevHolder.changePrevBlock(blockOriginPrevBlock);
-//                66의 prev 값을 44로 바꿔줌
-            }
-
-
-            // 4. 현재 update하려는 block에게서 넘어온 prev 블록을 참조하고 있던 original 블록을 조회
-            Block originalPrevBlockHolder = null;
-            if (newPrevBlock != null) {
-                // 기존의 prevBlock을 참조하고 있던 블록을 찾아 저장
-                originalPrevBlockHolder = blockRepository.findByPrevBlock_FeIdAndIsDeleted(newPrevBlock.getFeId(), IsDeleted.N)
+            //        prev block 존재 및 이전에 해당 prev block을 갖고있는 block 주소 업데이트
+            if (prevBlock != null) {
+                Block originalPrevBlockHolder = blockRepository.findByPrevBlockFeIdAndIsDeleted(prevBlock.getFeId(), IsDeleted.N)
                         .orElse(null);
-//                originalPrevBlockHolder는 22가 나와야 함
                 if (originalPrevBlockHolder != null) {
-                    // 3단계: 기존 prevBlock을 참조하고 있는 블록의 prevBlock을 update할 block으로 변경
                     originalPrevBlockHolder.changePrevBlock(block);
-//                    22의 앞 값을 block인 55값으로 변경
                 }
             }
 
-
-
-
-            // 5. 부모 블록 설정
             Block parentBlock = updateBlockReqDto.getParentBlockId() != null
                     ? blockRepository.findByFeIdAndIsDeleted(updateBlockReqDto.getParentBlockId(), IsDeleted.N)
                     .orElseThrow(() -> new IllegalArgumentException("해당 Parent Block이 존재하지 않습니다."))
                     : null;
 
-            // 6. 블록 정보 업데이트
-            block.updateAllInfo(newPrevBlock, parentBlock, updateBlockReqDto.getContents());
-
-            // 7. 저장 및 인덱싱
+            block.updateAllInfo(prevBlock, parentBlock, updateBlockReqDto.getContents());
             blockRepository.save(block);
             searchService.indexBlock(block.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), block);
 
         } catch (Exception e) {
-            log.info("Error updating block: {}", e.getMessage());
-            return false;
+            log.info(e.getMessage());
         }
         return true;
     }
@@ -195,35 +146,93 @@ public class BlockService {
 
 
     public List<BlockListResDto> getBlockListFromCanvas(Long canvasId) {
-//        List<Block> blocks = blockRepository.findByCanvasIdAndIsDeleted(canvasId, IsDeleted.N);
+        // 1. 데이터베이스에서 모든 블록을 가져옴
+        List<Block> blocks = blockRepository.findByCanvasIdAndIsDeleted(canvasId, IsDeleted.N);
 
-        List<BlockListResDto> blockResult = new ArrayList<>();
+        // 2. 블록들을 Map에 저장 (id -> Block)
+        Map<Long, Block> blockMap = blocks.stream()
+                .collect(Collectors.toMap(Block::getId, block -> block));
 
-        Block firstBlock = blockRepository.findByCanvasIdAndIsDeletedAndPrevBlock_FeIdAndParentBlock_FeId(
-                canvasId,
-                IsDeleted.N,
-                null,
-                null
-        ).orElse(null);
+        // 3. 블록을 저장할 최종 리스트
+        List<BlockListResDto> result = new ArrayList<>();
+        Set<Long> visitedBlocks = new HashSet<>(); // 중복 방지를 위한 Set
 
-        if (firstBlock != null) {
-            blockResult.add(firstBlock.fromEntity());
+        // 4. 루트 블록 찾기: prev_block_fe_id가 null인 블록
+        for (Block block : blocks) {
+            if (block.getPrevBlock() == null) {
+                // 루트 블록이면 리스트에 추가
+                BlockListResDto rootBlockDto = convertToDto(block);
+                result.add(rootBlockDto);
+                visitedBlocks.add(block.getId());
 
-            Boolean isWhile = true;
-            Block prevTargetBlock = firstBlock.copy();
-            while (isWhile) {
-                Block block = blockRepository.findByPrevBlockFeIdAndIsDeleted(prevTargetBlock.getFeId(), IsDeleted.N).orElse(null);
-                if (block == null) { // 더이상 넣을 값이 없음 (마지막 순서의 block
-                    isWhile = false;
-                    break;
-                }
-                prevTargetBlock = block.copy();
-                blockResult.add(block.fromEntity());
+                // 루트 블록을 기준으로 자식과 형제 블록 추가
+                addChildBlocks(block, result, blockMap, visitedBlocks);
+                addSiblingBlocks(block, result, blockMap, visitedBlocks);
             }
         }
 
-        return blockResult;
+        return result;
     }
+
+    private BlockListResDto convertToDto(Block block) {
+        return BlockListResDto.builder()
+                .id(block.getId())
+                .content(block.getContents())
+                .feId(block.getFeId())
+                .type(block.getType())
+                .member(block.getMember())
+                .prevBlockFeId(block.getPrevBlock() != null ? block.getPrevBlock().getFeId() : null)
+                .build();
+    }
+
+    // 재귀적으로 자식 블록을 추가하는 메서드
+    private void addChildBlocks(Block parentBlock, List<BlockListResDto> result, Map<Long, Block> blockMap, Set<Long> visitedBlocks) {
+        for (Block block : blockMap.values()) {
+            if (block.getParentBlock() != null && block.getParentBlock().getId().equals(parentBlock.getId())) {
+                // 이미 방문한 블록이면 건너뜀
+                if (visitedBlocks.contains(block.getId())) {
+                    continue;
+                }
+
+                // 부모가 현재 블록인 자식 블록을 찾고 리스트에 추가
+                BlockListResDto childBlockDto = convertToDto(block);
+                result.add(childBlockDto);
+                visitedBlocks.add(block.getId());
+
+                // 자식 블록을 기준으로 다시 자식 블록을 추가 (재귀 호출)
+                addChildBlocks(block, result, blockMap, visitedBlocks);
+
+                // 자식 블록의 형제 블록을 추가 (재귀 호출)
+                addSiblingBlocks(block, result, blockMap, visitedBlocks);
+            }
+        }
+    }
+
+    // 재귀적으로 형제 블록을 prev_block_fe_id에 따라 추가하는 메서드
+    private void addSiblingBlocks(Block currentBlock, List<BlockListResDto> result, Map<Long, Block> blockMap, Set<Long> visitedBlocks) {
+        for (Block block : blockMap.values()) {
+            if (block.getPrevBlock() != null && block.getPrevBlock().getId().equals(currentBlock.getId())) {
+                // 이미 방문한 블록이면 건너뜀
+                if (visitedBlocks.contains(block.getId())) {
+                    continue;
+                }
+
+                // prev_block_fe_id가 현재 블록인 형제 블록을 리스트에 추가
+                BlockListResDto siblingBlockDto = convertToDto(block);
+                result.add(siblingBlockDto);
+                visitedBlocks.add(block.getId());
+
+                // 형제 블록을 기준으로 다시 자식 블록 추가 (재귀 호출)
+                addChildBlocks(block, result, blockMap, visitedBlocks);
+
+                // 형제 블록의 형제 블록을 추가 (재귀 호출)
+                addSiblingBlocks(block, result, blockMap, visitedBlocks);
+            }
+        }
+    }
+
+
+
 
     //    ================= 통신전용
     private final SimpMessageSendingOperations messagingTemplate;
