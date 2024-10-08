@@ -33,6 +33,7 @@ public class ThreadTag {
                 .id(this.tag.getId())
                 .name(this.tag.getName())
                 .color(this.tag.getColor())
+                .threadTagId(this.id)
                 .build();
     }
 }

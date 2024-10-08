@@ -6,5 +6,6 @@ public enum MessageType {
     UPDATE,
     DELETE,
     DELETE_FILE,
-    ADD_TAG
+    ADD_TAG,
+    REMOVE_TAG,
 }

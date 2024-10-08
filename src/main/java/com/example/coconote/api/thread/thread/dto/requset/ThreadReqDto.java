@@ -31,6 +31,7 @@ public class ThreadReqDto {
     private Long tagId;
     private String tagName;
     private String tagColor;
+    private Long threadTagId;
 
     public Thread toEntity(WorkspaceMember member, Thread thread, Channel channel) {
         return Thread.builder()

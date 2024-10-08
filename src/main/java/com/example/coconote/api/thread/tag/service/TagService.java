@@ -46,9 +46,10 @@ public class TagService {
             tag = tagRepository.findById(dto.getTagId()).orElseThrow(()->new EntityNotFoundException("Tag not found"));
         }
         Thread thread = threadRepository.findById(dto.getThreadId()).orElseThrow(()->new EntityNotFoundException("Thread not found"));
-        threadTagRepository.save(new ThreadTag(thread, tag));
+        ThreadTag threadTag = threadTagRepository.save(new ThreadTag(thread, tag));
         return ThreadResDto.builder()
                 .type(MessageType.ADD_TAG)
+                .threadTagId(threadTag.getId())
                 .id(thread.getId())
                 .tagId(tag.getId())
                 .tagName(tag.getName())
