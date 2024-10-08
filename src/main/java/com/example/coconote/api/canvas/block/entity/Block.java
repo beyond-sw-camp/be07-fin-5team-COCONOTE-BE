@@ -35,7 +35,7 @@ public class Block extends BaseEntity {
     //    ⭐ 추후 로그인 붙일 때 변경
     private String member;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "prev_block_fe_id")
 //    순서를 알기 위한, 동레벨의 이전 블록
 //    이전 블록이 없다면, 최상위 블록!
@@ -72,7 +72,7 @@ public class Block extends BaseEntity {
     }
 
     public void updateAllInfo(Block prevBlock, Block parentBlock, String contents) {
-        if(this.prevBlock != null && !Objects.equals(this.prevBlock.getId(), prevBlock.getId())){
+        if(this.prevBlock == null || (this.prevBlock != null && !Objects.equals(this.prevBlock.getId(), prevBlock.getId()))){
             this.prevBlock = prevBlock;
         }
 

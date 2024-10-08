@@ -17,6 +17,7 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
     Optional<Block> findByFeIdAndIsDeleted(String feId, IsDeleted isDeleted);
 
     Optional<Block> findByPrevBlockFeIdAndIsDeleted(String feId, IsDeleted isDeleted);
+    Optional<Block> findByPrevBlock_FeIdAndIsDeleted(String feId, IsDeleted isDeleted);
 
     List<Block> findByParentBlockFeIdAndIsDeleted(String feId, IsDeleted isDeleted);
 
