@@ -1,5 +1,6 @@
 package com.example.coconote.api.canvas.block.service;
 
+import com.example.coconote.api.canvas.block.dto.request.ChangeOrderBlockReqDto;
 import com.example.coconote.api.canvas.block.dto.request.CreateBlockReqDto;
 import com.example.coconote.api.canvas.block.dto.request.SendBlockReqDto;
 import com.example.coconote.api.canvas.block.dto.request.UpdateBlockReqDto;
@@ -123,6 +124,13 @@ public class BlockService {
             log.info(e.getMessage());
         }
         return true;
+    }
+
+    @Transactional
+    public Boolean changeOrderBlock(ChangeOrderBlockReqDto changeOrderBlockReqDto){
+//        순서변경 진행 함수
+        log.info("순서 변경!! ChangeOrderBlockReqDto {}", changeOrderBlockReqDto);
+        return false;
     }
 
     @Transactional
@@ -278,6 +286,9 @@ public class BlockService {
         } else if (sendBlockReqDto.getMethod().equals(Method.update)) { // 수정블록
             UpdateBlockReqDto updateBlockReqDto = sendBlockReqDto.buildUpdateBlockReqDto();
             updateBlock(updateBlockReqDto, "");
+        } else if(sendBlockReqDto.getMethod().equals(Method.changeOrder)){ //순서 변경 블록
+            ChangeOrderBlockReqDto changeOrderBlockReqDto = sendBlockReqDto.buildChangeOrderBlockReqDto();
+            changeOrderBlock(changeOrderBlockReqDto);
         } else if (sendBlockReqDto.getMethod().equals(Method.delete)) { // 삭제블록
             deleteBlock(sendBlockReqDto.getFeId(), "");
 //            log.info("삭제블록 제작 진행 중");
