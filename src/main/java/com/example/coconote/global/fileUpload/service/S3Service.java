@@ -11,13 +11,12 @@ import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
 import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.api.workspace.workspace.entity.Workspace;
+import com.example.coconote.api.workspace.workspace.repository.WorkspaceRepository;
+import com.example.coconote.api.workspace.workspaceMember.dto.response.WorkspaceMemberResDto;
 import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
 import com.example.coconote.common.IsDeleted;
-import com.example.coconote.global.fileUpload.dto.request.FileMetadataReqDto;
-import com.example.coconote.global.fileUpload.dto.request.FileSaveListDto;
-import com.example.coconote.global.fileUpload.dto.request.FileUploadRequest;
-import com.example.coconote.global.fileUpload.dto.request.MoveFileReqDto;
+import com.example.coconote.global.fileUpload.dto.request.*;
 import com.example.coconote.global.fileUpload.dto.response.FileMetadataResDto;
 import com.example.coconote.global.fileUpload.dto.response.MoveFileResDto;
 import com.example.coconote.global.fileUpload.entity.FileEntity;
@@ -58,6 +57,7 @@ public class S3Service {
     private final ChannelMemberRepository channelMemberRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
     private final SearchService searchService;
+    private final WorkspaceRepository workspaceRepository;
 
     @Value("${aws.s3.region}")
     private String region;
@@ -303,5 +303,17 @@ public class S3Service {
     private Folder getFolderEntityById(Long folder){
         return folderRepository.findById(folder)
                 .orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
+    }
+
+    @Transactional
+    public WorkspaceMemberResDto saveProfileImage(ProfileImageReqDto profileImageReqDto, String email) {
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findById(profileImageReqDto.getWorkspaceMemberId())
+                .orElseThrow(() -> new IllegalArgumentException("워크스페이스 멤버를 찾을 수 없습니다."));
+        workspaceMember.changeProfileImage(profileImageReqDto.getProfileImage());
+        workspaceMemberRepository.save(workspaceMember);
+
+        searchService.indexWorkspaceMember(workspaceMember.getWorkspace().getWorkspaceId(), workspaceMember);
+
+        return workspaceMember.fromEntity();
     }
 }

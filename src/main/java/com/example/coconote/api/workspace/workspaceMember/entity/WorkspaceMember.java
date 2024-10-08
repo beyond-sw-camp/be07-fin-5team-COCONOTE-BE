@@ -97,4 +97,8 @@ public class WorkspaceMember extends BaseEntity {
             }
         }
     }
+
+    public void changeProfileImage(String profileImage) {
+        this.profileImage = profileImage;
+    }
 }
