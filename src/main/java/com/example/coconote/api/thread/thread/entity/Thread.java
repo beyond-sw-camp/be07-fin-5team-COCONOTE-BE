@@ -63,7 +63,7 @@ public class Thread extends BaseEntity {
                 .createdTime(this.getCreatedTime().toString())
                 .content(this.content)
                 .files(files)
-//                .tags(tags)
+                .tags(new ArrayList<>())
                 .build();
     }
 
@@ -74,7 +74,7 @@ public class Thread extends BaseEntity {
                 .createdTime(this.getCreatedTime().toString())
                 .content(this.content)
                 .files(files)
-//                .tags(tags)
+                .tags(new ArrayList<>())
                 .build();
     }
 
