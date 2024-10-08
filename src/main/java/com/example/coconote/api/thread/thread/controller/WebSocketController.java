@@ -2,7 +2,9 @@ package com.example.coconote.api.thread.thread.controller;
 
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.thread.tag.service.TagService;
 import com.example.coconote.api.thread.threadFile.service.ThreadFileService;
+import com.example.coconote.api.thread.threadTag.service.ThreadTagService;
 import com.example.coconote.security.token.JwtTokenProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,6 +37,8 @@ public class WebSocketController {
 //    private final KafkaTemplate<String, ThreadReqDto> kafkaThreadTemplate;
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final JwtTokenProvider jwtTokenProvider;
+    private final TagService tagService;
+    private final ThreadTagService threadTagService;
     private final MemberRepository memberRepository;
 
     @MessageMapping("/chat/message")
@@ -66,6 +70,10 @@ public class WebSocketController {
 
         if(MessageType.UPDATE.equals(threadReqDto.getType())) {
             threadResDto = threadService.updateThread(threadReqDto);
+        } else if (MessageType.ADD_TAG.equals(threadReqDto.getType())) {
+            threadResDto = tagService.createAndAddTag(threadReqDto);
+        } else if (MessageType.REMOVE_TAG.equals(threadReqDto.getType())) {
+            threadResDto = threadTagService.deleteThreadTag(threadReqDto);
         } else if (MessageType.DELETE.equals(threadReqDto.getType())) {
             threadResDto = threadService.deleteThread(threadReqDto.getThreadId());
         } else if (MessageType.DELETE_FILE.equals(threadReqDto.getType())) {
