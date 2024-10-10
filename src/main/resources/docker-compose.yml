@@ -28,18 +28,3 @@ services:
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9093  # 내부 네트워크에서 Kafka 브로커와의 연결 정보
       KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181  # Zookeeper 정보
     restart: unless-stopped
-  mariadb:
-    image: mariadb:latest
-    container_name: mariadb
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: coconote1234  # 루트 사용자 비밀번호
-      MYSQL_DATABASE: coconote_db  # 생성할 데이터베이스 이름
-      MYSQL_USER: root  # 사용자 이름
-    volumes:
-      - db_data:/var/lib/mysql
-    restart: unless-stopped
-
-volumes:
-  db_data:
