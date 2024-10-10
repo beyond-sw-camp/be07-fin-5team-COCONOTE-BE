@@ -147,6 +147,7 @@ public class MailVerifyService {
 		workspaceMember = WorkspaceMember.builder()
 				.member(member)
 				.workspace(workspace)
+				.memberName(member.getNickname())
 				.wsRole(WsRole.USER)
 				.build();
 

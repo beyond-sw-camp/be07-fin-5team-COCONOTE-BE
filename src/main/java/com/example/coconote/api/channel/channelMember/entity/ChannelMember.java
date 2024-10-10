@@ -42,6 +42,7 @@ public class ChannelMember extends BaseEntity {
         return ChannelMemberListResDto.builder()
                 .id(this.id)
                 .channelRole(this.channelRole)
+                .isBookmark(this.isBookmark)
                 .memberInfo(this.workspaceMember.fromEntity())
                 .build();
     }

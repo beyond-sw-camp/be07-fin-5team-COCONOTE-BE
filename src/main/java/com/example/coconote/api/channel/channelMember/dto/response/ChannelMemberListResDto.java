@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 public class ChannelMemberListResDto {
     private Long id;
     private ChannelRole channelRole;
+    private Boolean isBookmark;
     private WorkspaceMemberResDto memberInfo;
 
 }
