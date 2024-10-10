@@ -30,6 +30,7 @@ public class Block extends BaseEntity {
     @JoinColumn(name = "canvas_id")
     private Canvas canvas;
 
+    @Column(length = 50000)
     private String contents;
 
     //    ⭐ 추후 로그인 붙일 때 변경
