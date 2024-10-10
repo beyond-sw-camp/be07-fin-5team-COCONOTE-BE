@@ -64,6 +64,7 @@ public class Thread extends BaseEntity {
                 .content(this.content)
                 .files(files)
                 .tags(new ArrayList<>())
+                .parentThreadId(this.parent != null ? this.parent.getId() : null)
                 .build();
     }
 
@@ -75,6 +76,7 @@ public class Thread extends BaseEntity {
                 .content(this.content)
                 .files(files)
                 .tags(new ArrayList<>())
+                .parentThreadId(this.parent != null ? this.parent.getId() : null)
                 .build();
     }
 
@@ -90,6 +92,7 @@ public class Thread extends BaseEntity {
                 .content(this.content)
                 .files(files)
                 .tags(tags)
+                .parentThreadId(this.parent != null ? this.parent.getId() : null)
                 .build();
     }
 
@@ -104,6 +107,7 @@ public class Thread extends BaseEntity {
                 .files(fileDtos)
                 .childThreads(childThreadList)
                 .tags(tags)
+                .parentThreadId(this.parent != null ? this.parent.getId() : null)
                 .build();
     }
 
