@@ -157,4 +157,5 @@ public class ChannelMemberService {
         channelMemberRepository.save(channelMember);
         return channelMember.fromEntity();
     }
+
 }
