@@ -237,4 +237,9 @@ public class ChannelService {
         ChannelMember channelMember = channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, workspaceMember, IsDeleted.N).orElse(null);
         return channelMember != null;
     }
+
+    public ChannelDetailResDto channelDetail(Long channelId) {
+        Channel channel = channelRepository.findById(channelId).orElseThrow(()-> new EntityNotFoundException("채널을 찾을 수 없습니다."));
+        return channel.fromEntity(channel.getSection());
+    }
 }
