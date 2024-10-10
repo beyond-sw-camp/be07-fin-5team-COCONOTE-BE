@@ -223,7 +223,15 @@ public class ChannelService {
         if(channelMembers.equals(null)) {
             throw new IllegalArgumentException("회원을 찾을 수 없습니다.");
         }
-        return channelMembers.get(0).getChannel().fromEntity(channelMembers.get(0).getChannel().getSection());
+        Section section = sectionRepository.findByWorkspaceAndIsDeleted(workspace, IsDeleted.N).get(0);
+
+        List<Channel> channels = channelRepository.findBySectionAndIsDeleted(section, IsDeleted.N);
+        if(channels.equals(null)) {
+            throw new IllegalArgumentException("채널을 찾을 수 없습니다.");
+        }
+        Channel channel = channels.get(0);
+        return channel.fromEntity(section);
+
     }
 
     public boolean channelIsJoin(Long id, String email) {
