@@ -60,10 +60,10 @@ public class ChannelMemberController {
     }
 
     @Operation(summary= "채널 즐겨찾기 추가/해제")
-    @PatchMapping("/channel/member/bookmark/{id}")  // 채널 즐겨찾기
-    public ResponseEntity<Object> channelBookmark(@PathVariable Long id) {
+    @PatchMapping("/channel/member/bookmark/{channelId}")  // 채널 즐겨찾기
+    public ResponseEntity<Object> channelBookmark(@PathVariable Long channelId, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
         CommonResDto commonResDto;
-        Boolean value = channelMemberService.channelBookmark(id);
+        Boolean value = channelMemberService.channelBookmark(channelId, customPrincipal.getEmail());
         if(value) {
             commonResDto = new CommonResDto(HttpStatus.OK, "bookmark is successfully added", value);
         }else{
