@@ -4,6 +4,7 @@ import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
 import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.api.workspace.mail.dto.MailReqDto;
+import com.example.coconote.api.workspace.workspace.dto.response.WorkspaceListResDto;
 import com.example.coconote.api.workspace.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.workspace.repository.WorkspaceRepository;
 import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
@@ -124,7 +125,7 @@ public class MailVerifyService {
 
 	// 초대 링크에서 받은 토큰을 검증하고 워크스페이스 가입 처리
 	@Transactional
-	public void processInvitation(String token) {
+	public WorkspaceListResDto processInvitation(String token) {
 		Claims claims = validateJwtToken(token);
 		String email = claims.get("email", String.class);
 		Long workspaceId = claims.get("workspaceId", Long.class);
@@ -152,5 +153,6 @@ public class MailVerifyService {
 
 		workspaceMemberRepository.save(workspaceMember);
 		searchService.indexWorkspaceMember(workspaceId, workspaceMember);
+		return workspace.fromEntity();
 	}
 }
