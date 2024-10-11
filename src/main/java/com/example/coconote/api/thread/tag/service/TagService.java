@@ -57,6 +57,7 @@ public class TagService {
                 .tagId(tag.getId())
                 .tagName(tag.getName())
                 .tagColor(tag.getColor())
+                .parentThreadId(thread.getParent().getId())
                 .build();
     }
 
