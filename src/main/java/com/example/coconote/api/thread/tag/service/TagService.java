@@ -39,16 +39,19 @@ public class TagService {
 
     public ThreadResDto createAndAddTag(ThreadReqDto dto) {
         Tag tag;
+        MessageType messageType;
         if(dto.getTagId()==null){
+            messageType = MessageType.CREATE_AND_ADD_TAG;
             Channel channel = channelRepository.findById(dto.getChannelId()).orElseThrow(()->new EntityNotFoundException("Channel not found"));
             tag = tagRepository.save(Tag.builder().name(dto.getTagName()).color(dto.getTagColor()).channel(channel).build());
         } else {
+            messageType = MessageType.ADD_TAG;
             tag = tagRepository.findById(dto.getTagId()).orElseThrow(()->new EntityNotFoundException("Tag not found"));
         }
         Thread thread = threadRepository.findById(dto.getThreadId()).orElseThrow(()->new EntityNotFoundException("Thread not found"));
         ThreadTag threadTag = threadTagRepository.save(new ThreadTag(thread, tag));
         return ThreadResDto.builder()
-                .type(MessageType.ADD_TAG)
+                .type(messageType)
                 .threadTagId(threadTag.getId())
                 .id(thread.getId())
                 .tagId(tag.getId())
