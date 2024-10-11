@@ -9,6 +9,7 @@ public class SendBlockReqDto {
     private Method method;
     private Long canvasId;
     private String prevBlockId;
+    private String nextBlockId = null; // Method.changeOrder 전용
     private String parentBlockId;
     private String contents;
     private Type type;
@@ -27,7 +28,7 @@ public class SendBlockReqDto {
                 .build();
     }
 
-//    현재 create와 update 형식 동일
+    //    현재 create와 update 형식 동일
     public UpdateBlockReqDto buildUpdateBlockReqDto() {
         return UpdateBlockReqDto.builder()
                 .canvasId(this.canvasId)
@@ -35,6 +36,17 @@ public class SendBlockReqDto {
                 .type(this.type)
                 .feId(this.feId)
                 .prevBlockId(this.prevBlockId)
+                .parentBlockId(this.parentBlockId)
+                .member(this.member)
+                .build();
+    }
+
+    public ChangeOrderBlockReqDto buildChangeOrderBlockReqDto() {
+        return ChangeOrderBlockReqDto.builder()
+                .canvasId(this.canvasId)
+                .feId(this.feId)
+                .prevBlockId(this.prevBlockId)
+                .nextBlockId(this.nextBlockId)
                 .parentBlockId(this.parentBlockId)
                 .member(this.member)
                 .build();

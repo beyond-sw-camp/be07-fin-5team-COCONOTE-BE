@@ -44,6 +44,14 @@ public class ChannelController {
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
+    @Operation(summary= "특정 채널 조회")
+    @GetMapping("/channel/detail/{channelId}")
+    public ResponseEntity<Object> channelDetail(@PathVariable Long channelId) {
+        ChannelDetailResDto dto = channelService.channelDetail(channelId);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "channel is successfully found", dto);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
 
     @Operation(summary= "채널 수정")
     @PatchMapping("/channel/update/{id}")

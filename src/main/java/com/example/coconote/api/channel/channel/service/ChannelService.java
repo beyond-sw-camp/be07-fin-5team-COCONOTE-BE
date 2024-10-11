@@ -154,7 +154,7 @@ public class ChannelService {
             throw new IllegalArgumentException("이미 삭제된 채널입니다.");
         }
         channel.deleteEntity();
-        searchService.deleteChannel(channel.getSection().getWorkspace().getWorkspaceId(), channel.getChannelId().toString());
+        searchService.deleteChannel(channel.getSection().getWorkspace().getWorkspaceId(), channel.getChannelId());
     }
 
     public FolderAllListResDto channelDrive(Long channelId, String email) {
@@ -223,7 +223,15 @@ public class ChannelService {
         if(channelMembers.equals(null)) {
             throw new IllegalArgumentException("회원을 찾을 수 없습니다.");
         }
-        return channelMembers.get(0).getChannel().fromEntity(channelMembers.get(0).getChannel().getSection());
+        Section section = sectionRepository.findByWorkspaceAndIsDeleted(workspace, IsDeleted.N).get(0);
+
+        List<Channel> channels = channelRepository.findBySectionAndIsDeleted(section, IsDeleted.N);
+        if(channels.equals(null)) {
+            throw new IllegalArgumentException("채널을 찾을 수 없습니다.");
+        }
+        Channel channel = channels.get(0);
+        return channel.fromEntity(section);
+
     }
 
     public boolean channelIsJoin(Long id, String email) {
@@ -236,5 +244,10 @@ public class ChannelService {
 //        채널멤버가 존재하면 true, 존재하지 않으면 false
         ChannelMember channelMember = channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, workspaceMember, IsDeleted.N).orElse(null);
         return channelMember != null;
+    }
+
+    public ChannelDetailResDto channelDetail(Long channelId) {
+        Channel channel = channelRepository.findById(channelId).orElseThrow(()-> new EntityNotFoundException("채널을 찾을 수 없습니다."));
+        return channel.fromEntity(channel.getSection());
     }
 }

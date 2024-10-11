@@ -72,4 +72,10 @@ public class Canvas extends BaseEntity {
                 .updatedTime(this.getUpdatedTime())
                 .build();
     }
+
+    public void updateInfo(String title, Canvas parentCanvas, IsDeleted isDeleted) {
+        this.title = title;
+        this.parentCanvas = parentCanvas;
+        this.isDeleted = isDeleted;
+    }
 }

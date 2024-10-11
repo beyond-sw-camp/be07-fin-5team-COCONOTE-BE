@@ -56,8 +56,9 @@ public class TokenSecurityConfig {
                 // 2. 요청 인가 처리 (리소스에 접근하기 전에 인증된 사용자만 접근 허용)
                 .authorizeHttpRequests(authorizeRequests ->
                                 authorizeRequests
-                                        .requestMatchers("/**").permitAll()
-//                                .requestMatchers("/" , "/login**" , "/error", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**").permitAll()
+//                                        .requestMatchers("/**").permitAll()
+                                .requestMatchers("/" , "/login**" , "/error", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**").permitAll()
+                                        .requestMatchers("/api/v1/ws-stomp/**").permitAll()  // WebSocket 엔드포인트 허용
                                         .anyRequest().authenticated()
                 )
 
@@ -98,15 +99,15 @@ public class TokenSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("http://localhost:3000");
+        configuration.addAllowedOrigin("http://localhost:*");
         configuration.addAllowedOrigin("http://localhost:8082");
         configuration.addAllowedOrigin("https://coconote.site");
         configuration.addAllowedMethod("*");  // 모든 HTTP 메서드를 허용
-        configuration.addAllowedHeader("*");  // 모든 헤더를 허용
+        configuration.addAllowedHeader("*");  // 모든 HTTP 헤더를 허용
         configuration.setAllowCredentials(true);  // 자격 증명 허용
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/**", configuration);  // CORS 규칙을 "/api/**" 경로에 적용
+        source.registerCorsConfiguration("/**", configuration);  // CORS 규칙을 "/api/**" 경로에 적용
         return source;
     }
 }
