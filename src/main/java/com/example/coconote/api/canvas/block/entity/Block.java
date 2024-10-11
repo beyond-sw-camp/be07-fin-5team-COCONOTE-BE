@@ -30,12 +30,13 @@ public class Block extends BaseEntity {
     @JoinColumn(name = "canvas_id")
     private Canvas canvas;
 
+    @Column(length = 5000)
     private String contents;
 
     //    ⭐ 추후 로그인 붙일 때 변경
     private String member;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "prev_block_fe_id")
 //    순서를 알기 위한, 동레벨의 이전 블록
 //    이전 블록이 없다면, 최상위 블록!
@@ -72,7 +73,7 @@ public class Block extends BaseEntity {
     }
 
     public void updateAllInfo(Block prevBlock, Block parentBlock, String contents) {
-        if(this.prevBlock != null && !Objects.equals(this.prevBlock.getId(), prevBlock.getId())){
+        if(this.prevBlock == null || (this.prevBlock != null && !Objects.equals(this.prevBlock.getId(), prevBlock.getId()))){
             this.prevBlock = prevBlock;
         }
 
@@ -91,6 +92,21 @@ public class Block extends BaseEntity {
                 .type(this.getType())
                 .content(this.contents)
                 .member(this.member)
+                .prevBlockFeId(this.prevBlock != null ? this.prevBlock.getFeId() : null) // 이전 블록의 feId 설정
+                .build();
+    }
+
+    public Block copy() {
+        return Block.builder()
+                .id(this.id)
+                .canvas(this.canvas)
+                .contents(this.contents)
+                .member(this.member)
+                .prevBlock(this.prevBlock)
+                .parentBlock(this.parentBlock)
+                .type(this.type)
+                .level(this.level)
+                .feId(this.feId)
                 .build();
     }
 }

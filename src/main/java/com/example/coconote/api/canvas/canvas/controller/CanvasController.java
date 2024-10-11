@@ -2,6 +2,7 @@ package com.example.coconote.api.canvas.canvas.controller;
 
 
 import com.example.coconote.api.canvas.canvas.dto.request.CreateCanvasReqDto;
+import com.example.coconote.api.canvas.canvas.dto.request.UpdateCanvasReqDto;
 import com.example.coconote.api.canvas.canvas.dto.response.CanvasDetResDto;
 import com.example.coconote.api.canvas.canvas.dto.response.CanvasListResDto;
 import com.example.coconote.api.canvas.canvas.dto.response.CreateCanvasResDto;
@@ -84,6 +85,17 @@ public class CanvasController {
     public ResponseEntity<?> getCanvasDetail(@PathVariable Long canvasId, String email){
         CanvasDetResDto canvasDetResDto = canvasService.getCanvasDetail(canvasId, email);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "Canvas가 성공적으로 조회되었습니다.", canvasDetResDto);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Canvas 수정하기",
+            description = "Canvas 수정하기."
+    )
+    @PatchMapping("/{canvasId}")
+    public ResponseEntity<?> updateCanvas(@RequestBody UpdateCanvasReqDto updateCanvasReqDto){
+        CanvasDetResDto canvasDetResDto = canvasService.updateCanvas(updateCanvasReqDto);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "Canvas가 성공적으로 업데이트되었습니다.", canvasDetResDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
