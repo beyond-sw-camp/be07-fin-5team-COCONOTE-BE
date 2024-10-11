@@ -1,6 +1,7 @@
 spring:
   profiles:
-    active: local # default
+#    active: local # default
+    active: local
     group:
       local:
         - secret
