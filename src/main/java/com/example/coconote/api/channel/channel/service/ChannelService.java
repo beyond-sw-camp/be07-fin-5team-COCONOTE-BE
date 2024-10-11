@@ -36,6 +36,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.example.coconote.api.drive.service.FolderService.getFolderAllListResDto;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -166,19 +168,7 @@ public class ChannelService {
 //        루트 폴더 찾기
         Folder rootFolder = folderRepository.findByChannelAndParentFolderIsNull(channel).orElseThrow(() -> new EntityNotFoundException("찾을 수 없습니다."));
 
-        List<Folder> folderList = folderRepository.findAllByParentFolderAndIsDeleted(rootFolder, IsDeleted.N);
-        List<FileEntity> fileEntityList = fileRepository.findAllByFolderAndIsDeleted(rootFolder, IsDeleted.N);
-
-
-        List<FolderListDto> folderListDto = FolderListDto.fromEntity(folderList);
-        List<FileListDto> fileListDto = FileListDto.fromEntity(fileEntityList);
-
-        return FolderAllListResDto.builder()
-                .nowFolderId(rootFolder.getId())
-                .nowFolderName(rootFolder.getFolderName())
-                .folderListDto(folderListDto)
-                .fileListDto(fileListDto)
-                .build();
+        return getFolderAllListResDto(rootFolder, folderRepository, fileRepository);
     }
 
     public List<ChannelDetailResDto> bookmarkList(Long workspaceId, String email) {
