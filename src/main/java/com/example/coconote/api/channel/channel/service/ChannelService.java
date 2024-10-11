@@ -8,24 +8,19 @@ import com.example.coconote.api.channel.channel.repository.ChannelRepository;
 import com.example.coconote.api.channel.channelMember.entity.ChannelMember;
 import com.example.coconote.api.channel.channelMember.entity.ChannelRole;
 import com.example.coconote.api.channel.channelMember.repository.ChannelMemberRepository;
-import com.example.coconote.api.drive.dto.response.FileListDto;
 import com.example.coconote.api.drive.dto.response.FolderAllListResDto;
-import com.example.coconote.api.drive.dto.response.FolderListDto;
 import com.example.coconote.api.drive.entity.Folder;
 import com.example.coconote.api.drive.repository.FolderRepository;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
-import com.example.coconote.api.section.dto.response.SectionListResDto;
 import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.section.repository.SectionRepository;
-import com.example.coconote.api.workspace.workspace.dto.response.WorkspaceListResDto;
 import com.example.coconote.api.workspace.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.workspace.repository.WorkspaceRepository;
 import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
 import com.example.coconote.common.IsDeleted;
-import com.example.coconote.global.fileUpload.entity.FileEntity;
 import com.example.coconote.global.fileUpload.repository.FileRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.example.coconote.api.drive.service.FolderService.getFolderAllListResDto;
 
@@ -55,13 +51,13 @@ public class ChannelService {
 
     @Transactional
     public ChannelDetailResDto channelCreate(ChannelCreateReqDto dto, String email) {
-        Section section = sectionRepository.findById(dto.getSectionId()).orElseThrow(()-> new EntityNotFoundException("존재하지 않는 섹션입니다."));
+        Section section = getSectionBySectionId(dto.getSectionId());
         if(section.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 삭제된 섹션입니다.");
         }
+//        1. 해당 섹션에 채널 생성
         Channel channel = dto.toEntity(section);
-
-        Member member = memberRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("존재하지 않는 회원입니다."));
+        Member member = getMemberByEmail(email);
         WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, section.getWorkspace(), IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("워크스페이스 회원이 존재하지 않습니다."));
 
         ChannelMember channelMember = ChannelMember.builder()
@@ -72,15 +68,12 @@ public class ChannelService {
 
         channelMemberRepository.save(channelMember);
         channel.getChannelMembers().add(channelMember);
-        workspaceMember.getChannelMembers().add(channelMember);
         channelRepository.save(channel);
 
         searchService.indexChannel(section.getWorkspace().getWorkspaceId(), channel);
 
         createDefaultFolder(channel);
         ChannelDetailResDto resDto = channel.fromEntity(section);
-
-
         return resDto;
     }
 
@@ -105,27 +98,50 @@ public class ChannelService {
     }
 
     public List<ChannelDetailResDto> channelList(Long sectionId, String email) {
-        Member member = memberRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("존재하지 않는 회원입니다."));
+        // 1. 이메일을 통해 멤버 조회
+        Member member = getMemberByEmail(email);
 
-        Section section = sectionRepository.findById(sectionId).orElseThrow(()->new EntityNotFoundException("존재하지 않는 섹션입니다."));
-        if(section.getIsDeleted().equals(IsDeleted.Y)) {
+        // 2. 섹션 ID를 통해 섹션 조회
+        Section section = getSectionBySectionId(sectionId);
+
+        // 3. 섹션이 삭제되었는지 확인
+        if (section.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 삭제된 섹션입니다.");
         }
-        List<Channel> channels = channelRepository.findBySectionAndIsDeleted(section, IsDeleted.N);
-        List<ChannelDetailResDto> dtos = new ArrayList<>();
-        for(Channel c : channels) {
-            // 비공개채널이고 내가 채널멤버도 아니면 -> continue
-            // 내가 채널멤버인지 아닌지 알아보기 -> email과 channel 정보로
-            // email로 멤버 정보를 받아온다
-            // channelMembers 탐색 >
-            List<ChannelMember> cMembers = c.getChannelMembers();
-            for(ChannelMember cm : cMembers) {
-                if(c.getIsPublic()  || cm.getWorkspaceMember().getMember().equals(member)) { // 비공개채널이고 내가 채널멤버도 아님 -> continue
-                    dtos.add(c.fromEntity(section));
-                }
-            }
-        }
-        return dtos;
+
+        // 4. 해당 멤버가 섹션의 워크스페이스에 속해 있는지 확인
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, section.getWorkspace(), IsDeleted.N)
+                .orElseThrow(() -> new EntityNotFoundException("워크스페이스 회원이 존재하지 않습니다."));
+
+        // 5. 쿼리를 통해 채널 조회 (멤버와 워크스페이스를 사용)
+        List<Channel> channels = channelRepository.findChannelsByWorkspaceMemberOrPublic(section, IsDeleted.N, workspaceMember);
+
+        // 6. 채널을 DTO로 변환하여 반환
+        return channels.stream()
+                .map(channel -> channel.fromEntity(section))  // 각 채널을 DTO로 변환
+                .collect(Collectors.toList());
+//      채널리스트
+//        1. 해당 섹션에 존재하는 채널리스트
+//        2. 멤버에따라 공개 비공개 여부가 달라짐
+//        3. public 채널은 모두 보여줌
+//        4. Public false 면 해당 멤버가 채널멤버인지 확인후 채널멤버면 보여줌
+
+
+//        List<Channel> channels = channelRepository.findBySectionAndIsDeleted(section, IsDeleted.N);
+//        List<ChannelDetailResDto> dtos = new ArrayList<>();
+//        for(Channel c : channels) {
+//            // 비공개채널이고 내가 채널멤버도 아니면 -> continue
+//            // 내가 채널멤버인지 아닌지 알아보기 -> email과 channel 정보로
+//            // email로 멤버 정보를 받아온다
+//            // channelMembers 탐색 >
+//            List<ChannelMember> cMembers = c.getChannelMembers();
+//            for(ChannelMember cm : cMembers) {
+//                if(c.getIsPublic()  || cm.getWorkspaceMember().getMember().equals(member)) { // 비공개채널이고 내가 채널멤버도 아님 -> continue
+//                    dtos.add(c.fromEntity(section));
+//                }
+//            }
+//        }
+//        return dtos;
     }
 
 
@@ -234,5 +250,23 @@ public class ChannelService {
 //        채널멤버가 존재하면 true, 존재하지 않으면 false
         ChannelMember channelMember = channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, workspaceMember, IsDeleted.N).orElse(null);
         return channelMember != null;
+    }
+
+
+//    공통 메서드
+    private Member getMemberByEmail(String email) {
+        return memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
+    }
+
+    private Section getSectionBySectionId(Long sectionId) {
+        return sectionRepository.findById(sectionId).orElseThrow(() -> new IllegalArgumentException("섹션이 존재하지 않습니다."));
+    }
+
+    private Channel getChannelByChannelId(Long channelId) {
+        return channelRepository.findById(channelId).orElseThrow(() -> new IllegalArgumentException("채널이 존재하지 않습니다."));
+    }
+
+    private Workspace getWorkspaceByWorkspaceId(Long workspaceId) {
+        return workspaceRepository.findById(workspaceId).orElseThrow(() -> new IllegalArgumentException("워크스페이스가 존재하지 않습니다."));
     }
 }
