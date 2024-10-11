@@ -154,7 +154,7 @@ public class ChannelService {
             throw new IllegalArgumentException("이미 삭제된 채널입니다.");
         }
         channel.deleteEntity();
-        searchService.deleteChannel(channel.getSection().getWorkspace().getWorkspaceId(), channel.getChannelId().toString());
+        searchService.deleteChannel(channel.getSection().getWorkspace().getWorkspaceId(), channel.getChannelId());
     }
 
     public FolderAllListResDto channelDrive(Long channelId, String email) {

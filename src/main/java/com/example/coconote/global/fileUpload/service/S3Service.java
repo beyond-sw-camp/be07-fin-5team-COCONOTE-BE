@@ -207,7 +207,7 @@ public class S3Service {
 
         fileEntity.markAsDeleted();
 
-        searchService.deleteFileEntity(channel.getSection().getWorkspace().getWorkspaceId(), fileEntity.getId().toString());
+        searchService.deleteFileEntity(channel.getSection().getWorkspace().getWorkspaceId(), fileEntity.getId());
 
 
     }
