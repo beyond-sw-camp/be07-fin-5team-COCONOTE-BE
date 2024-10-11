@@ -59,6 +59,7 @@ public class Thread extends BaseEntity {
         List<ThreadFileDto> files = this.threadFiles.stream().map(ThreadFile::fromEntity).toList();
         return ThreadResDto.builder()
                 .id(this.id)
+                .image(this.workspaceMember.getProfileImage())
                 .memberName(this.workspaceMember.getNickname())
                 .createdTime(this.getCreatedTime().toString())
                 .content(this.content)
@@ -71,6 +72,7 @@ public class Thread extends BaseEntity {
     public ThreadResDto fromEntity(List<ThreadFileDto> files) {
         return ThreadResDto.builder()
                 .id(this.id)
+                .image(this.workspaceMember.getProfileImage())
                 .memberName(this.workspaceMember.getNickname())
                 .createdTime(this.getCreatedTime().toString())
                 .content(this.content)
