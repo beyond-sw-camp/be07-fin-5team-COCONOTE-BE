@@ -106,7 +106,7 @@ public class WorkspaceMemberService {
 
         workspaceMemberRepository.save(workspaceMember);
 // OpenSearch에 인덱싱
-        searchService.deleteWorkspaceMember(workspaceMember.getWorkspace().getWorkspaceId() ,String.valueOf(workspaceMember.getWorkspaceMemberId()));
+        searchService.deleteWorkspaceMember(workspaceMember.getWorkspace().getWorkspaceId() ,workspaceMember.getWorkspaceMemberId());
 
 
         return workspaceMember.changeRole();
@@ -124,7 +124,7 @@ public class WorkspaceMemberService {
         //            DeleteResponse deleteResponse = openSearchClient.delete(d -> d
 //                    .index("workspace_members")  // 인덱스 이름
 //                    .id(String.valueOf(workspaceMember.getWorkspaceMemberId()))  // 삭제할 문서의 ID
-        searchService.deleteWorkspaceMember(workspaceMember.getWorkspace().getWorkspaceId(), String.valueOf(workspaceMember.getWorkspaceMemberId()));
+        searchService.deleteWorkspaceMember(workspaceMember.getWorkspace().getWorkspaceId(), workspaceMember.getWorkspaceMemberId());
 
     }
 
