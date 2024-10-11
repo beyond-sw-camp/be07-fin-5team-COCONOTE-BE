@@ -2,6 +2,7 @@ package com.example.coconote.api.drive.service;
 
 import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;
+import com.example.coconote.api.channel.channelMember.entity.ChannelMember;
 import com.example.coconote.api.channel.channelMember.repository.ChannelMemberRepository;
 import com.example.coconote.api.drive.dto.request.CreateFolderReqDto;
 import com.example.coconote.api.drive.dto.response.*;
@@ -39,15 +40,13 @@ public class FolderService {
         Channel channel = getChannelByChannelId(createFolderReqDto.getChannelId());
         Member member =  getMemberByEmail(email);
         Workspace workspace = getWorkspaceByChannel(channel);
-        WorkspaceMember workspaceMember = workspace.getWorkspaceMembers().stream()
-                .filter(wm -> wm.getMember().getEmail().equals(email))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("워크스페이스 멤버가 아닙니다."));
+//        워크스페이스 멤버인지 확인
+        WorkspaceMember workspaceMember = getWorkspaceMember(member, workspace);
 //        채널 멤버인지 확인
         checkChannelMember(workspaceMember, channel);
         // 부모 폴더 조회 (parentFolderId가 null이 아닐 경우에만)
         Folder parentFolder = null;
-        if (createFolderReqDto.getParentFolderId() != null) {
+        if (createFolderReqDto.getParentFolderId() != null) { // 부모 폴더가 존재할 경우
             parentFolder = folderRepository.findById(createFolderReqDto.getParentFolderId())
                     .orElseThrow(() -> new IllegalArgumentException("부모 폴더가 존재하지 않습니다."));
             if (!parentFolder.getChannel().getChannelId().equals(channel.getChannelId())) {
@@ -68,8 +67,8 @@ public class FolderService {
         Member member = getMemberByEmail(email);
         Folder folder = getFolderByFolderId(folderId);
         Channel channel = getChannelByChannelId(folder.getChannel().getChannelId());
-        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspace(member, channel.getSection().getWorkspace())
-                .orElseThrow(() -> new IllegalArgumentException("워크스페이스 멤버가 아닙니다."));
+        Workspace workspace = getWorkspaceByChannel(channel);
+        WorkspaceMember workspaceMember = getWorkspaceMember(member, workspace);
 
         if(folder.getFolderName().equals("캔버스 자동업로드 폴더") || folder.getFolderName().equals("쓰레드 자동업로드 폴더")){
             throw new IllegalArgumentException("이 폴더는 이름을 변경할 수 없습니다.");
@@ -92,7 +91,6 @@ public class FolderService {
         if(folder.getFolderName().equals("캔버스 자동업로드 폴더") || folder.getFolderName().equals("쓰레드 자동업로드 폴더")){
             throw new IllegalArgumentException("이 폴더는 삭제할 수 없습니다.");
         }
-
 //        채널 멤버인지 확인
         checkChannelMember(workspaceMember, channel);
 //        자식 폴더들도 재귀적으로 삭제 처리
@@ -142,14 +140,17 @@ public class FolderService {
 //        채널이 공개 채널인지 확인
         Channel channel = getChannelByChannelId(folder.getChannel().getChannelId());
 //        체날 멤버인지 확인
-
         if (!channel.getIsPublic()) {
             throw new IllegalArgumentException("비공개 채널입니다.");
         }
+        return getFolderAllListResDto(folder, folderRepository, fileRepository);
+    }
 
+//    공통 메서드
+//    폴더에 속한 폴더 및 파일 조회
+    public static FolderAllListResDto getFolderAllListResDto(Folder folder, FolderRepository folderRepository, FileRepository fileRepository) {
         List<Folder> folderList = folderRepository.findAllByParentFolderAndIsDeleted(folder, IsDeleted.N);
         List<FileEntity> fileEntityList = fileRepository.findAllByFolderAndIsDeleted(folder, IsDeleted.N);
-
 
         List<FolderListDto> folderListDto = FolderListDto.fromEntity(folderList);
         List<FileListDto> fileListDto = FileListDto.fromEntity(fileEntityList);
@@ -180,10 +181,14 @@ public class FolderService {
 
 //    채널 멤버인지 확인
     private void checkChannelMember(WorkspaceMember workspaceMember, Channel channel) {
-        System.out.println(channel.getChannelMembers());
         if (channel.getChannelMembers().stream().noneMatch(cm -> cm.getWorkspaceMember().equals(workspaceMember))) {
             throw new IllegalArgumentException("채널 멤버가 아닙니다.");
         }
+    }
+
+    private WorkspaceMember getWorkspaceMember(Member member, Workspace workspace) {
+        return workspaceMemberRepository.findByMemberAndWorkspace(member, workspace)
+                .orElseThrow(() -> new IllegalArgumentException("워크스페이스 멤버가 아닙니다."));
     }
 
 
