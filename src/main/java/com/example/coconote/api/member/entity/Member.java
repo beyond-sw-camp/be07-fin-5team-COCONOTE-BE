@@ -13,6 +13,7 @@ import org.hibernate.validator.constraints.UniqueElements;
 @Entity
 @Table(indexes = @Index(name = "idx_member_email", columnList = "email"))
 public class Member extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="member_id")
