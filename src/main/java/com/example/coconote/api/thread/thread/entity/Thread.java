@@ -43,10 +43,13 @@ public class Thread extends BaseEntity {
 //    private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "workspace_member_id")
     private WorkspaceMember workspaceMember;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "channel_id")
     private Channel channel;
+
     @Builder.Default
     @OneToMany(mappedBy = "thread", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ThreadTag> threadTags = new ArrayList<>();
