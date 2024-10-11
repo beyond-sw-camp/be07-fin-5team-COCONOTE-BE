@@ -12,14 +12,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TagCreateReqDto {
-    private String name;
-    private String color;
+    private String tagName;
+    private String tagColor;
     private Long channelId;
 
     public Tag toEntity(Channel channel) {
         return Tag.builder()
-                .name(this.name)
-                .color(this.color)
+                .name(this.tagName)
+                .color(this.tagColor)
                 .channel(channel)
                 .build();
     }

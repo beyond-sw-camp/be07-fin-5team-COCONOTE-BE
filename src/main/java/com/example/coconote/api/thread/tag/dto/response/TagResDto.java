@@ -13,4 +13,5 @@ public class TagResDto {
     private Long id;
     private String name;
     private String color;
+    private Long threadTagId;
 }

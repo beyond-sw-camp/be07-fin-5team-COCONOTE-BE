@@ -72,7 +72,7 @@ public class ThreadService {
         Page<ThreadResDto> threadResDtos = threads.map(thread -> {
             List<Thread> childThreads = threadRepository.findAllByParentAndIsDeleted(thread, IsDeleted.N);
             List<ThreadResDto> childThreadResDtos = childThreads.stream().map(Thread::fromEntity).toList();
-            List<ThreadFileDto> threadFileDtos = thread.getThreadFiles().stream().map(ThreadFile::fromEntity).toList();
+            List<ThreadFileDto> threadFileDtos = thread.getThreadFiles().stream().filter(f -> f.getIsDeleted()==IsDeleted.N).map(ThreadFile::fromEntity).toList();
             return thread.fromEntity(childThreadResDtos,threadFileDtos);
         });
         return threadResDtos;

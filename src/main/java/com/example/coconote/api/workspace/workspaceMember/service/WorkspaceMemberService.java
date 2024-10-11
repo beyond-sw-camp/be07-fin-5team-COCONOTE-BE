@@ -114,21 +114,19 @@ public class WorkspaceMemberService {
 
     @Transactional
     public void workspaceMemberDelete(Long id) {
-        WorkspaceMember workspaceMember = workspaceMemberRepository.findById(id).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
-        if(workspaceMember.getIsDeleted().equals(IsDeleted.Y)) {
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("찾을 수 없습니다."));
+        if (workspaceMember.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 워크스페이스에서 탈퇴한 회원입니다.");
         }
 
         workspaceMember.deleteEntity();
         // OpenSearch에서 문서 삭제
-        try {
-            DeleteResponse deleteResponse = openSearchClient.delete(d -> d
-                    .index("workspace_members")  // 인덱스 이름
-                    .id(String.valueOf(workspaceMember.getWorkspaceMemberId()))  // 삭제할 문서의 ID
-            );
-        } catch (IOException e) {
-            throw new RuntimeException("OpenSearch에서 문서를 삭제하는 중 오류가 발생했습니다.", e);
-        }    }
+        //            DeleteResponse deleteResponse = openSearchClient.delete(d -> d
+//                    .index("workspace_members")  // 인덱스 이름
+//                    .id(String.valueOf(workspaceMember.getWorkspaceMemberId()))  // 삭제할 문서의 ID
+        searchService.deleteWorkspaceMember(workspaceMember.getWorkspace().getWorkspaceId(), String.valueOf(workspaceMember.getWorkspaceMemberId()));
+
+    }
 
     private Member getMemberByEmail(String email){
         return memberRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
