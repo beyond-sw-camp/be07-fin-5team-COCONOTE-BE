@@ -99,15 +99,15 @@ public class TokenSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("http://localhost:3000");
+        configuration.addAllowedOrigin("http://localhost:*");
         configuration.addAllowedOrigin("http://localhost:8082");
         configuration.addAllowedOrigin("https://coconote.site");
         configuration.addAllowedMethod("*");  // 모든 HTTP 메서드를 허용
-        configuration.addAllowedHeader("*");  // 모든 헤더를 허용
+        configuration.addAllowedHeader("*");  // 모든 HTTP 헤더를 허용
         configuration.setAllowCredentials(true);  // 자격 증명 허용
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/**", configuration);  // CORS 규칙을 "/api/**" 경로에 적용
+        source.registerCorsConfiguration("/**", configuration);  // CORS 규칙을 "/api/**" 경로에 적용
         return source;
     }
 }
