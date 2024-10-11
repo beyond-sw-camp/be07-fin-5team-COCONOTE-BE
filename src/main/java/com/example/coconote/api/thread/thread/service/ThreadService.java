@@ -87,6 +87,7 @@ public class ThreadService {
         return ThreadResDto.builder()
                 .id(thread.getId())
                 .type(MessageType.DELETE)
+                .parentThreadId(thread.getParent() != null ? thread.getParent().getId() : null)
                 .build();
     }
 
