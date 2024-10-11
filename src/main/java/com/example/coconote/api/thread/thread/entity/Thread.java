@@ -55,7 +55,7 @@ public class Thread extends BaseEntity {
     private List<ThreadFile> threadFiles = new ArrayList<>();
 
     public ThreadResDto fromEntity() {
-//        List<TagResDto> tags = this.threadTags.stream().map(threadTag -> threadTag.fromEntity()).toList();
+        List<TagResDto> tags = this.threadTags.stream().map(threadTag -> threadTag.fromEntity()).toList();
         List<ThreadFileDto> files = this.threadFiles.stream().map(ThreadFile::fromEntity).toList();
         return ThreadResDto.builder()
                 .id(this.id)
@@ -63,7 +63,7 @@ public class Thread extends BaseEntity {
                 .createdTime(this.getCreatedTime().toString())
                 .content(this.content)
                 .files(files)
-                .tags(new ArrayList<>())
+                .tags(tags)
                 .parentThreadId(this.parent != null ? this.parent.getId() : null)
                 .build();
     }
