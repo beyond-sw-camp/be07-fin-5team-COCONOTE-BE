@@ -46,6 +46,7 @@ public class ChannelMemberController {
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
+
     @Operation(summary= "채널 관리자 권한 부여/박탈")
     @PatchMapping("/channel/member/role/{id}") // 채널 관리자 권한 부여/삭제
     public ResponseEntity<Object> channelMemberChangeRole(@PathVariable Long id) {

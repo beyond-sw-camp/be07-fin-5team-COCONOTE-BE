@@ -40,10 +40,12 @@ public class ThreadTagService {
     public ThreadResDto deleteThreadTag(ThreadReqDto dto) {
         log.info("dto.getThreadTagId() {}", dto.getThreadTagId());
         threadTagRepository.deleteById(dto.getThreadTagId());
+        Thread thread = ThreadRepository.findById(dto.getThreadId()).orElseThrow(()-> new EntityNotFoundException("Thread not found"));
         return ThreadResDto.builder()
                 .type(MessageType.REMOVE_TAG)
                 .id(dto.getThreadId())
                 .tagId(dto.getTagId())
+                .parentThreadId(thread.getParent() != null ? thread.getParent().getId() : null)
                 .build();
     }
     private ThreadTag findThreadTag(Long id) {

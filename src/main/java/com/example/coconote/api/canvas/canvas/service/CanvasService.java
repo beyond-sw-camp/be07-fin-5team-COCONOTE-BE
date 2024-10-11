@@ -1,5 +1,6 @@
 package com.example.coconote.api.canvas.canvas.service;
 
+import com.example.coconote.api.canvas.canvas.dto.request.UpdateCanvasReqDto;
 import com.example.coconote.api.canvas.canvas.entity.Canvas;
 import com.example.coconote.api.canvas.canvas.repository.CanvasRepository;
 import com.example.coconote.api.canvas.canvas.dto.request.ChatMessage;
@@ -17,6 +18,7 @@ import com.example.coconote.api.channel.channel.repository.ChannelRepository;imp
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -134,6 +136,17 @@ public class CanvasService {
         Canvas canvas = canvasRepository.findByIdAndIsDeleted(canvasId, IsDeleted.N).orElseThrow(() -> new IllegalArgumentException("캔버스가 존재하지 않습니다."));
         CanvasDetResDto canvasDetResDto = canvas.fromDetEntity();
         return canvasDetResDto;
+    }
+
+    @Transactional
+    public CanvasDetResDto updateCanvas(UpdateCanvasReqDto updateCanvasReqDto) {
+        Canvas canvas = canvasRepository.findById(updateCanvasReqDto.getCanvasId()).orElseThrow(() -> new EntityNotFoundException("캔버스가 존재하지 않습니다."));
+        Canvas parentCanvas = null;
+        if(updateCanvasReqDto.getParentCanvasId() != null){
+            parentCanvas = canvasRepository.findById(updateCanvasReqDto.getParentCanvasId()).orElseThrow(() -> new EntityNotFoundException("해당 부모 캔버스가 존재하지 않습니다."));
+        }
+        canvas.updateInfo(updateCanvasReqDto.getTitle(), parentCanvas, updateCanvasReqDto.getIsDeleted());
+        return canvas.fromDetEntity();
     }
 
     @Transactional
