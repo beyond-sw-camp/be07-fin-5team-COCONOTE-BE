@@ -11,7 +11,6 @@ import org.hibernate.validator.constraints.UniqueElements;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(indexes = @Index(name = "idx_member_email", columnList = "email"))
 public class Member extends BaseEntity {
 
     @Id
