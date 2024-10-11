@@ -32,7 +32,6 @@ public class SectionController {
     public ResponseEntity<Object> sectionCreate(@RequestBody SectionCreateReqDto dto, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
         SectionListResDto resDto = sectionService.sectionCreate(dto, customPrincipal.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "section is successfully created", resDto);
-        System.out.println("commonResDto = " + commonResDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
 
     }
@@ -41,7 +40,6 @@ public class SectionController {
     @GetMapping("/section/list/{workspaceId}")
     public ResponseEntity<Object> sectionRead(@PathVariable Long workspaceId, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
         List<SectionListResDto> dtos = sectionService.sectionList(workspaceId, customPrincipal.getEmail());
-        System.out.println("dtos = " + dtos);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "list is successfully found", dtos);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
