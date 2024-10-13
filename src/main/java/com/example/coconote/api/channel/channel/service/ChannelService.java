@@ -137,7 +137,6 @@ public class ChannelService {
             throw new IllegalArgumentException("이미 삭제된 채널입니다.");
         }
         channel.updateEntity(dto);
-
         channelRepository.save(channel);
         searchService.indexChannel(channel.getSection().getWorkspace().getWorkspaceId(), channel);
         return channel;
