@@ -36,6 +36,11 @@ public class SearchService {
         return "workspace_" + workspaceId;
     }
 
+    // 고유한 documentId 생성 메서드
+    private String generateDocumentId(String prefix, Long id) {
+        return prefix + "_" + id;
+    }
+
     // 공통 인덱스 저장 메서드
     private <T> void indexDocument(String alias, String documentId, T document) {
         try {
@@ -124,6 +129,7 @@ public class SearchService {
     private String escapeSpecialChars(String keyword) {
         return keyword.replaceAll("([+\\-!(){}\\[\\]^\"~*?:\\\\/@])", "\\\\$1");
     }
+
     // 워크스페이스 멤버 검색 (총 결과 수 포함)
     public SearchResultWithTotal<WorkspaceMemberSearchResultDto> searchWorkspaceMembers(Long workspaceId, String keyword, int page, int size) {
         String alias = getAliasForWorkspace(workspaceId);
@@ -298,77 +304,91 @@ public class SearchService {
     public void indexWorkspaceMember(Long workspaceId, WorkspaceMember workspaceMember) {
         WorkspaceMemberDocument document = workspaceMemberMapper.toDocument(workspaceMember);
         String alias = getAliasForWorkspace(workspaceId);
-        indexDocument(alias, document.getId(), document);
+        String documentId = generateDocumentId("workspaceMember", workspaceMember.getWorkspaceMemberId());
+        indexDocument(alias, documentId, document);
     }
 
     // 워크스페이스 멤버 삭제
-    public void deleteWorkspaceMember(Long workspaceId, String workspaceMemberId) {
+    public void deleteWorkspaceMember(Long workspaceId, Long workspaceMemberId) {
         String alias = getAliasForWorkspace(workspaceId);
-        deleteDocument(alias, workspaceMemberId);
+        String documentId = generateDocumentId("workspaceMember", workspaceMemberId);
+        deleteDocument(alias, documentId);
     }
 
     // 파일 인덱스 저장
     public void indexFileEntity(Long workspaceId, FileEntity fileEntity) {
         FileEntityDocument document = fileEntityMapper.toDocument(fileEntity);
         String alias = getAliasForWorkspace(workspaceId);
-        indexDocument(alias, document.getFileId(), document);
+        String documentId = generateDocumentId("fileEntity", fileEntity.getId());
+        indexDocument(alias, documentId, document);
     }
 
     // 파일 삭제
-    public void deleteFileEntity(Long workspaceId, String fileId) {
+    public void deleteFileEntity(Long workspaceId, Long fileId) {
         String alias = getAliasForWorkspace(workspaceId);
-        deleteDocument(alias, fileId);
+        String documentId = generateDocumentId("fileEntity", fileId);
+        deleteDocument(alias, documentId);
     }
 
     // 채널 인덱스 저장
     public void indexChannel(Long workspaceId, Channel channel) {
         ChannelDocument document = channelMapper.toDocument(channel);
         String alias = getAliasForWorkspace(workspaceId);
-        indexDocument(alias, document.getChannelId(), document);
+        String documentId = generateDocumentId("channel", channel.getChannelId());
+        indexDocument(alias, documentId, document);
     }
 
     // 채널 삭제
-    public void deleteChannel(Long workspaceId, String channelId) {
+    public void deleteChannel(Long workspaceId, Long channelId) {
         String alias = getAliasForWorkspace(workspaceId);
-        deleteDocument(alias, channelId);
+        String documentId = generateDocumentId("channel", channelId);
+        deleteDocument(alias, documentId);
     }
 
     // 쓰레드 인덱스 저장
     public void indexThread(Long workspaceId, Thread thread) {
         ThreadDocument document = threadMapper.toDocument(thread);
         String alias = getAliasForWorkspace(workspaceId);
-        indexDocument(alias, document.getThreadId(), document);
+        String documentId = generateDocumentId("thread", thread.getId());
+        indexDocument(alias, documentId, document);
     }
 
     // 쓰레드 삭제
-    public void deleteThread(Long workspaceId, String threadId) {
+    public void deleteThread(Long workspaceId, Long threadId) {
         String alias = getAliasForWorkspace(workspaceId);
-        deleteDocument(alias, threadId);
+        String documentId = generateDocumentId("thread", threadId);
+        deleteDocument(alias, documentId);
     }
 
     // 캔버스 인덱스 저장
     public void indexCanvas(Long workspaceId, Canvas canvas) {
         CanvasBlockDocument canvasBlockDocument = canvasBlockMapper.toDocument(canvas);
         String alias = getAliasForWorkspace(workspaceId);
-        indexDocument(alias, canvasBlockDocument.getCanvasId(), canvasBlockDocument);
+        String documentId = generateDocumentId("canvas", canvas.getId());
+        indexDocument(alias, documentId, canvasBlockDocument);
+    }
+
+    // 캔버스 삭제
+    public void deleteCanvas(Long workspaceId, Long canvasId) {
+        String alias = getAliasForWorkspace(workspaceId);
+        String documentId = generateDocumentId("canvas", canvasId);
+        deleteDocument(alias, documentId);
     }
 
     // 블록 인덱스 저장
     public void indexBlock(Long workspaceId, Block block) {
         CanvasBlockDocument canvasBlockDocument = canvasBlockMapper.toDocument(block);
         String alias = getAliasForWorkspace(workspaceId);
-        indexDocument(alias, canvasBlockDocument.getId(), canvasBlockDocument);
+        String documentId = generateDocumentId("block", block.getId());
+        indexDocument(alias, documentId, canvasBlockDocument);
     }
 
-    // 캔버스 삭제
-    public void deleteCanvas(Long workspaceId, Long canvasId) {
-        String alias = getAliasForWorkspace(workspaceId);
-        deleteDocument(alias, String.valueOf(canvasId));
-    }
+
 
     // 블록 삭제
     public void deleteBlock(Long workspaceId, Long blockId) {
         String alias = getAliasForWorkspace(workspaceId);
-        deleteDocument(alias, String.valueOf(blockId));
+        String documentId = generateDocumentId("block", blockId);
+        deleteDocument(alias, documentId);
     }
 }

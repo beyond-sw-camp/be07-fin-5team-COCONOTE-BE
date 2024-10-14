@@ -57,7 +57,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                             .nickname(name)
                             .build();
                     Member tempMember = memberRepository.save(newMember);
-                    workspaceService.workspaceCreate(new WorkspaceCreateReqDto("My Workspace", ""), email);
+                    workspaceService.workspaceCreate(new WorkspaceCreateReqDto(name + "Workspace", name + "의 워크스페이스입니다."), email);
                     return tempMember;
                 });
 

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 @Data
@@ -25,5 +26,8 @@ public class BlockListResDto {
 
     @Builder.Default
     private List<BlockListResDto> childBlock = new ArrayList<>();
+
+    private String prevBlockFeId; // 이전 블록의 feId
+
 }
 
