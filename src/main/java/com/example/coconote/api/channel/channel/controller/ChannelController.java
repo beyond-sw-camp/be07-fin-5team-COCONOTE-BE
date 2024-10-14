@@ -48,8 +48,8 @@ public class ChannelController {
     @Operation(summary= "채널 수정")
     @PatchMapping("/channel/update/{id}")
     public ResponseEntity<Object> channelUpdate(@PathVariable Long id, @RequestBody ChannelUpdateReqDto dto, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
-        Channel channel = channelService.channelUpdate(id, dto, customPrincipal.getEmail());
-        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "channel is successfully updated", channel);
+        ChannelDetailResDto resDto = channelService.channelUpdate(id, dto, customPrincipal.getEmail());
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "channel is successfully updated", resDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
