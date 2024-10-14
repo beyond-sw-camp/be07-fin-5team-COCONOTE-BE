@@ -247,6 +247,9 @@ public class ChannelService {
         return channelMember != null;
     }
 
+
+    public ChannelDetailResDto channelDetail(Long channelId) {
+        Channel channel = channelRepository.findById(channelId).orElseThrow(()-> new EntityNotFoundException("채널을 찾을 수 없습니다."));
     //    공통 메서드
     private Member getMemberByEmail(String email) {
         return memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
