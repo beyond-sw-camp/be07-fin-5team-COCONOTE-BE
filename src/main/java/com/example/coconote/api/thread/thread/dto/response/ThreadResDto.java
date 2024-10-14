@@ -29,4 +29,5 @@ public class ThreadResDto {
     private String tagName;
     private String tagColor;
     private Long threadTagId;
+    private Long parentThreadId;
 }

@@ -54,8 +54,8 @@ public class WorkspaceMemberController {
     @PostMapping("/workspace/invite/accept")
     public ResponseEntity<CommonResDto> acceptInvitation(@RequestParam("token") String token) {
             // JWT 토큰을 이용해 워크스페이스에 가입 처리
-            mailVerifyService.processInvitation(token);
-            CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "워크스페이스 가입이 성공적으로 처리되었습니다.", null);
+            WorkspaceListResDto workspaceListResDto =  mailVerifyService.processInvitation(token);
+            CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "워크스페이스 가입이 성공적으로 처리되었습니다.", workspaceListResDto);
             return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }
 

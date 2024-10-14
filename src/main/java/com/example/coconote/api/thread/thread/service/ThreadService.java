@@ -83,10 +83,11 @@ public class ThreadService {
         Thread thread = threadRepository.findById(threadId).orElseThrow(()->new EntityNotFoundException("thread not found"));
 //        isDeleted를 true로 바꾸는 것으로 대체
         thread.markAsDeleted();
-        searchService.deleteThread(thread.getChannel().getSection().getWorkspace().getWorkspaceId(), String.valueOf(thread.getId()));
+        searchService.deleteThread(thread.getChannel().getSection().getWorkspace().getWorkspaceId(), thread.getId());
         return ThreadResDto.builder()
                 .id(thread.getId())
                 .type(MessageType.DELETE)
+                .parentThreadId(thread.getParent() != null ? thread.getParent().getId() : null)
                 .build();
     }
 
