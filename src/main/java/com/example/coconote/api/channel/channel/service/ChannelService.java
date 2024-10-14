@@ -196,18 +196,6 @@ public class ChannelService {
                 }
             }
         }
-//        List<Section> sections = sectionRepository.findByWorkspaceAndIsDeleted(workspace, IsDeleted.N);
-//        List<ChannelDetailResDto> bookmarkChannels = new ArrayList<>();
-//        for (Section s : sections) {
-//            if (s.getChannels() != null) {
-//                for (Channel c : s.getChannels()) {
-//                  ChannelMember channelMember = channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(c, workspaceMember, IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("채널 회원을 찾을 수 없습니다."));
-//                    if(channelMember.getIsBookmark()){
-//                      bookmarkChannels.add(c.fromEntity(s));
-//                  }
-//                }
-//            }
-//        }
         return bookmarkChannels;
     }
 
