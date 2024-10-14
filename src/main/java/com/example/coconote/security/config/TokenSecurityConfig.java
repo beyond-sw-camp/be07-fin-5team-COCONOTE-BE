@@ -57,7 +57,7 @@ public class TokenSecurityConfig {
                 .authorizeHttpRequests(authorizeRequests ->
                                 authorizeRequests
 //                                        .requestMatchers("/**").permitAll()
-                                .requestMatchers("/" , "/login**" , "/error", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**").permitAll()
+                                        .requestMatchers("/", "/refresh", "/login**", "/error", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**").permitAll()
                                         .requestMatchers("/api/v1/ws-stomp/**").permitAll()  // WebSocket 엔드포인트 허용
                                         .anyRequest().authenticated()
                 )
@@ -72,7 +72,7 @@ public class TokenSecurityConfig {
                                                 .authorizationRequestRepository(authorizationRequestRepository())
                                         ) // 세션을 사용하지 않도록 null 설정, 쿠키 기반 OAuth2 상태 관리
                                         .userInfoEndpoint(userInfoEndpoint ->
-                                                userInfoEndpoint .userService(customOAuth2UserService)  // CustomOAuth2UserService 등록
+                                                userInfoEndpoint.userService(customOAuth2UserService)  // CustomOAuth2UserService 등록
                                         )
                                         .successHandler(new CustomAuthenticationSuccessHandler(jwtTokenProvider, frontUrl))  // 직접 만든 SuccessHandler 설정, Bean 으로 등록한 SuccessHandler 사용
                 )
