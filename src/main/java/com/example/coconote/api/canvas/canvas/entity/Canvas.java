@@ -1,5 +1,6 @@
 package com.example.coconote.api.canvas.canvas.entity;
 
+import com.example.coconote.api.canvas.block.entity.Block;
 import com.example.coconote.api.canvas.canvas.dto.response.CanvasDetResDto;
 import com.example.coconote.api.canvas.canvas.dto.response.CanvasListResDto;
 import com.example.coconote.api.channel.channel.entity.Channel;
@@ -34,6 +35,12 @@ public class Canvas extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_canvas_id")
     private Canvas parentCanvas;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "prev_canvas_id")
+//    순서를 알기 위한, 동레벨의 이전 캔버스
+//    이전 캔버스이 없다면, 최상위 캔버스!
+    private Canvas prevCanvas;
 
     @OneToMany(mappedBy = "parentCanvas", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Canvas> childCanvasList;

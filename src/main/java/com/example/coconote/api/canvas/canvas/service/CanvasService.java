@@ -1,10 +1,9 @@
 package com.example.coconote.api.canvas.canvas.service;
 
-import com.example.coconote.api.canvas.canvas.dto.request.UpdateCanvasReqDto;
+import com.example.coconote.api.canvas.block.entity.Method;
+import com.example.coconote.api.canvas.canvas.dto.request.*;
 import com.example.coconote.api.canvas.canvas.entity.Canvas;
 import com.example.coconote.api.canvas.canvas.repository.CanvasRepository;
-import com.example.coconote.api.canvas.canvas.dto.request.ChatMessage;
-import com.example.coconote.api.canvas.canvas.dto.request.CreateCanvasReqDto;
 import com.example.coconote.api.canvas.canvas.dto.response.CanvasDetResDto;
 import com.example.coconote.api.canvas.canvas.dto.response.CanvasListResDto;
 import com.example.coconote.api.canvas.canvas.dto.response.CreateCanvasResDto;
@@ -14,12 +13,14 @@ import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
 import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.common.IsDeleted;
-import com.example.coconote.api.channel.channel.repository.ChannelRepository;import com.example.coconote.common.IsDeleted;
+import com.example.coconote.api.channel.channel.repository.ChannelRepository;
+import com.example.coconote.common.IsDeleted;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 public class CanvasService {
@@ -41,7 +43,7 @@ public class CanvasService {
     private final MemberRepository memberRepository;
     private final SearchService searchService;
 
-    public CanvasService(CanvasRepository canvasRepository, ChannelRepository channelRepository, MemberRepository memberRepository, KafkaTemplate<String, Object> kafkaTemplate, SimpMessageSendingOperations messagingTemplate, SearchService searchService){
+    public CanvasService(CanvasRepository canvasRepository, ChannelRepository channelRepository, MemberRepository memberRepository, KafkaTemplate<String, Object> kafkaTemplate, SimpMessageSendingOperations messagingTemplate, SearchService searchService) {
         this.canvasRepository = canvasRepository;
         this.channelRepository = channelRepository;
         this.memberRepository = memberRepository;
@@ -53,7 +55,7 @@ public class CanvasService {
     }
 
     @Transactional
-    public CreateCanvasResDto createCanvas(CreateCanvasReqDto createCanvasReqDto, String email){
+    public CreateCanvasResDto createCanvas(CreateCanvasReqDto createCanvasReqDto, String email) {
         Channel channel = channelRepository.findById(createCanvasReqDto.getChannelId()).orElseThrow(() -> new IllegalArgumentException("채널이 존재하지 않습니다."));
 
         Member member = getMemberByEmail(email);
@@ -85,7 +87,7 @@ public class CanvasService {
         return CreateCanvasResDto.fromEntity(canvas);
     }
 
-    public Page<CanvasListResDto> getCanvasListInChannel(Long channelId, String email, Pageable pageable, Integer depth){
+    public Page<CanvasListResDto> getCanvasListInChannel(Long channelId, String email, Pageable pageable, Integer depth) {
         Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new IllegalArgumentException("채널이 존재하지 않습니다."));
 
         Page<Canvas> canvasList = canvasRepository.findByChannelAndParentCanvasIdAndIsDeleted(pageable, channel, null, IsDeleted.N);
@@ -102,29 +104,29 @@ public class CanvasService {
         return canvasListResDtos;
     }
 
-//    현 캔버스를 참조하고 있는 하위 캔버스
-    public List<CanvasListResDto> getChildCanvasListFromCanvas(Long canvasId, String email){
+    //    현 캔버스를 참조하고 있는 하위 캔버스
+    public List<CanvasListResDto> getChildCanvasListFromCanvas(Long canvasId, String email) {
         Canvas canvas = canvasRepository.findByIdAndIsDeleted(canvasId, IsDeleted.N).orElseThrow(() -> new IllegalArgumentException("캔버스가 존재하지 않습니다."));
         List<Canvas> childCanvas = canvasRepository.findByParentCanvasIdAndIsDeleted(canvas.getId(), IsDeleted.N);
         List<CanvasListResDto> childCanvasListDto = !childCanvas.isEmpty() ?
-                childCanvas.stream().map(a->a.fromListEntity()).toList()
+                childCanvas.stream().map(a -> a.fromListEntity()).toList()
                 : null;
 
         return childCanvasListDto;
     }
 
-//    현 캔버스와 형제 캔버스
-    public List<CanvasListResDto> getChildCanvasListFromParentCanvas(Long canvasId, String email){
+    //    현 캔버스와 형제 캔버스
+    public List<CanvasListResDto> getChildCanvasListFromParentCanvas(Long canvasId, String email) {
         Canvas canvas = canvasRepository.findByIdAndIsDeleted(canvasId, IsDeleted.N).orElseThrow(() -> new IllegalArgumentException("캔버스가 존재하지 않습니다."));
         Canvas parentCanvas = null;
-        if(canvas.getParentCanvas() != null){
+        if (canvas.getParentCanvas() != null) {
             parentCanvas = canvasRepository.findByIdAndIsDeleted(canvas.getParentCanvas().getId(), IsDeleted.N).orElse(null);
         }
 
-        List<Canvas> siblingCanvasList = canvasRepository.findByParentCanvasIdAndChannelAndIsDeleted(parentCanvas!=null ? parentCanvas.getId() : null,
+        List<Canvas> siblingCanvasList = canvasRepository.findByParentCanvasIdAndChannelAndIsDeleted(parentCanvas != null ? parentCanvas.getId() : null,
                 canvas.getChannel(), IsDeleted.N);
         List<CanvasListResDto> siblingCanvasListDto = !siblingCanvasList.isEmpty() ?
-                siblingCanvasList.stream().map(a->a.fromListEntity()).toList()
+                siblingCanvasList.stream().map(a -> a.fromListEntity()).toList()
                 : null;
 
 
@@ -132,7 +134,7 @@ public class CanvasService {
     }
 
     @Transactional
-    public CanvasDetResDto getCanvasDetail(Long canvasId, String email){
+    public CanvasDetResDto getCanvasDetail(Long canvasId, String email) {
         Canvas canvas = canvasRepository.findByIdAndIsDeleted(canvasId, IsDeleted.N).orElseThrow(() -> new IllegalArgumentException("캔버스가 존재하지 않습니다."));
         CanvasDetResDto canvasDetResDto = canvas.fromDetEntity();
         return canvasDetResDto;
@@ -142,11 +144,16 @@ public class CanvasService {
     public CanvasDetResDto updateCanvas(UpdateCanvasReqDto updateCanvasReqDto) {
         Canvas canvas = canvasRepository.findById(updateCanvasReqDto.getCanvasId()).orElseThrow(() -> new EntityNotFoundException("캔버스가 존재하지 않습니다."));
         Canvas parentCanvas = null;
-        if(updateCanvasReqDto.getParentCanvasId() != null){
+        if (updateCanvasReqDto.getParentCanvasId() != null) {
             parentCanvas = canvasRepository.findById(updateCanvasReqDto.getParentCanvasId()).orElseThrow(() -> new EntityNotFoundException("해당 부모 캔버스가 존재하지 않습니다."));
         }
         canvas.updateInfo(updateCanvasReqDto.getTitle(), parentCanvas, updateCanvasReqDto.getIsDeleted());
         return canvas.fromDetEntity();
+    }
+
+    @Transactional
+    private void changeOrderCanvas(ChangeOrderCanvasReqDto changeOrderCanvasReqDto) {
+
     }
 
     @Transactional
@@ -160,20 +167,20 @@ public class CanvasService {
 
 //    ========== 기능 불러와서 쓰기~
 
-    public Canvas findByIdAndIsDeletedReturnRequired(Long canvasId){
+    public Canvas findByIdAndIsDeletedReturnRequired(Long canvasId) {
         return canvasRepository.findById(canvasId).orElseThrow(() -> new IllegalArgumentException("캔버스가 존재하지 않습니다."));
     }
 
-    public Canvas findByIdAndIsDeletedReturnOrElseNull(Long canvasId){
+    public Canvas findByIdAndIsDeletedReturnOrElseNull(Long canvasId) {
         return canvasRepository.findById(canvasId).orElse(null);
     }
 
-    public Member getMemberByEmail(String email){
+    public Member getMemberByEmail(String email) {
         return memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
     }
 
 
-//    ========== websocket 소스코드 영역
+    //    ========== websocket 소스코드 영역
     private static final String CHAT_ROOMS = "CHAT_ROOM";
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private Map<String, String> topics;
@@ -218,21 +225,42 @@ public class CanvasService {
 
     private final SimpMessageSendingOperations messagingTemplate;
 
+    @Transactional
     @KafkaListener(topics = "canvas-topic", groupId = "websocket-group"
             , containerFactory = "kafkaListenerContainerFactory")
-    public void consumerProductQuantity(String message){ // return 시, string 형식으로 message가 들어옴
+    public void consumerProductQuantity(String message) { // return 시, string 형식으로 message가 들어옴
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             System.out.println(message);
             // ChatMessage 객채로 맵핑
-            ChatMessage roomMessage =  objectMapper.readValue(message,ChatMessage.class);
+            ChatMessage roomMessage = objectMapper.readValue(message, ChatMessage.class);
             messagingTemplate.convertAndSend("/sub/canvas/room/" + roomMessage.getRoomId(), roomMessage);
+            SendCanvasReqDto sendCanvasReqDto = objectMapper.readValue(roomMessage.getMessage(), SendCanvasReqDto.class);
+            editCanvasInSocket(sendCanvasReqDto);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
-        } catch (Exception e){
+        } catch (Exception e) {
 //            만약, 실패했을 때 코드 추가해야함
         }
         System.out.println(message);
+    }
+
+    public void editCanvasInSocket(SendCanvasReqDto sendCanvasReqDto) {
+//        생성, 수정, 삭제인지 type 구분해서 넣어주는 용도
+        if (sendCanvasReqDto.getMethod().equals(Method.create)) { // 생성 캔버스
+            CreateCanvasReqDto createCanvasReqDto = sendCanvasReqDto.buildCreateCanvasReqDto();
+            createCanvas(createCanvasReqDto, "");
+        } else if (sendCanvasReqDto.getMethod().equals(Method.update)) { // 수정 캔버스
+            UpdateCanvasReqDto updateCanvasReqDto = sendCanvasReqDto.buildUpdateCanvasReqDto();
+            updateCanvas(updateCanvasReqDto);
+        } else if (sendCanvasReqDto.getMethod().equals(Method.changeOrder)) { //순서 변경  캔버스
+            ChangeOrderCanvasReqDto changeOrderCanvasReqDto = sendCanvasReqDto.buildChangeOrderCanvasReqDto();
+            changeOrderCanvas(changeOrderCanvasReqDto);
+        } else if (sendCanvasReqDto.getMethod().equals(Method.delete)) { // 삭제 캔버스
+            deleteCanvas(sendCanvasReqDto.getCanvasId(), "");
+        } else {
+            log.error("잘못된 canvas method");
+        }
     }
 
 }
