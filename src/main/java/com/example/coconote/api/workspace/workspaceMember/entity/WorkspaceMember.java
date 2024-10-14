@@ -57,6 +57,13 @@ public class WorkspaceMember extends BaseEntity {
 
 
     public WorkspaceMemberResDto fromEntity() {
+        List<Long> myChannels = new ArrayList<>();
+        for(ChannelMember cm : this.channelMembers) {
+            if(cm.getIsDeleted().equals(IsDeleted.N)) {
+                myChannels.add(cm.getChannel().getChannelId());
+            }
+        }
+
         return WorkspaceMemberResDto.builder()
                 .workspaceMemberId(this.workspaceMemberId)
                 .workspaceId(this.workspace.getWorkspaceId())
@@ -67,6 +74,7 @@ public class WorkspaceMember extends BaseEntity {
                 .position(this.position)
                 .profileImage(this.profileImage)
                 .wsRole(this.wsRole)
+                .channels(myChannels)
                 .build();
     }
 
