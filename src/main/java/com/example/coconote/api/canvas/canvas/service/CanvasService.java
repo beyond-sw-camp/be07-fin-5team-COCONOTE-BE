@@ -1,5 +1,6 @@
 package com.example.coconote.api.canvas.canvas.service;
 
+import com.example.coconote.api.canvas.block.entity.Block;
 import com.example.coconote.api.canvas.block.entity.Method;
 import com.example.coconote.api.canvas.canvas.dto.request.*;
 import com.example.coconote.api.canvas.canvas.entity.Canvas;
@@ -13,13 +14,10 @@ import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
 import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.common.IsDeleted;
-import com.example.coconote.api.channel.channel.repository.ChannelRepository;
-import com.example.coconote.common.IsDeleted;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -71,9 +68,17 @@ public class CanvasService {
             }
         }
 
+        Canvas prevCanvas = null;
+        if (createCanvasReqDto.getPrevCanvasId() != null) {
+            prevCanvas = canvasRepository.findByIdAndIsDeleted(createCanvasReqDto.getPrevCanvasId(), IsDeleted.N).orElseThrow(() -> new IllegalArgumentException("해당 이전 Block이 존재하지 않습니다."));
+
+
+        }
+
         Canvas canvas = Canvas.builder()
                 .title(createCanvasReqDto.getTitle())
                 .parentCanvas(parentCanvas)
+                .prevCanvas(prevCanvas)
                 .channel(channel)
                 .createMember(member)
                 .build();
@@ -142,24 +147,111 @@ public class CanvasService {
 
     @Transactional
     public CanvasDetResDto updateCanvas(UpdateCanvasReqDto updateCanvasReqDto) {
-        Canvas canvas = canvasRepository.findById(updateCanvasReqDto.getCanvasId()).orElseThrow(() -> new EntityNotFoundException("캔버스가 존재하지 않습니다."));
+        Canvas canvas = canvasRepository.findByIdAndIsDeleted(updateCanvasReqDto.getCanvasId(), IsDeleted.N)
+                .orElseThrow(() -> new EntityNotFoundException("캔버스가 존재하지 않습니다."));
         Canvas parentCanvas = null;
         if (updateCanvasReqDto.getParentCanvasId() != null) {
-            parentCanvas = canvasRepository.findById(updateCanvasReqDto.getParentCanvasId()).orElseThrow(() -> new EntityNotFoundException("해당 부모 캔버스가 존재하지 않습니다."));
+            parentCanvas = canvasRepository.findByIdAndIsDeleted(updateCanvasReqDto.getParentCanvasId(), IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("해당 부모 캔버스가 존재하지 않습니다."));
         }
+
+        Canvas prevCanvas = updateCanvasReqDto.getPrevCanvasId() != null
+                ? canvasRepository.findByIdAndIsDeleted(updateCanvasReqDto.getPrevCanvasId(), IsDeleted.N)
+                .orElseThrow(() -> new IllegalArgumentException("해당 Prev Canvas이 존재하지 않습니다."))
+                : null;
+
+        //        prev canvas 존재 및 이전에 해당 prev canvas을 갖고있는 canvas 주소 업데이트
+        if (prevCanvas != null) {
+            Canvas originalPrevCanvasHolder = canvasRepository.findByPrevCanvasIdAndIsDeleted(prevCanvas.getId(), IsDeleted.N)
+                    .orElse(null);
+            if (originalPrevCanvasHolder != null) {
+                originalPrevCanvasHolder.changePrevCanvas(canvas);
+            }
+        }
+
         canvas.updateInfo(updateCanvasReqDto.getTitle(), parentCanvas, updateCanvasReqDto.getIsDeleted());
         return canvas.fromDetEntity();
     }
 
     @Transactional
-    private void changeOrderCanvas(ChangeOrderCanvasReqDto changeOrderCanvasReqDto) {
+    private boolean changeOrderCanvas(ChangeOrderCanvasReqDto changeOrderCanvasReqDto) {
+        log.info("순서 변경!! changeOrderCanvasReqDto {}", changeOrderCanvasReqDto);
 
+        // 1. id로 현재 블록 찾기
+        Canvas currentCanvas = canvasRepository.findByIdAndIsDeleted(changeOrderCanvasReqDto.getId(), IsDeleted.N)
+                .orElseThrow(() -> new IllegalArgumentException("해당 Canvas이 존재하지 않습니다."));
+
+        // 2. 새로운 prevCanvasId와 nextCanvasId로 블록 찾기 (없으면 null 허용)
+        Canvas newPrevCanvas = null;
+        if (changeOrderCanvasReqDto.getPrevCanvasId() != null) {
+            newPrevCanvas = canvasRepository.findByIdAndIsDeleted(changeOrderCanvasReqDto.getPrevCanvasId(), IsDeleted.N)
+                    .orElse(null); // null 허용 (맨 앞 블록일 수 있음)
+        }
+
+        Canvas newNextCanvas = null;
+        if (changeOrderCanvasReqDto.getNextCanvasId() != null) {
+            newNextCanvas = canvasRepository.findByIdAndIsDeleted(changeOrderCanvasReqDto.getNextCanvasId(), IsDeleted.N)
+                    .orElse(null); // null 허용 (맨 뒤 블록일 수 있음)
+        }
+
+        // 3. 기존 prevCanvas과 nextCanvas 연결 끊기
+        Canvas originalPrevCanvas = currentCanvas.getPrevCanvas();
+        Canvas originalNextCanvas = canvasRepository.findByPrevCanvasIdAndIsDeleted(currentCanvas.getId(), IsDeleted.N)
+                .orElse(null);
+
+        // 기존 prevCanvas이 연결한 nextCanvas을 업데이트
+        if (originalNextCanvas != null) {
+            originalNextCanvas.changePrevCanvas(originalPrevCanvas);
+            canvasRepository.save(originalNextCanvas);
+            searchService.indexCanvas(currentCanvas.getChannel().getSection().getWorkspace().getWorkspaceId(), originalNextCanvas);
+
+        }
+
+        // 4. 새로운 prevCanvas과의 연결 설정
+        if (newPrevCanvas != null) {
+            Canvas nextOfNewPrevCanvas = canvasRepository.findByPrevCanvasIdAndIsDeleted(newPrevCanvas.getId(), IsDeleted.N)
+                    .orElse(null);
+
+            // 새 prevCanvas이 가지고 있던 nextCanvas의 prevCanvas을 currentCanvas으로 설정
+            if (nextOfNewPrevCanvas != null && !nextOfNewPrevCanvas.equals(currentCanvas)) {
+                nextOfNewPrevCanvas.changePrevCanvas(currentCanvas);
+                canvasRepository.save(nextOfNewPrevCanvas);
+                searchService.indexCanvas(currentCanvas.getChannel().getSection().getWorkspace().getWorkspaceId(), nextOfNewPrevCanvas);
+
+            }
+
+            // 현재 블록의 prevCanvas을 새로운 prevCanvas으로 설정
+            currentCanvas.changePrevCanvas(newPrevCanvas);
+        } else {
+            // 새 prevCanvas이 없다면, 현재 블록을 첫 번째 블록으로 만듭니다.
+            currentCanvas.changePrevCanvas(null);
+        }
+
+        // 5. 새로운 nextCanvas과의 연결 설정
+        if (newNextCanvas != null) {
+            newNextCanvas.changePrevCanvas(currentCanvas);
+            canvasRepository.save(newNextCanvas);
+            searchService.indexCanvas(currentCanvas.getChannel().getSection().getWorkspace().getWorkspaceId(), newNextCanvas);
+
+        }
+
+        // 6. 현재 블록을 저장하여 순서 변경 적용
+        canvasRepository.save(currentCanvas);
+        searchService.indexCanvas(currentCanvas.getChannel().getSection().getWorkspace().getWorkspaceId(), currentCanvas);
+        log.info("블록 순서가 성공적으로 변경되었습니다.");
+        return true;
     }
 
     @Transactional
     public void deleteCanvas(Long canvasId, String email) {
         Canvas canvas = canvasRepository.findById(canvasId)
                 .orElseThrow(() -> new IllegalArgumentException("캔버스가 존재하지 않습니다."));
+        Canvas prevLinkedCanvas = canvasRepository.findByPrevCanvasIdAndIsDeleted(canvasId, IsDeleted.N)
+                .orElse(null);
+
+        // 삭제하는 canvas을 참조하고 있던 canvas의 prev 값을 현 삭제 canvas의 prev 값으로 수정
+        if (prevLinkedCanvas != null) {
+            prevLinkedCanvas.changePrevCanvas(canvas.getPrevCanvas());
+        }
         canvas.markAsDeleted(); // 실제 삭제 대신 소프트 삭제 처리
         searchService.deleteCanvas(canvas.getChannel().getSection().getWorkspace().getWorkspaceId(), canvas.getId());
     }

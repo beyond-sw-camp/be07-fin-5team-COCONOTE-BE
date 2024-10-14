@@ -85,4 +85,9 @@ public class Canvas extends BaseEntity {
         this.parentCanvas = parentCanvas;
         this.isDeleted = isDeleted;
     }
+
+    public void changePrevCanvas(Canvas canvas) {
+        this.prevCanvas = canvas;
+    }
+
 }

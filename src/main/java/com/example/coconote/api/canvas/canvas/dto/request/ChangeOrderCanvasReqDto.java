@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class ChangeOrderCanvasReqDto {
-    private Long canvasId;
+    private Long id;
 
     //    ⭐ 추후 로그인 붙일 때 변경
     private String member;
