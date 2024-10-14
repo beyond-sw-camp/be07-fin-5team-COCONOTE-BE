@@ -249,7 +249,9 @@ public class ChannelService {
 
 
     public ChannelDetailResDto channelDetail(Long channelId) {
-        Channel channel = channelRepository.findById(channelId).orElseThrow(()-> new EntityNotFoundException("채널을 찾을 수 없습니다."));
+        Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new EntityNotFoundException("채널을 찾을 수 없습니다."));
+        return channel.fromEntity(channel.getSection());
+    }
     //    공통 메서드
     private Member getMemberByEmail(String email) {
         return memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
@@ -265,11 +267,6 @@ public class ChannelService {
 
     private Workspace getWorkspaceByWorkspaceId(Long workspaceId) {
         return workspaceRepository.findById(workspaceId).orElseThrow(() -> new IllegalArgumentException("워크스페이스가 존재하지 않습니다."));
-    }
-
-    public ChannelDetailResDto channelDetail(Long channelId) {
-        Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new EntityNotFoundException("채널을 찾을 수 없습니다."));
-        return channel.fromEntity(channel.getSection());
     }
 }
 
