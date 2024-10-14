@@ -4,6 +4,7 @@ import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.search.dto.EntityType;
 import com.example.coconote.api.search.dto.IndexEntityMessage;
 import com.example.coconote.api.search.entity.ThreadDocument;
 import com.example.coconote.api.search.mapper.ThreadMapper;
@@ -24,6 +25,7 @@ import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMe
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -35,6 +37,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class ThreadService {
 
     private final ThreadRepository threadRepository;
@@ -65,7 +68,8 @@ public class ThreadService {
 //        searchService.indexThread(channel.getSection().getWorkspace().getWorkspaceId(), thread);
 // ThreadDocument로 미리 변환하여 Kafka 메시지 전송
         ThreadDocument document = threadMapper.toDocument(thread);  // toDocument로 미리 변환
-        IndexEntityMessage<ThreadDocument> indexEntityMessage = new IndexEntityMessage<>(workspace.getWorkspaceId(), document);
+        IndexEntityMessage<ThreadDocument> indexEntityMessage = new IndexEntityMessage<>(workspace.getWorkspaceId(), EntityType.THREAD , document);
+        log.info("indexEntityMessage : {}", indexEntityMessage);
         kafkaTemplate.send("thread_entity_search", indexEntityMessage.toJson());
 
         if(dto.getFiles() != null){
@@ -107,7 +111,7 @@ public class ThreadService {
         thread.updateThread(threadReqDto);
 
         ThreadDocument document = threadMapper.toDocument(thread);  // toDocument로 미리 변환
-        IndexEntityMessage<ThreadDocument> indexEntityMessage = new IndexEntityMessage<>(thread.getChannel().getSection().getWorkspace().getWorkspaceId(), document);
+        IndexEntityMessage<ThreadDocument> indexEntityMessage = new IndexEntityMessage<>(thread.getChannel().getSection().getWorkspace().getWorkspaceId(),EntityType.THREAD , document);
         kafkaTemplate.send("thread_entity_search", indexEntityMessage.toJson());
 
         return thread.fromEntity(MessageType.UPDATE);

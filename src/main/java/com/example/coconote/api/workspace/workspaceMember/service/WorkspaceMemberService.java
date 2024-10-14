@@ -2,6 +2,8 @@ package com.example.coconote.api.workspace.workspaceMember.service;
 
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.search.dto.EntityType;
+import com.example.coconote.api.search.dto.IndexEntityMessage;
 import com.example.coconote.api.search.entity.WorkspaceMemberDocument;
 import com.example.coconote.api.search.mapper.WorkspaceMemberMapper;
 import com.example.coconote.api.search.service.SearchService;
@@ -18,6 +20,7 @@ import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch.core.DeleteResponse;
 import org.opensearch.client.opensearch.core.IndexResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +39,7 @@ public class WorkspaceMemberService {
     private final WorkspaceMemberMapper workspaceMemberMapper;
     private final OpenSearchClient openSearchClient;  // OpenSearchClient 의존성 주입
     private final SearchService searchService;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
 
 
@@ -63,7 +67,10 @@ public class WorkspaceMemberService {
         workspaceMemberRepository.save(workspaceMember);
 
 // OpenSearch에 인덱싱
-        searchService.indexWorkspaceMember(workspaceId, workspaceMember);
+        WorkspaceMemberDocument document = workspaceMemberMapper.toDocument(workspaceMember);
+        IndexEntityMessage<WorkspaceMemberDocument> indexEntityMessage = new IndexEntityMessage<>(workspace.getWorkspaceId(), EntityType.WORKSPACE_MEMBER , document);
+        kafkaTemplate.send("workspace_member_entity_search", indexEntityMessage.toJson());
+
         return workspaceMember.fromEntity();
     }
 
@@ -90,7 +97,9 @@ public class WorkspaceMemberService {
 
         workspaceMemberRepository.save(workspaceMember);
 // OpenSearch에 인덱싱
-        searchService.indexWorkspaceMember(id, workspaceMember);
+        WorkspaceMemberDocument document = workspaceMemberMapper.toDocument(workspaceMember);
+        IndexEntityMessage<WorkspaceMemberDocument> indexEntityMessage = new IndexEntityMessage<>(workspaceMember.getWorkspace().getWorkspaceId(), EntityType.WORKSPACE_MEMBER , document);
+        kafkaTemplate.send("workspace_member_entity_search", indexEntityMessage.toJson());
 
         WorkspaceMemberResDto restDto = workspaceMember.fromEntity();
         return restDto;

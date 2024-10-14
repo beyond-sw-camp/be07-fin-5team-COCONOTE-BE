@@ -6,10 +6,7 @@ import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.search.dto.*;
 import com.example.coconote.api.search.entity.*;
 import com.example.coconote.api.search.mapper.*;
-import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import com.example.coconote.global.fileUpload.entity.FileEntity;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -23,7 +20,6 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.io.DataInput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,39 +49,80 @@ public class SearchService {
     }
 
     // 통합 Kafka Listener: 모든 인덱싱 메시지를 처리
-    @KafkaListener(topics = "thread_entity_search", groupId = "search-group")
+    @KafkaListener(topics = {
+            "thread_entity_search",
+            "workspace_member_entity_search",
+            "file_entity_search",
+            "channel_entity_search",
+            "canvas_block_entity_search",
+    }, groupId = "search-group")
     public void consumeIndexEntityMessage(String message) {
         log.info("Received Kafka message: {}", message);
 
         try {
             // ObjectMapper 설정
             ObjectMapper objectMapper = new ObjectMapper()
-                    .registerModule(new JavaTimeModule())  // Java 8 날짜/시간 지원
+                    .registerModule(new JavaTimeModule())
                     .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
                     .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
             // 문자열 안에 있는 이스케이프된 JSON 형식을 해제
             String unescapedMessage = objectMapper.readValue(message, String.class);
 
-            // 해제된 JSON을 JsonNode로 파싱
+// 해제된 JSON을 JsonNode로 파싱
             JsonNode jsonNode = objectMapper.readTree(unescapedMessage);
             log.info("Deserialized JsonNode: {}", jsonNode);
+
 
             // workspaceId 추출
             long workspaceId = jsonNode.path("workspaceId").asLong();
             log.info("Deserialized workspaceId: {}", workspaceId);
 
-            // entity 부분만 ThreadDocument로 역직렬화
-            ThreadDocument threadDocument = objectMapper.treeToValue(jsonNode.get("entity"), ThreadDocument.class);
-            log.info("Deserialized ThreadDocument: {}", threadDocument);
+            // topic에 따라 다른 엔터티 처리
+            String topic = jsonNode.path("entityType").asText();  // 엔터티 타입을 나타내는 필드를 가정
+            log.info("Deserialized topic: {}", topic);
 
-            // 쓰레드 인덱싱
-            indexThread(workspaceId, threadDocument);
+            switch (topic) {
+                case "THREAD":
+                    ThreadDocument threadDocument = objectMapper.treeToValue(jsonNode.get("entity"), ThreadDocument.class);
+                    log.info("Deserialized ThreadDocument: {}", threadDocument);
+                    indexThread(workspaceId, threadDocument);
+                    break;
+
+                case "WORKSPACE_MEMBER":
+                    WorkspaceMemberDocument memberDocument = objectMapper.treeToValue(jsonNode.get("entity"), WorkspaceMemberDocument.class);
+                    log.info("Deserialized WorkspaceMemberDocument: {}", memberDocument);
+                    indexWorkspaceMember(workspaceId, memberDocument);
+                    break;
+
+                case "FILE_ENTITY":
+                    FileEntityDocument fileDocument = objectMapper.treeToValue(jsonNode.get("entity"), FileEntityDocument.class);
+                    log.info("Deserialized FileEntityDocument: {}", fileDocument);
+                    indexFileEntity(workspaceId, fileDocument);
+                    break;
+
+                case "CHANNEL":
+                    ChannelDocument channelDocument = objectMapper.treeToValue(jsonNode.get("entity"), ChannelDocument.class);
+                    log.info("Deserialized ChannelDocument: {}", channelDocument);
+                    indexChannel(workspaceId, channelDocument);
+                    break;
+
+                case "CANVAS_BLOCK":
+                    CanvasBlockDocument canvasBlockDocument = objectMapper.treeToValue(jsonNode.get("entity"), CanvasBlockDocument.class);
+                    log.info("Deserialized CanvasBlockDocument: {}", canvasBlockDocument);
+                    indexCanvas(workspaceId, canvasBlockDocument);
+                    break;
+
+                default:
+                    throw new IllegalArgumentException("Unknown entity type: " + topic);
+            }
+
         } catch (Exception e) {
             log.error("Failed to process Kafka message", e);
             throw new RuntimeException("Error processing Kafka message", e);
         }
     }
+
 
 
 
@@ -352,11 +389,10 @@ public class SearchService {
 
     // 워크스페이스 멤버 인덱스 저장
     @Async
-    public CompletableFuture<Void> indexWorkspaceMember(Long workspaceId, WorkspaceMember workspaceMember) {
-        WorkspaceMemberDocument document = workspaceMemberMapper.toDocument(workspaceMember);
+    public void indexWorkspaceMember(Long workspaceId, WorkspaceMemberDocument document) {
         String alias = getAliasForWorkspace(workspaceId);
-        String documentId = generateDocumentId("workspaceMember", workspaceMember.getWorkspaceMemberId());
-        return CompletableFuture.runAsync(() -> {
+        String documentId = generateDocumentId("thread", document.getWorkspaceMemberId());  // threadId를 Long으로 변환
+        CompletableFuture.runAsync(() -> {
             indexDocument(alias, documentId, document);
         });
     }
@@ -370,10 +406,9 @@ public class SearchService {
 
     // 파일 인덱스 저장
     @Async
-    public CompletableFuture<Void> indexFileEntity(Long workspaceId, FileEntity fileEntity) {
-        FileEntityDocument document = fileEntityMapper.toDocument(fileEntity);
+    public CompletableFuture<Void> indexFileEntity(Long workspaceId, FileEntityDocument document) {
         String alias = getAliasForWorkspace(workspaceId);
-        String documentId = generateDocumentId("fileEntity", fileEntity.getId());
+        String documentId = generateDocumentId("fileEntity", Long.valueOf(document.getFileId()));
         indexDocument(alias, documentId, document);
 
         return CompletableFuture.runAsync(() -> {
@@ -390,10 +425,9 @@ public class SearchService {
 
     // 채널 인덱스 저장
     @Async
-    public CompletableFuture<Void> indexChannel(Long workspaceId, Channel channel) {
-        ChannelDocument document = channelMapper.toDocument(channel);
+    public CompletableFuture<Void> indexChannel(Long workspaceId, ChannelDocument document) {
         String alias = getAliasForWorkspace(workspaceId);
-        String documentId = generateDocumentId("channel", channel.getChannelId());
+        String documentId = generateDocumentId("channel", Long.valueOf(document.getChannelId()));
         return CompletableFuture.runAsync(() -> {
             indexDocument(alias, documentId, document);
         });
@@ -426,12 +460,11 @@ public class SearchService {
 
     // 캔버스 인덱스 저장
     @Async
-    public CompletableFuture<Void> indexCanvas(Long workspaceId, Canvas canvas) {
-        CanvasBlockDocument canvasBlockDocument = canvasBlockMapper.toDocument(canvas);
+    public CompletableFuture<Void> indexCanvas(Long workspaceId, CanvasBlockDocument document) {
         String alias = getAliasForWorkspace(workspaceId);
-        String documentId = generateDocumentId("canvas", canvas.getId());
+        String documentId = generateDocumentId("canvas", Long.valueOf(document.getCanvasId()));
         return CompletableFuture.runAsync(() -> {
-            indexDocument(alias, documentId, canvasBlockDocument);
+            indexDocument(alias, documentId, document);
         });
     }
 
@@ -444,12 +477,11 @@ public class SearchService {
 
     // 블록 인덱스 저장
     @Async
-    public CompletableFuture<Void> indexBlock(Long workspaceId, Block block) {
-        CanvasBlockDocument canvasBlockDocument = canvasBlockMapper.toDocument(block);
+    public CompletableFuture<Void> indexBlock(Long workspaceId, CanvasBlockDocument document) {
         String alias = getAliasForWorkspace(workspaceId);
-        String documentId = generateDocumentId("block", block.getId());
+        String documentId = generateDocumentId("block", Long.valueOf(document.getCanvasId()));
         return CompletableFuture.runAsync(() -> {
-            indexDocument(alias, documentId, canvasBlockDocument);
+            indexDocument(alias, documentId, document);
         });
     }
 

@@ -6,6 +6,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,6 +17,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class IndexEntityMessage<T> {
     private Long workspaceId;
+    @Enumerated(EnumType.STRING)
+    private EntityType entityType;
     private T entity;
 
     // ObjectMapper를 재사용하도록 static으로 선언

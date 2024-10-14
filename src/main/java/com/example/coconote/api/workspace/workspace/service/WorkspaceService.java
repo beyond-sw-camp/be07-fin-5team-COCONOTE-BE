@@ -7,6 +7,10 @@ import com.example.coconote.api.channel.channelMember.dto.response.ChannelMember
 import com.example.coconote.api.channel.channelMember.service.ChannelMemberService;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.search.dto.EntityType;
+import com.example.coconote.api.search.dto.IndexEntityMessage;
+import com.example.coconote.api.search.entity.WorkspaceMemberDocument;
+import com.example.coconote.api.search.mapper.WorkspaceMemberMapper;
 import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.api.section.dto.response.SectionListResDto;
 import com.example.coconote.api.section.entity.Section;
@@ -24,6 +28,7 @@ import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +48,8 @@ public class WorkspaceService {
     private final ChannelMemberService channelMemberService;
     private final SearchService searchService;
     private final ChannelService channelService;
+    private final WorkspaceMemberMapper workspaceMemberMapper;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
 
     @Transactional
@@ -100,7 +107,9 @@ public class WorkspaceService {
 
         workspaceRepository.save(workspace);
 
-        searchService.indexWorkspaceMember(workspace.getWorkspaceId(), workspaceMember);
+        WorkspaceMemberDocument document = workspaceMemberMapper.toDocument(workspaceMember);
+        IndexEntityMessage<WorkspaceMemberDocument> indexEntityMessage = new IndexEntityMessage<>(workspaceMember.getWorkspace().getWorkspaceId(), EntityType.WORKSPACE_MEMBER , document);
+        kafkaTemplate.send("workspace_member_entity_search", indexEntityMessage.toJson());
 
         return workspace.fromEntity();
     }
