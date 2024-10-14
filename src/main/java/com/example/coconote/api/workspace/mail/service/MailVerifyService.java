@@ -2,6 +2,7 @@ package com.example.coconote.api.workspace.mail.service;
 
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.api.workspace.mail.dto.MailReqDto;
 import com.example.coconote.api.workspace.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.workspace.repository.WorkspaceRepository;
@@ -29,6 +30,7 @@ import java.util.Map;
 @Service
 public class MailVerifyService {
 
+	private final SearchService searchService;
 	// JWT Secret Key를 환경 변수나 설정 파일에서 불러옴
 	@Value("${jwt.secret}")
 	private String jwtSecret;
@@ -44,11 +46,12 @@ public class MailVerifyService {
 	private long authCodeExpirationMillis;
 
 	@Autowired
-	public MailVerifyService(JavaMailSender mailSender, MemberRepository memberRepository, WorkspaceMemberRepository workspaceMemberRepository, WorkspaceRepository workspaceRepository) {
+	public MailVerifyService(JavaMailSender mailSender, MemberRepository memberRepository, WorkspaceMemberRepository workspaceMemberRepository, WorkspaceRepository workspaceRepository, SearchService searchService) {
 		this.mailSender = mailSender;
 		this.memberRepository = memberRepository;
 		this.workspaceMemberRepository = workspaceMemberRepository;
 		this.workspaceRepository = workspaceRepository;
+		this.searchService = searchService;
 	}
 
 	// 메일 전송
@@ -132,13 +135,23 @@ public class MailVerifyService {
 		Workspace workspace = workspaceRepository.findById(workspaceId)
 				.orElseThrow(() -> new EntityNotFoundException("워크스페이스를 찾을 수 없습니다."));
 
-		// 회원을 워크스페이스에 추가하는 로직
-		WorkspaceMember workspaceMember = WorkspaceMember.builder()
-				.workspace(workspace)
+		// 이미 가입된 회원인지 확인
+		WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N)
+				.orElse(null);
+
+		if (workspaceMember != null) {
+			throw new IllegalArgumentException("이미 가입된 회원입니다.");
+		}
+
+		// 회원 가입 처리
+		workspaceMember = WorkspaceMember.builder()
 				.member(member)
-				.nickname(member.getNickname())
+				.workspace(workspace)
+				.memberName(member.getNickname())
+				.wsRole(WsRole.USER)
 				.build();
 
 		workspaceMemberRepository.save(workspaceMember);
+		searchService.indexWorkspaceMember(workspaceId, workspaceMember);
 	}
 }

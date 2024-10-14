@@ -128,7 +128,7 @@ public class ChannelService {
 
 
     @Transactional
-    public Channel channelUpdate(Long id, ChannelUpdateReqDto dto, String email) {
+    public ChannelDetailResDto channelUpdate(Long id, ChannelUpdateReqDto dto, String email) {
         Channel channel = channelRepository.findById(id).orElseThrow(()->new EntityNotFoundException("존재하지 않는 채널입니다."));
         if(!checkChannelAuthorization(id, email)) {
             throw new IllegalArgumentException("채널을 수정할 권한이 없습니다.");
@@ -137,10 +137,9 @@ public class ChannelService {
             throw new IllegalArgumentException("이미 삭제된 채널입니다.");
         }
         channel.updateEntity(dto);
-
         channelRepository.save(channel);
         searchService.indexChannel(channel.getSection().getWorkspace().getWorkspaceId(), channel);
-        return channel;
+        return channel.fromEntity(channel.getSection());
     }
 
 
@@ -189,15 +188,11 @@ public class ChannelService {
         if (workspace.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 삭제된 워크스페이스입니다.");
         }
-        List<Section> sections = sectionRepository.findByWorkspaceAndIsDeleted(workspace, IsDeleted.N);
         List<ChannelDetailResDto> bookmarkChannels = new ArrayList<>();
-        for (Section s : sections) {
-            if (s.getChannels() != null) {
-                for (Channel c : s.getChannels()) {
-                  ChannelMember channelMember = channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(c, workspaceMember, IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("채널 회원을 찾을 수 없습니다."));
-                  if(channelMember.getIsBookmark()){
-                      bookmarkChannels.add(c.fromEntity(s));
-                  }
+        if(workspaceMember.getChannelMembers() != null) {
+            for(ChannelMember cm : workspaceMember.getChannelMembers()) {
+                if(cm.getIsBookmark()) {
+                    bookmarkChannels.add(cm.getChannel().fromEntity(cm.getChannel().getSection()));
                 }
             }
         }

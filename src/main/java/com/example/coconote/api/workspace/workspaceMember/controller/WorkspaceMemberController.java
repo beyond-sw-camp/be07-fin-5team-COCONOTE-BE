@@ -53,15 +53,10 @@ public class WorkspaceMemberController {
     @Operation(summary = "JWT 초대 링크를 통한 워크스페이스 가입 처리")
     @PostMapping("/workspace/invite/accept")
     public ResponseEntity<CommonResDto> acceptInvitation(@RequestParam("token") String token) {
-        try {
             // JWT 토큰을 이용해 워크스페이스에 가입 처리
             mailVerifyService.processInvitation(token);
             CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "워크스페이스 가입이 성공적으로 처리되었습니다.", null);
             return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
-        } catch (Exception e) {
-            CommonResDto commonResDto = new CommonResDto(HttpStatus.BAD_REQUEST, "초대 처리 중 오류가 발생했습니다.", e.getMessage());
-            return new ResponseEntity<>(commonResDto, HttpStatus.BAD_REQUEST);
-        }
     }
 
     @Operation(summary= "웤스 회원 목록 조회")
