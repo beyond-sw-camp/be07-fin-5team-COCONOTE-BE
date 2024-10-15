@@ -95,7 +95,7 @@ public class SearchService {
                     indexWorkspaceMember(workspaceId, memberDocument);
                     break;
 
-                case "FILE_ENTITY":
+                case "FILE":
                     FileEntityDocument fileDocument = objectMapper.treeToValue(jsonNode.get("entity"), FileEntityDocument.class);
                     log.info("Deserialized FileEntityDocument: {}", fileDocument);
                     indexFileEntity(workspaceId, fileDocument);
@@ -391,10 +391,9 @@ public class SearchService {
     @Async
     public void indexWorkspaceMember(Long workspaceId, WorkspaceMemberDocument document) {
         String alias = getAliasForWorkspace(workspaceId);
-        String documentId = generateDocumentId("thread", document.getWorkspaceMemberId());  // threadId를 Long으로 변환
-        CompletableFuture.runAsync(() -> {
-            indexDocument(alias, documentId, document);
-        });
+        String documentId = generateDocumentId("workspaceMember", document.getWorkspaceMemberId());  // threadId를 Long으로 변환
+        log.info("Indexing Workspace Member - Alias: {}, Document ID: {}", alias, documentId);
+        indexDocument(alias, documentId, document);
     }
 
     // 워크스페이스 멤버 삭제

@@ -9,7 +9,9 @@ import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
 import com.example.coconote.api.search.dto.EntityType;
 import com.example.coconote.api.search.dto.IndexEntityMessage;
+import com.example.coconote.api.search.entity.ChannelDocument;
 import com.example.coconote.api.search.entity.WorkspaceMemberDocument;
+import com.example.coconote.api.search.mapper.ChannelMapper;
 import com.example.coconote.api.search.mapper.WorkspaceMemberMapper;
 import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.api.section.dto.response.SectionListResDto;
@@ -50,6 +52,7 @@ public class WorkspaceService {
     private final ChannelService channelService;
     private final WorkspaceMemberMapper workspaceMemberMapper;
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final ChannelMapper channelMapper;
 
 
     @Transactional
@@ -87,6 +90,14 @@ public class WorkspaceService {
         channelRepository.save(channelNotice);
         sectionDefault.getChannels().add(channelDefault);
         sectionDefault.getChannels().add(channelNotice);
+
+        ChannelDocument document1 = channelMapper.toDocument(channelDefault);
+        IndexEntityMessage<ChannelDocument> indexEntityMessage1 = new IndexEntityMessage<>(channelDefault.getSection().getWorkspace().getWorkspaceId(), EntityType.CHANNEL , document1);
+        kafkaTemplate.send("channel_entity_search", indexEntityMessage1.toJson());
+
+        ChannelDocument document2 = channelMapper.toDocument(channelNotice);
+        IndexEntityMessage<ChannelDocument> indexEntityMessage2 = new IndexEntityMessage<>(channelNotice.getSection().getWorkspace().getWorkspaceId(), EntityType.CHANNEL , document2);
+        kafkaTemplate.send("channel_entity_search", indexEntityMessage2.toJson());
 
         // 워크스페이스 멤버로 영입(?)
         Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("회원을 찾을 수 없습니다."));
