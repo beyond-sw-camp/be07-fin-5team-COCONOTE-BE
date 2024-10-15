@@ -136,4 +136,11 @@ public class WorkspaceMemberService {
         WorkspaceMember workspaceMember = workspaceMemberRepository.findById(workspaceMemberId).orElseThrow(()-> new EntityNotFoundException("회원을 조회할 수 없습니다."));
         return workspaceMember.fromEntity();
     }
+
+    public void workspaceMemberLeave(Long workspaceId, String email) {
+        Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+        Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(()-> new EntityNotFoundException("워크스페이스를 찾을 수 없습니다."));
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("존재하지 않는 워크스페이스 회원입니다."));
+        workspaceMember.deleteEntity();
+    }
 }

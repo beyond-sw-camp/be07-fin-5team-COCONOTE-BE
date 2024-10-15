@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/api/v1/member")
 @RequiredArgsConstructor
@@ -33,7 +35,7 @@ public class MemberController {
     @Operation(summary= "나의 채널 내에서의 정보 반환")
     @GetMapping("/me/channel/{channelId}")
     public ResponseEntity<Object> getChannelMemberInfo(@PathVariable Long channelId, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
-        ChannelMemberListResDto channelMemberListResDto = memberService.getChannelMemberInfo(channelId, customPrincipal.getEmail());
+        Optional<ChannelMemberListResDto> channelMemberListResDto = memberService.getChannelMemberInfo(channelId, customPrincipal.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "member is successfully found", channelMemberListResDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }

@@ -98,6 +98,7 @@ public class WorkspaceService {
         ChannelMemberListResDto channelMemberNotice = channelMemberService.channelMemberCreate(channelNotice.getChannelId(), email);
         channelMemberService.channelMemberChangeRole(channelMemberNotice.getId());
 
+
         workspaceRepository.save(workspace);
 
         searchService.indexWorkspaceMember(workspace.getWorkspaceId(), workspaceMember);

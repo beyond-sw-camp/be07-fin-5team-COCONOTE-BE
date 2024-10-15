@@ -8,12 +8,9 @@ import com.example.coconote.api.channel.channelMember.entity.ChannelRole;
 import com.example.coconote.api.channel.channelMember.repository.ChannelMemberRepository;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
-import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.section.repository.SectionRepository;
-import com.example.coconote.api.workspace.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.workspace.repository.WorkspaceRepository;
 import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
-import com.example.coconote.api.workspace.workspaceMember.entity.WsRole;
 import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.EntityNotFoundException;
@@ -32,8 +29,6 @@ public class ChannelMemberService {
     private final ChannelMemberRepository channelMemberRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
     private final ChannelRepository channelRepository;
-    private final SectionRepository sectionRepository;
-    private final WorkspaceRepository workspaceRepository;
     private final MemberRepository memberRepository;
 
     @Autowired
@@ -46,8 +41,6 @@ public class ChannelMemberService {
         this.channelMemberRepository = channelMemberRepository;
         this.workspaceMemberRepository = workspaceMemberRepository;
         this.channelRepository = channelRepository;
-        this.sectionRepository = sectionRepository;
-        this.workspaceRepository = workspaceRepository;
         this.memberRepository = memberRepository;
     }
 
@@ -153,4 +146,11 @@ public class ChannelMemberService {
         return channelMember.fromEntity();
     }
 
+    public void channelMemberLeave(Long channelId, String email) {
+        Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("회원을 조회할 수 없습니다."));
+        Channel channel = channelRepository.findById(channelId).orElseThrow(()-> new EntityNotFoundException("채널을 조회할 수 없습니다."));
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, channel.getSection().getWorkspace(), IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("존재하지 않는 워크스페이스 회원입니다."));
+        ChannelMember channelMember = channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, workspaceMember, IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("채널 회원을 조회할 수 없습니다."));
+        channelMember.deleteEntity();
+    }
 }
