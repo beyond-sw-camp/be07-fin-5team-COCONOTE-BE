@@ -12,6 +12,10 @@ import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.search.dto.EntityType;
+import com.example.coconote.api.search.dto.IndexEntityMessage;
+import com.example.coconote.api.search.entity.CanvasBlockDocument;
+import com.example.coconote.api.search.mapper.CanvasBlockMapper;
 import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.common.IsDeleted;
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;import com.example.coconote.common.IsDeleted;
@@ -40,8 +44,9 @@ public class CanvasService {
     private final ChannelRepository channelRepository;
     private final MemberRepository memberRepository;
     private final SearchService searchService;
+    private final CanvasBlockMapper canvasBlockMapper;
 
-    public CanvasService(CanvasRepository canvasRepository, ChannelRepository channelRepository, MemberRepository memberRepository, KafkaTemplate<String, Object> kafkaTemplate, SimpMessageSendingOperations messagingTemplate, SearchService searchService){
+    public CanvasService(CanvasRepository canvasRepository, ChannelRepository channelRepository, MemberRepository memberRepository, KafkaTemplate<String, Object> kafkaTemplate, SimpMessageSendingOperations messagingTemplate, SearchService searchService, CanvasBlockMapper canvasBlockMapper){
         this.canvasRepository = canvasRepository;
         this.channelRepository = channelRepository;
         this.memberRepository = memberRepository;
@@ -50,6 +55,7 @@ public class CanvasService {
         this.kafkaTemplate = kafkaTemplate;
         this.messagingTemplate = messagingTemplate;
         this.searchService = searchService;
+        this.canvasBlockMapper = canvasBlockMapper;
     }
 
     @Transactional
@@ -78,7 +84,9 @@ public class CanvasService {
 
         canvasRepository.save(canvas);
 //        검색 인덱스에 저장
-        searchService.indexCanvas(channel.getSection().getWorkspace().getWorkspaceId(), canvas);
+        CanvasBlockDocument document = canvasBlockMapper.toDocument(canvas);
+        IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(channel.getSection().getWorkspace().getWorkspaceId() , EntityType.CANVAS_BLOCK, document);
+        kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
 
         topics.put(String.valueOf(canvas.getId()), String.valueOf(canvas.getId()));
 
