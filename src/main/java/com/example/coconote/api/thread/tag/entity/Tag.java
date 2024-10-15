@@ -24,6 +24,7 @@ public class Tag extends BaseEntity {
     @Column(name="tag_color")
     private String color;
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "channel_id")
     private Channel channel;
 
     public TagResDto fromEntity() {
