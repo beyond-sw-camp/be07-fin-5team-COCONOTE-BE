@@ -171,7 +171,7 @@ public class ChannelService {
         IndexEntityMessage<ChannelDocument> indexEntityMessage = new IndexEntityMessage<>(channel.getSection().getWorkspace().getWorkspaceId(),EntityType.CHANNEL , document);
         kafkaTemplate.send("channel_entity_search", indexEntityMessage.toJson());
 
-        return channel;
+        return channel.fromEntity(channel.getSection());
     }
 
 
