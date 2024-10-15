@@ -156,17 +156,17 @@ public class ChannelService {
 
 
     @Transactional
-    public Channel channelUpdate(Long id, ChannelUpdateReqDto dto, String email) {
-        Channel channel = channelRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 채널입니다."));
-        if (!checkChannelAuthorization(id, email)) {
+    public ChannelDetailResDto channelUpdate(Long id, ChannelUpdateReqDto dto, String email) {
+        Channel channel = channelRepository.findById(id).orElseThrow(()->new EntityNotFoundException("존재하지 않는 채널입니다."));
+        if(!checkChannelAuthorization(id, email)) {
             throw new IllegalArgumentException("채널을 수정할 권한이 없습니다.");
         }
         if (channel.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 삭제된 채널입니다.");
         }
         channel.updateEntity(dto);
-
         channelRepository.save(channel);
+
         ChannelDocument document = channelMapper.toDocument(channel);
         IndexEntityMessage<ChannelDocument> indexEntityMessage = new IndexEntityMessage<>(channel.getSection().getWorkspace().getWorkspaceId(),EntityType.CHANNEL , document);
         kafkaTemplate.send("channel_entity_search", indexEntityMessage.toJson());
@@ -208,15 +208,11 @@ public class ChannelService {
         if (workspace.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 삭제된 워크스페이스입니다.");
         }
-        List<Section> sections = sectionRepository.findByWorkspaceAndIsDeleted(workspace, IsDeleted.N);
         List<ChannelDetailResDto> bookmarkChannels = new ArrayList<>();
-        for (Section s : sections) {
-            if (s.getChannels() != null) {
-                for (Channel c : s.getChannels()) {
-                    ChannelMember channelMember = channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(c, workspaceMember, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("채널 회원을 찾을 수 없습니다."));
-                    if (channelMember.getIsBookmark()) {
-                        bookmarkChannels.add(c.fromEntity(s));
-                    }
+        if(workspaceMember.getChannelMembers() != null) {
+            for(ChannelMember cm : workspaceMember.getChannelMembers()) {
+                if(cm.getIsBookmark()) {
+                    bookmarkChannels.add(cm.getChannel().fromEntity(cm.getChannel().getSection()));
                 }
             }
         }
@@ -265,6 +261,11 @@ public class ChannelService {
         return channelMember != null;
     }
 
+
+    public ChannelDetailResDto channelDetail(Long channelId) {
+        Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new EntityNotFoundException("채널을 찾을 수 없습니다."));
+        return channel.fromEntity(channel.getSection());
+    }
     //    공통 메서드
     private Member getMemberByEmail(String email) {
         return memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
@@ -280,11 +281,6 @@ public class ChannelService {
 
     private Workspace getWorkspaceByWorkspaceId(Long workspaceId) {
         return workspaceRepository.findById(workspaceId).orElseThrow(() -> new IllegalArgumentException("워크스페이스가 존재하지 않습니다."));
-    }
-
-    public ChannelDetailResDto channelDetail(Long channelId) {
-        Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new EntityNotFoundException("채널을 찾을 수 없습니다."));
-        return channel.fromEntity(channel.getSection());
     }
 }
 

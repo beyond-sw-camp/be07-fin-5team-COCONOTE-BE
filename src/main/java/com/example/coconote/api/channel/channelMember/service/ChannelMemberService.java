@@ -94,8 +94,11 @@ public class ChannelMemberService {
         return channelMember.changeRole();
     }
 
-    public Boolean channelBookmark(Long id) {
-        ChannelMember channelMember = channelMemberRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 회원입니다."));
+    public Boolean channelBookmark(Long channelId, String email) {
+        Channel channel = channelRepository.findById(channelId).orElseThrow(()-> new EntityNotFoundException("채널을 찾을 수 없습니다."));
+        Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, channel.getSection().getWorkspace(), IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("워크스페이스 회원을 찾을 수 없습니다."));
+        ChannelMember channelMember = channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, workspaceMember, IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("채널 회원을 찾을 수 없습니다."));
         if(channelMember.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 채널을 탈퇴한 회원입니다.");
         }
@@ -103,25 +106,17 @@ public class ChannelMemberService {
     }
 
     public void channelMemberDelete(Long id, String email) {
-        if(!checkChannelAuthorization(id, email)) {
-            throw new IllegalArgumentException("");
-        };
-        ChannelMember channelMember = channelMemberRepository.findById(id).orElseThrow(()->new EntityNotFoundException("존재하지 않는 회원입니다."));
-        if(channelMember.getIsDeleted().equals(IsDeleted.Y)) {
-            throw new IllegalArgumentException("이미 채널을 탈퇴한 회원입니다.");
+        Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+        ChannelMember channelMember = channelMemberRepository.findByIdAndIsDeleted(id, IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("채널 회원을 찾을 수 없습니다."));
+        Channel channel = channelMember.getChannel();
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, channel.getSection().getWorkspace(), IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("워크스페이스 회원을 찾을 수 없습니다."));
+        ChannelMember deleter = channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, workspaceMember, IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("채널 회원을 찾을 수 없습니다."));
+        if(deleter.getChannelRole().equals(ChannelRole.USER)) {
+            throw new IllegalArgumentException("회원을 강퇴시킬 권한이 없습니다.");
         }
         channelMember.deleteEntity();
     }
 
-    private Boolean checkChannelAuthorization(Long channelId, String email){
-        Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("회원을 찾을 수 없습니다."));
-        Channel channel = channelRepository.findById(channelId).orElseThrow(()->new EntityNotFoundException("채널을 찾을 수 없습니다."));
-        Section section = sectionRepository.findById(channel.getSection().getSectionId()).orElseThrow(()->new EntityNotFoundException("섹션을 찾을 수 없습니다."));
-        Workspace workspace = workspaceRepository.findById(section.getWorkspace().getWorkspaceId()).orElseThrow(()-> new EntityNotFoundException("존재하지 않는 워크스페이스입니다."));
-        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("워크스페이스 회원을 찾을 수 없습니다."));
-        ChannelMember channelMember = channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, workspaceMember, IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("채널 회원을 찾을 수 없습니다."));
-        return channelMember.getChannelRole().equals(ChannelRole.MANAGER);
-    }
 
     @Transactional
     public ChannelMemberListResDto channelMemberInvite(Long channelId, Long workspaceMemberId, String email) {
