@@ -28,4 +28,10 @@ public class ThreadTagController {
         threadTagService.deleteThreadTag(id);
         return new ResponseEntity<>("태그 삭제 완료", HttpStatus.OK);
     }
+
+    @Operation(summary= "필터된 스레드 리스트")
+    @PostMapping("filtered/thread/list")
+    public ResponseEntity<?> getFilteredThreadList() {
+        return new ResponseEntity<>("태그 삭제 완료", HttpStatus.OK);
+    }
 }
