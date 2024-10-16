@@ -1,6 +1,7 @@
 package com.example.coconote.api.canvas.canvas.controller;
 
 
+import com.example.coconote.api.canvas.canvas.dto.request.CanvasSocketReqDto;
 import com.example.coconote.api.canvas.canvas.dto.request.CreateCanvasReqDto;
 import com.example.coconote.api.canvas.canvas.dto.request.UpdateCanvasReqDto;
 import com.example.coconote.api.canvas.canvas.dto.response.CanvasDetResDto;
@@ -34,9 +35,9 @@ public class CanvasController {
             description = "새로운 Canvas 생성. `parentCanvasId`가 null이면 최상위 Canvas로 간주"
     )
     @PostMapping("/create")
-    public ResponseEntity<?> createCanvas(@RequestBody CreateCanvasReqDto createCanvasReqDto
+    public ResponseEntity<?> createCanvas(@RequestBody CanvasSocketReqDto createCanvasReqDto
             , @AuthenticationPrincipal CustomPrincipal customPrincipal){
-        CreateCanvasResDto createCanvasResDto = canvasService.createCanvas(createCanvasReqDto, customPrincipal.getEmail());
+        CreateCanvasResDto createCanvasResDto = canvasService.createCanvas(createCanvasReqDto);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "Canvas가 성공적으로 생성되었습니다.", createCanvasResDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }
@@ -93,7 +94,7 @@ public class CanvasController {
             description = "Canvas 수정하기."
     )
     @PatchMapping("/{canvasId}")
-    public ResponseEntity<?> updateCanvas(@RequestBody UpdateCanvasReqDto updateCanvasReqDto){
+    public ResponseEntity<?> updateCanvas(@RequestBody CanvasSocketReqDto updateCanvasReqDto){
         CanvasDetResDto canvasDetResDto = canvasService.updateCanvas(updateCanvasReqDto);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "Canvas가 성공적으로 업데이트되었습니다.", canvasDetResDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
@@ -104,8 +105,8 @@ public class CanvasController {
             description = "Canvas 삭제하기."
     )
     @DeleteMapping("/{canvasId}")
-    public ResponseEntity<?> deleteCanvas(@PathVariable Long canvasId, String email){
-        canvasService.deleteCanvas(canvasId, email);
+    public ResponseEntity<?> deleteCanvas(@PathVariable Long canvasId){
+        canvasService.deleteCanvas(canvasId);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "Canvas가 성공적으로 삭제되었습니다.", null);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
