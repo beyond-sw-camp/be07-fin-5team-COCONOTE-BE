@@ -53,11 +53,24 @@ public class ChannelController {
     }
 
 
-    @Operation(summary= "채널 수정")
+    @Operation(summary= "채널 이름, 정보 수정")
     @PatchMapping("/channel/update/{id}")
     public ResponseEntity<Object> channelUpdate(@PathVariable Long id, @RequestBody ChannelUpdateReqDto dto, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
         ChannelDetailResDto resDto = channelService.channelUpdate(id, dto, customPrincipal.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "channel is successfully updated", resDto);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
+    @Operation(summary= "채널 공개 범위 수정")
+    @PatchMapping("/channel/access/{id}")
+    public ResponseEntity<Object> channelChangeAccessLevel(@PathVariable Long id, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        CommonResDto commonResDto;
+        Boolean value = channelService.channelChangeAccessLevel(id, customPrincipal.getEmail());
+        if(value) {
+            commonResDto = new CommonResDto(HttpStatus.OK, "access level of this channel is now public", value);
+        }else{
+            commonResDto = new CommonResDto(HttpStatus.OK, "access level of this channel is now private", value);
+        }
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 

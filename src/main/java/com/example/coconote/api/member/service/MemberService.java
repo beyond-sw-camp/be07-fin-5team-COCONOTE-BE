@@ -18,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -36,13 +38,22 @@ public class MemberService {
         return workspaceMember.fromEntity();
     }
 
-    public ChannelMemberListResDto getChannelMemberInfo(Long channelId, String email) {
-        Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("회원을 찾을 수 없습니다."));
-        Channel channel = channelRepository.findById(channelId).orElseThrow(()-> new EntityNotFoundException("채널을 찾을 수 없습니다."));
-        Workspace workspace = workspaceRepository.findById(channel.getSection().getWorkspace().getWorkspaceId()).orElseThrow(()-> new EntityNotFoundException("워크스페이스를 찾을 수 없습니다."));
-        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("워크스페이스 회원을 찾을 수 없습니다."));
-        ChannelMember channelMember = channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, workspaceMember, IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("채널 회원을 찾을 수 없습니다."));
-        return channelMember.fromEntity();
+    public Optional<ChannelMemberListResDto> getChannelMemberInfo(Long channelId, String email) {
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new EntityNotFoundException("채널을 찾을 수 없습니다."));
+        Workspace workspace = workspaceRepository.findById(channel.getSection().getWorkspace().getWorkspaceId())
+                .orElseThrow(() -> new EntityNotFoundException("워크스페이스를 찾을 수 없습니다."));
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N)
+                .orElseThrow(() -> new EntityNotFoundException("워크스페이스 회원을 찾을 수 없습니다."));
 
+        for (ChannelMember cm : workspaceMember.getChannelMembers()) {
+            if (cm.getChannel().equals(channel)) {
+                return Optional.of(cm.fromEntity());
+            }
+        }
+        return Optional.empty(); // 찾지 못했을 때 빈 Optional 반환
     }
+
 }

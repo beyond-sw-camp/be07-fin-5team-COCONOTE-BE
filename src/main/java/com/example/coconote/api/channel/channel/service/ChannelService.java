@@ -4,6 +4,7 @@ import com.example.coconote.api.channel.channel.dto.request.ChannelCreateReqDto;
 import com.example.coconote.api.channel.channel.dto.request.ChannelUpdateReqDto;
 import com.example.coconote.api.channel.channel.dto.response.ChannelDetailResDto;
 import com.example.coconote.api.channel.channel.entity.Channel;
+import com.example.coconote.api.channel.channel.entity.ChannelType;
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;
 import com.example.coconote.api.channel.channelMember.entity.ChannelMember;
 import com.example.coconote.api.channel.channelMember.entity.ChannelRole;
@@ -20,6 +21,7 @@ import com.example.coconote.api.search.entity.WorkspaceMemberDocument;
 import com.example.coconote.api.search.mapper.ChannelMapper;
 import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.api.section.entity.Section;
+import com.example.coconote.api.section.entity.SectionType;
 import com.example.coconote.api.section.repository.SectionRepository;
 import com.example.coconote.api.workspace.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.workspace.repository.WorkspaceRepository;
@@ -36,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.example.coconote.api.drive.service.FolderService.getFolderAllListResDto;
@@ -184,6 +187,9 @@ public class ChannelService {
         if (channel.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 삭제된 채널입니다.");
         }
+        if(channel.getChannelType().equals(ChannelType.DEFAULT)) {
+            throw new IllegalArgumentException("기본 채널은 삭제할 수 없습니다.");
+        }
         channel.deleteEntity();
         searchService.deleteChannel(channel.getSection().getWorkspace().getWorkspaceId(), channel.getChannelId());
     }
@@ -235,18 +241,18 @@ public class ChannelService {
         Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 워크스페이스입니다."));
         WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 워크스페이스멤버입니다."));
         List<ChannelMember> channelMembers = channelMemberRepository.findByWorkspaceMemberAndIsDeleted(workspaceMember, IsDeleted.N);
-        if (channelMembers.equals(null)) {
+        if (channelMembers.isEmpty()) {
             throw new IllegalArgumentException("회원을 찾을 수 없습니다.");
         }
-        Section section = sectionRepository.findByWorkspaceAndIsDeleted(workspace, IsDeleted.N).get(0);
-
-        List<Channel> channels = channelRepository.findBySectionAndIsDeleted(section, IsDeleted.N);
-        if (channels.equals(null)) {
-            throw new IllegalArgumentException("채널을 찾을 수 없습니다.");
+        for(Section s : workspace.getSections()) {
+            if(s.getSectionType().equals(SectionType.DEFAULT) && s.getChannels()!=null) {
+                for(Channel c : s.getChannels()) {
+                    if(c.getChannelType().equals(ChannelType.DEFAULT)) {
+                        return c.fromEntity(s);					}
+                }
+            }
         }
-        Channel channel = channels.get(0);
-        return channel.fromEntity(section);
-
+        throw new IllegalArgumentException("기본 채널을 찾을 수 없습니다.");
     }
 
     public boolean channelIsJoin(Long id, String email) {
@@ -281,6 +287,25 @@ public class ChannelService {
 
     private Workspace getWorkspaceByWorkspaceId(Long workspaceId) {
         return workspaceRepository.findById(workspaceId).orElseThrow(() -> new IllegalArgumentException("워크스페이스가 존재하지 않습니다."));
+    }
+
+    public Boolean channelChangeAccessLevel(Long id, String email) {
+        Channel channel = channelRepository.findById(id).orElseThrow(()->new EntityNotFoundException("존재하지 않는 채널입니다."));
+        System.out.println("1 ok");
+        if(!checkChannelAuthorization(id, email)) {
+            throw new IllegalArgumentException("채널을 수정할 권한이 없습니다.");
+        }
+        if (channel.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("이미 삭제된 채널입니다.");
+        }
+        boolean value = channel.changeAccessLevel();
+        channelRepository.save(channel);
+
+        ChannelDocument document = channelMapper.toDocument(channel);
+        IndexEntityMessage<ChannelDocument> indexEntityMessage = new IndexEntityMessage<>(channel.getSection().getWorkspace().getWorkspaceId(),EntityType.CHANNEL , document);
+        kafkaTemplate.send("channel_entity_search", indexEntityMessage.toJson());
+
+        return value;
     }
 }
 

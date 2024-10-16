@@ -46,6 +46,10 @@ public class Channel extends BaseEntity {
     @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL)
     private List<Folder> folders;
 
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private ChannelType channelType = ChannelType.GENERAL;
+
 
     // 캔버스 관계
 //    @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL)
@@ -75,7 +79,11 @@ public class Channel extends BaseEntity {
     public void updateEntity(ChannelUpdateReqDto dto) {
         this.channelName = dto.getChannelName();
         this.channelInfo = dto.getChannelInfo();
-        this.isPublic = dto.getIsPublic();
+    }
+
+    public Boolean changeAccessLevel() {
+        this.isPublic = !this.isPublic;
+        return this.isPublic;
     }
 
     public void deleteEntity() {

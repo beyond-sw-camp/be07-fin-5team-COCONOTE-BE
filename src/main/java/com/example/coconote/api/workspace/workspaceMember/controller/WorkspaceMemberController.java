@@ -99,10 +99,18 @@ public class WorkspaceMemberController {
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
-    @Operation(summary= "웤스 회원 강퇴/탈퇴")
+    @Operation(summary= "웤스 회원 강퇴")
     @DeleteMapping("/workspace/member/delete/{id}")
-    public ResponseEntity<Object> workspaceDelete(@PathVariable Long id) {
+    public ResponseEntity<Object> workspaceMemberDelete(@PathVariable Long id) {
         workspaceMemberService.workspaceMemberDelete(id);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "member is successfully deleted", null);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
+    @Operation(summary= "웤스 회원 탈퇴")
+    @DeleteMapping("/workspace/{workspaceId}/member/leave")
+    public ResponseEntity<Object> workspaceLeave(@PathVariable Long workspaceId, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        workspaceMemberService.workspaceMemberLeave(workspaceId, customPrincipal.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "member is successfully deleted", null);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
