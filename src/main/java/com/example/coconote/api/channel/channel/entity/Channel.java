@@ -6,6 +6,7 @@ import com.example.coconote.api.channel.channel.dto.response.ChannelResDto;
 import com.example.coconote.api.channel.channelMember.entity.ChannelMember;
 import com.example.coconote.api.drive.entity.Folder;
 import com.example.coconote.api.section.entity.Section;
+import com.example.coconote.api.workspace.workspaceMember.entity.WsRole;
 import com.example.coconote.common.BaseEntity;
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.*;
@@ -13,6 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.kafka.common.protocol.types.Field;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -75,7 +77,11 @@ public class Channel extends BaseEntity {
     public void updateEntity(ChannelUpdateReqDto dto) {
         this.channelName = dto.getChannelName();
         this.channelInfo = dto.getChannelInfo();
-        this.isPublic = dto.getIsPublic();
+    }
+
+    public Boolean changeAccessLevel() {
+        this.isPublic = !this.isPublic;
+        return this.isPublic;
     }
 
     public void deleteEntity() {

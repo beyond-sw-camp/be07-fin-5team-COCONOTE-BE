@@ -73,7 +73,7 @@ public class ChannelMemberController {
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
-    @Operation(summary= "채널 회원 탈퇴")
+    @Operation(summary= "채널 회원 강퇴")
     @DeleteMapping("/channel/member/delete/{id}") // 채널 강퇴
     public ResponseEntity<Object> channelMemberDelete(@PathVariable Long id, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
         channelMemberService.channelMemberDelete(id, customPrincipal.getEmail()); // 1번 파라미터는 삭제당하는 사람, 2번은 삭제하는 사람
@@ -81,7 +81,7 @@ public class ChannelMemberController {
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
-    @Operation(summary= "웤스 회원 탈퇴")
+    @Operation(summary= "채널 회원 탈퇴")
     @DeleteMapping("/channel/{channelId}/member/leave")
     public ResponseEntity<Object> channelLeave(@PathVariable Long channelId, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
         channelMemberService.channelMemberLeave(channelId, customPrincipal.getEmail());

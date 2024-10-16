@@ -268,5 +268,19 @@ public class ChannelService {
     private Workspace getWorkspaceByWorkspaceId(Long workspaceId) {
         return workspaceRepository.findById(workspaceId).orElseThrow(() -> new IllegalArgumentException("워크스페이스가 존재하지 않습니다."));
     }
+
+    public Boolean channelChangeAccessLevel(Long id, String email) {
+        Channel channel = channelRepository.findById(id).orElseThrow(()->new EntityNotFoundException("존재하지 않는 채널입니다."));
+        if(!checkChannelAuthorization(id, email)) {
+            throw new IllegalArgumentException("채널을 수정할 권한이 없습니다.");
+        }
+        if (channel.getIsDeleted().equals(IsDeleted.Y)) {
+            throw new IllegalArgumentException("이미 삭제된 채널입니다.");
+        }
+        boolean value = channel.changeAccessLevel();
+        channelRepository.save(channel);
+        searchService.indexChannel(channel.getSection().getWorkspace().getWorkspaceId(), channel);
+        return value;
+    }
 }
 
