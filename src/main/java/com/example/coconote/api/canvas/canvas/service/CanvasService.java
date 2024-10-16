@@ -57,10 +57,10 @@ public class CanvasService {
     }
 
     @Transactional
-    public CreateCanvasResDto createCanvas(CanvasSocketReqDto createCanvasReqDto) {
+    public CreateCanvasResDto createCanvas(CanvasSocketReqDto createCanvasReqDto, Long memberId) {
         Channel channel = channelRepository.findById(createCanvasReqDto.getChannelId()).orElseThrow(() -> new IllegalArgumentException("채널이 존재하지 않습니다."));
 
-        Member member = getMemberById(createCanvasReqDto.getSenderId());
+        Member member = getMemberById(memberId);
         Canvas parentCanvas = null;
         // 부모 캔버스 조회 (parentCanvasId가 null이 아닐 경우에만)
         if (createCanvasReqDto.getParentCanvasId() != null) {
@@ -151,7 +151,7 @@ public class CanvasService {
     }
 
     @Transactional
-    public CanvasDetResDto updateCanvas(CanvasSocketReqDto canvasSocketReqDto) {
+    public CanvasDetResDto updateCanvas(CanvasSocketReqDto canvasSocketReqDto, Long memberId) {
         Canvas canvas = canvasRepository.findByIdAndIsDeleted(canvasSocketReqDto.getCanvasId(), IsDeleted.N)
                 .orElseThrow(() -> new EntityNotFoundException("캔버스가 존재하지 않습니다."));
         Canvas parentCanvas = null;
@@ -178,7 +178,7 @@ public class CanvasService {
     }
 
     @Transactional
-    private boolean changeOrderCanvas(CanvasSocketReqDto canvasSocketReqDto) {
+    private boolean changeOrderCanvas(CanvasSocketReqDto canvasSocketReqDto, Long memberId) {
         log.info("순서 변경!! canvasSocketReqDto {}", canvasSocketReqDto);
 
         // 1. id로 현재 캔버스 찾기
@@ -247,7 +247,7 @@ public class CanvasService {
     }
 
     @Transactional
-    public void deleteCanvas(Long canvasId) {
+    public void deleteCanvas(Long canvasId, Long memberId) {
         Canvas canvas = canvasRepository.findById(canvasId)
                 .orElseThrow(() -> new IllegalArgumentException("캔버스가 존재하지 않습니다."));
         Canvas prevLinkedCanvas = canvasRepository.findByPrevCanvasIdAndIsDeleted(canvasId, IsDeleted.N)
@@ -353,13 +353,13 @@ public class CanvasService {
     public void editCanvasInSocket(CanvasSocketReqDto canvasSocketReqDto) {
 //        생성, 수정, 삭제인지 type 구분해서 넣어주는 용도
         if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.CREATE_CANVAS)) { // 생성 캔버스
-            createCanvas(canvasSocketReqDto);
+            createCanvas(canvasSocketReqDto, canvasSocketReqDto.getSenderId());
         } else if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.UPDATE_CANVAS)) { // 수정 캔버스
-            updateCanvas(canvasSocketReqDto);
+            updateCanvas(canvasSocketReqDto, canvasSocketReqDto.getSenderId());
         } else if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.CHANGE_ORDER_CANVAS)) { //순서 변경  캔버스
-            changeOrderCanvas(canvasSocketReqDto);
+            changeOrderCanvas(canvasSocketReqDto, canvasSocketReqDto.getSenderId());
         } else if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.DELETE_CANVAS)) { // 삭제 캔버스
-            deleteCanvas(canvasSocketReqDto.getCanvasId());
+            deleteCanvas(canvasSocketReqDto.getCanvasId(), canvasSocketReqDto.getSenderId());
         } else {
             log.error("잘못된 canvas method");
         }

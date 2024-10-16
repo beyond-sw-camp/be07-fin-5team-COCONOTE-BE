@@ -42,9 +42,4 @@ public class CanvasSocketReqDto {
     private String blockContents;
     private Type blockType;
 
-    public CreateCanvasReqDto buildCreateCanvasReqDto() {
-        return CreateCanvasReqDto.builder()
-
-                .build();
-    }
 }
