@@ -13,11 +13,16 @@ import com.example.coconote.api.canvas.block.repository.BlockRepository;
 import com.example.coconote.api.canvas.canvas.dto.request.ChatMessage;
 import com.example.coconote.api.canvas.canvas.entity.Canvas;
 import com.example.coconote.api.canvas.canvas.service.CanvasService;
+import com.example.coconote.api.search.dto.EntityType;
+import com.example.coconote.api.search.dto.IndexEntityMessage;
+import com.example.coconote.api.search.entity.CanvasBlockDocument;
+import com.example.coconote.api.search.mapper.CanvasBlockMapper;
 import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.common.IsDeleted;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -30,20 +35,16 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class BlockService {
 
     private final CanvasService canvasService;
     private final BlockRepository blockRepository;
     private final SearchService searchService;
+    private final CanvasBlockMapper canvasBlockMapper;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public BlockService(CanvasService canvasService, BlockRepository blockRepository, SearchService searchService, SimpMessageSendingOperations messagingTemplate, KafkaTemplate<String, Object> kafkaTemplate) {
-        this.canvasService = canvasService;
-        this.blockRepository = blockRepository;
-        this.searchService = searchService;
-        this.messagingTemplate = messagingTemplate;
-        this.kafkaTemplate = kafkaTemplate;
-    }
 
     @Transactional
     public CreateBlockResDto createBlock(CreateBlockReqDto createBlockReqDto, String email) {
@@ -87,7 +88,9 @@ public class BlockService {
         // Block 저장 및 리턴
         blockRepository.save(block);
 //        검색 인덱스에 저장
-        searchService.indexBlock(canvas.getChannel().getSection().getWorkspace().getWorkspaceId(), block);
+        CanvasBlockDocument document = canvasBlockMapper.toDocument(block);
+        IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(canvas.getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.CANVAS_BLOCK, document);
+        kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
 
         return CreateBlockResDto.fromEntity(block);
     }
@@ -118,7 +121,10 @@ public class BlockService {
 
             block.updateAllInfo(prevBlock, parentBlock, updateBlockReqDto.getContents());
             blockRepository.save(block);
-            searchService.indexBlock(block.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), block);
+
+            CanvasBlockDocument document = canvasBlockMapper.toDocument(block);
+            IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(block.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.CANVAS_BLOCK, document);
+            kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
 
         } catch (Exception e) {
             log.info(e.getMessage());
@@ -148,17 +154,19 @@ public class BlockService {
         }
 
         // 3. 기존 prevBlock과 nextBlock 연결 끊기
-            Block originalPrevBlock = currentBlock.getPrevBlock();
-            Block originalNextBlock = blockRepository.findByPrevBlockFeIdAndIsDeleted(currentBlock.getFeId(), IsDeleted.N)
-                    .orElse(null);
+        Block originalPrevBlock = currentBlock.getPrevBlock();
+        Block originalNextBlock = blockRepository.findByPrevBlockFeIdAndIsDeleted(currentBlock.getFeId(), IsDeleted.N)
+                .orElse(null);
 
-            // 기존 prevBlock이 연결한 nextBlock을 업데이트
-            if (originalNextBlock != null) {
-                originalNextBlock.changePrevBlock(originalPrevBlock);
-                blockRepository.save(originalNextBlock);
-                searchService.indexBlock(currentBlock.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), originalNextBlock);
+        // 기존 prevBlock이 연결한 nextBlock을 업데이트
+        if (originalNextBlock != null) {
+            originalNextBlock.changePrevBlock(originalPrevBlock);
+            blockRepository.save(originalNextBlock);
 
-            }
+            CanvasBlockDocument document = canvasBlockMapper.toDocument(originalNextBlock);
+            IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(originalNextBlock.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.CANVAS_BLOCK, document);
+            kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
+        }
 
         // 4. 새로운 prevBlock과의 연결 설정
         if (newPrevBlock != null) {
@@ -169,8 +177,10 @@ public class BlockService {
             if (nextOfNewPrevBlock != null && !nextOfNewPrevBlock.equals(currentBlock)) {
                 nextOfNewPrevBlock.changePrevBlock(currentBlock);
                 blockRepository.save(nextOfNewPrevBlock);
-                searchService.indexBlock(currentBlock.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), nextOfNewPrevBlock);
 
+                CanvasBlockDocument document = canvasBlockMapper.toDocument(nextOfNewPrevBlock);
+                IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(nextOfNewPrevBlock.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.CANVAS_BLOCK, document);
+                kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
             }
 
             // 현재 블록의 prevBlock을 새로운 prevBlock으로 설정
@@ -184,14 +194,20 @@ public class BlockService {
         if (newNextBlock != null) {
             newNextBlock.changePrevBlock(currentBlock);
             blockRepository.save(newNextBlock);
-            searchService.indexBlock(currentBlock.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), newNextBlock);
 
+            CanvasBlockDocument document = canvasBlockMapper.toDocument(newNextBlock);
+            IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(newNextBlock.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.CANVAS_BLOCK, document);
+            kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
         }
 
         // 6. 현재 블록을 저장하여 순서 변경 적용
         blockRepository.save(currentBlock);
-        searchService.indexBlock(currentBlock.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), currentBlock);
+
+        CanvasBlockDocument document = canvasBlockMapper.toDocument(currentBlock);
+        IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(currentBlock.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.CANVAS_BLOCK, document);
+        kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
         log.info("블록 순서가 성공적으로 변경되었습니다.");
+
         return true;
     }
 
@@ -303,11 +319,8 @@ public class BlockService {
     }
 
 
-
-
     //    ================= 통신전용
     private final SimpMessageSendingOperations messagingTemplate;
-    private final KafkaTemplate<String, Object> kafkaTemplate;
     private Map<String, String> topics;
 
     @PostConstruct
@@ -349,7 +362,7 @@ public class BlockService {
         } else if (sendBlockReqDto.getMethod().equals(Method.update)) { // 수정블록
             UpdateBlockReqDto updateBlockReqDto = sendBlockReqDto.buildUpdateBlockReqDto();
             updateBlock(updateBlockReqDto, "");
-        } else if(sendBlockReqDto.getMethod().equals(Method.changeOrder)){ //순서 변경 블록
+        } else if (sendBlockReqDto.getMethod().equals(Method.changeOrder)) { //순서 변경 블록
             ChangeOrderBlockReqDto changeOrderBlockReqDto = sendBlockReqDto.buildChangeOrderBlockReqDto();
             changeOrderBlock(changeOrderBlockReqDto);
         } else if (sendBlockReqDto.getMethod().equals(Method.delete)) { // 삭제블록

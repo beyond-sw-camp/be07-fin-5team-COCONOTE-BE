@@ -4,6 +4,10 @@ import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.search.dto.EntityType;
+import com.example.coconote.api.search.dto.IndexEntityMessage;
+import com.example.coconote.api.search.entity.ThreadDocument;
+import com.example.coconote.api.search.mapper.ThreadMapper;
 import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.api.thread.thread.dto.requset.ThreadReqDto;
 import com.example.coconote.api.thread.thread.dto.response.ThreadResDto;
@@ -21,8 +25,10 @@ import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMe
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +37,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class ThreadService {
 
     private final ThreadRepository threadRepository;
@@ -41,7 +48,10 @@ public class ThreadService {
     private final ThreadTagRepository threadTagRepository;
     private final ThreadFileRepository threadFileRepository;
     private final SearchService searchService;
+    private final ThreadMapper threadMapper;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
+    @Transactional
     public ThreadResDto createThread(ThreadReqDto dto, Long memberId) {
         //TODO: jwt토큰이 완성되면 memberId 는 불러오면됨 완료
         Member member = memberRepository.findById(memberId).orElseThrow(()-> new EntityNotFoundException("해당멤버가 없습니다."));
@@ -55,7 +65,12 @@ public class ThreadService {
 
         Thread thread = threadRepository.save(dto.toEntity(workspaceMember,parentThread, channel));
 //        검색
-        searchService.indexThread(channel.getSection().getWorkspace().getWorkspaceId(), thread);
+//        searchService.indexThread(channel.getSection().getWorkspace().getWorkspaceId(), thread);
+// ThreadDocument로 미리 변환하여 Kafka 메시지 전송
+        ThreadDocument document = threadMapper.toDocument(thread);  // toDocument로 미리 변환
+        IndexEntityMessage<ThreadDocument> indexEntityMessage = new IndexEntityMessage<>(workspace.getWorkspaceId(), EntityType.THREAD , document);
+        log.info("indexEntityMessage : {}", indexEntityMessage);
+        kafkaTemplate.send("thread_entity_search", indexEntityMessage.toJson());
 
         if(dto.getFiles() != null){
             for (ThreadFileDto threadFileDto : dto.getFiles()){
@@ -94,7 +109,11 @@ public class ThreadService {
     public ThreadResDto updateThread(ThreadReqDto threadReqDto) {
         Thread thread = threadRepository.findById(threadReqDto.getThreadId()).orElseThrow(()->new EntityNotFoundException("thread not found"));
         thread.updateThread(threadReqDto);
-        searchService.indexThread(thread.getChannel().getSection().getWorkspace().getWorkspaceId(), thread);
+
+        ThreadDocument document = threadMapper.toDocument(thread);  // toDocument로 미리 변환
+        IndexEntityMessage<ThreadDocument> indexEntityMessage = new IndexEntityMessage<>(thread.getChannel().getSection().getWorkspace().getWorkspaceId(),EntityType.THREAD , document);
+        kafkaTemplate.send("thread_entity_search", indexEntityMessage.toJson());
+
         return thread.fromEntity(MessageType.UPDATE);
     }
 }
