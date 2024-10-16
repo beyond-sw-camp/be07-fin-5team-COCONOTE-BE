@@ -21,6 +21,7 @@ import com.example.coconote.api.search.entity.WorkspaceMemberDocument;
 import com.example.coconote.api.search.mapper.ChannelMapper;
 import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.api.section.entity.Section;
+import com.example.coconote.api.section.entity.SectionType;
 import com.example.coconote.api.section.repository.SectionRepository;
 import com.example.coconote.api.workspace.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.workspace.repository.WorkspaceRepository;
@@ -37,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.example.coconote.api.drive.service.FolderService.getFolderAllListResDto;
@@ -239,18 +241,18 @@ public class ChannelService {
         Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 워크스페이스입니다."));
         WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 워크스페이스멤버입니다."));
         List<ChannelMember> channelMembers = channelMemberRepository.findByWorkspaceMemberAndIsDeleted(workspaceMember, IsDeleted.N);
-        if (channelMembers.equals(null)) {
+        if (channelMembers.isEmpty()) {
             throw new IllegalArgumentException("회원을 찾을 수 없습니다.");
         }
-        Section section = sectionRepository.findByWorkspaceAndIsDeleted(workspace, IsDeleted.N).get(0);
-
-        List<Channel> channels = channelRepository.findBySectionAndIsDeleted(section, IsDeleted.N);
-        if (channels.equals(null)) {
-            throw new IllegalArgumentException("채널을 찾을 수 없습니다.");
+        for(Section s : workspace.getSections()) {
+            if(s.getSectionType().equals(SectionType.DEFAULT) && s.getChannels()!=null) {
+                for(Channel c : s.getChannels()) {
+                    if(c.getChannelType().equals(ChannelType.DEFAULT)) {
+                        return c.fromEntity(s);					}
+                }
+            }
         }
-        Channel channel = channels.get(0);
-        return channel.fromEntity(section);
-
+        throw new IllegalArgumentException("기본 채널을 찾을 수 없습니다.");
     }
 
     public boolean channelIsJoin(Long id, String email) {
