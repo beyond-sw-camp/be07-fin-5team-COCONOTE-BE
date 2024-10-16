@@ -76,14 +76,14 @@ public class WorkspaceService {
         // 기본 채널 생성
         Channel channelDefault = Channel.builder()
                 .section(sectionDefault)
-                .channelName(workspaceName + "일반")
+                .channelName(workspaceName + "_일반")
                 .channelInfo(workspaceName + "의 일반 채널입니다.")
                 .channelType(ChannelType.DEFAULT)
                 .isPublic(true)
                 .build();
         Channel channelNotice = Channel.builder()
                 .section(sectionDefault)
-                .channelName(workspaceName + "공지사항")
+                .channelName(workspaceName + "_공지사항")
                 .channelInfo(workspaceName + "의 공지사항 채널입니다.")
                 .isPublic(true)
                 .build();

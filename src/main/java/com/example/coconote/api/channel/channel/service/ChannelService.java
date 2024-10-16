@@ -291,6 +291,7 @@ public class ChannelService {
 
     public Boolean channelChangeAccessLevel(Long id, String email) {
         Channel channel = channelRepository.findById(id).orElseThrow(()->new EntityNotFoundException("존재하지 않는 채널입니다."));
+        System.out.println("1 ok");
         if(!checkChannelAuthorization(id, email)) {
             throw new IllegalArgumentException("채널을 수정할 권한이 없습니다.");
         }

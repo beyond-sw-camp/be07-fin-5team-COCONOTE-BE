@@ -1,6 +1,7 @@
 package com.example.coconote.api.channel.channelMember.service;
 
 import com.example.coconote.api.channel.channel.entity.Channel;
+import com.example.coconote.api.channel.channel.entity.ChannelType;
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;
 import com.example.coconote.api.channel.channelMember.dto.response.ChannelMemberListResDto;
 import com.example.coconote.api.channel.channelMember.entity.ChannelMember;
@@ -107,6 +108,9 @@ public class ChannelMemberService {
         if(deleter.getChannelRole().equals(ChannelRole.USER)) {
             throw new IllegalArgumentException("회원을 강퇴시킬 권한이 없습니다.");
         }
+        if(channel.getChannelType().equals(ChannelType.DEFAULT)) {
+            throw new IllegalArgumentException("기본 채널에서는 다른 회원을 퇴장시킬 수 없습니다.");
+        }
         channelMember.deleteEntity();
     }
 
@@ -151,6 +155,9 @@ public class ChannelMemberService {
         Channel channel = channelRepository.findById(channelId).orElseThrow(()-> new EntityNotFoundException("채널을 조회할 수 없습니다."));
         WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, channel.getSection().getWorkspace(), IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("존재하지 않는 워크스페이스 회원입니다."));
         ChannelMember channelMember = channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, workspaceMember, IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("채널 회원을 조회할 수 없습니다."));
+        if(channel.getChannelType().equals(ChannelType.DEFAULT)) {
+            throw new IllegalArgumentException("기본 채널에서는 나갈 수 없습니다.");
+        }
         channelMember.deleteEntity();
     }
 }
