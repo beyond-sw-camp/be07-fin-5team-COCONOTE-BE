@@ -14,6 +14,7 @@ import com.example.coconote.api.thread.thread.entity.Thread;
 import com.example.coconote.api.thread.thread.repository.ThreadRepository;
 import com.example.coconote.api.thread.threadTag.entity.ThreadTag;
 import com.example.coconote.api.thread.threadTag.repository.ThreadTagRepository;
+import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -63,7 +64,7 @@ public class TagService {
 
     public List<TagResDto> tagList(Long channelId) {
         Channel channel = channelRepository.findById(channelId).orElseThrow(()->new EntityNotFoundException("Channel not found"));
-        List<Tag> tags = tagRepository.findAllByChannel(channel);
+        List<Tag> tags = tagRepository.findAllByChannelAndIsDeleted(channel, IsDeleted.N);
         List<TagResDto> tagResDtos = tags.stream().map(tag -> tag.fromEntity()).toList();
         return tagResDtos;
     }
