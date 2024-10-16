@@ -6,7 +6,6 @@ import com.example.coconote.api.channel.channel.dto.response.ChannelResDto;
 import com.example.coconote.api.channel.channelMember.entity.ChannelMember;
 import com.example.coconote.api.drive.entity.Folder;
 import com.example.coconote.api.section.entity.Section;
-import com.example.coconote.api.workspace.workspaceMember.entity.WsRole;
 import com.example.coconote.common.BaseEntity;
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.*;
@@ -14,7 +13,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.apache.kafka.common.protocol.types.Field;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -47,6 +45,10 @@ public class Channel extends BaseEntity {
     // 폴더들과의 관계 (일대다 관계)
     @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL)
     private List<Folder> folders;
+
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private ChannelType channelType = ChannelType.GENERAL;
 
 
     // 캔버스 관계

@@ -1,5 +1,9 @@
 package com.example.coconote.api.workspace.mail.service;
 
+import com.example.coconote.api.channel.channel.entity.Channel;
+import com.example.coconote.api.channel.channel.entity.ChannelType;
+import com.example.coconote.api.channel.channelMember.entity.ChannelMember;
+import com.example.coconote.api.channel.channelMember.repository.ChannelMemberRepository;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
 import com.example.coconote.api.search.dto.EntityType;
@@ -8,6 +12,8 @@ import com.example.coconote.api.search.entity.ChannelDocument;
 import com.example.coconote.api.search.entity.WorkspaceMemberDocument;
 import com.example.coconote.api.search.mapper.WorkspaceMemberMapper;
 import com.example.coconote.api.search.service.SearchService;
+import com.example.coconote.api.section.entity.Section;
+import com.example.coconote.api.section.entity.SectionType;
 import com.example.coconote.api.workspace.mail.dto.MailReqDto;
 import com.example.coconote.api.workspace.workspace.dto.response.WorkspaceListResDto;
 import com.example.coconote.api.workspace.workspace.entity.Workspace;
@@ -49,6 +55,7 @@ public class MailVerifyService {
 	private final JavaMailSender mailSender;
 	private final MemberRepository memberRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
+	private final ChannelMemberRepository channelMemberRepository;
 	private final WorkspaceRepository workspaceRepository;
 	private final WorkspaceMemberMapper workspaceMemberMapper;
 	private final KafkaTemplate<String, Object> kafkaTemplate;
@@ -156,6 +163,22 @@ public class MailVerifyService {
 				.build();
 
 		workspaceMemberRepository.save(workspaceMember);
+
+
+		// 기본채널은 무조건 채널 회원으로 등록됨
+		for(Section s : workspace.getSections()) {
+			if(s.getSectionType().equals(SectionType.DEFAULT)) {
+				for(Channel c : s.getChannels()) {
+					if(c.getChannelType().equals(ChannelType.DEFAULT)) {
+						ChannelMember channelMember = ChannelMember.builder()
+								.workspaceMember(workspaceMember)
+								.channel(c)
+								.build();
+						channelMemberRepository.save(channelMember);					}
+				}
+			}
+		}
+
 
 		WorkspaceMemberDocument document = workspaceMemberMapper.toDocument(workspaceMember);
 		IndexEntityMessage<WorkspaceMemberDocument> indexEntityMessage = new IndexEntityMessage<>(workspace.getWorkspaceId(), EntityType.WORKSPACE_MEMBER , document);

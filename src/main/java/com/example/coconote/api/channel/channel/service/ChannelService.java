@@ -4,6 +4,7 @@ import com.example.coconote.api.channel.channel.dto.request.ChannelCreateReqDto;
 import com.example.coconote.api.channel.channel.dto.request.ChannelUpdateReqDto;
 import com.example.coconote.api.channel.channel.dto.response.ChannelDetailResDto;
 import com.example.coconote.api.channel.channel.entity.Channel;
+import com.example.coconote.api.channel.channel.entity.ChannelType;
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;
 import com.example.coconote.api.channel.channelMember.entity.ChannelMember;
 import com.example.coconote.api.channel.channelMember.entity.ChannelRole;
@@ -184,6 +185,9 @@ public class ChannelService {
         if (channel.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 삭제된 채널입니다.");
         }
+        if(channel.getChannelType().equals(ChannelType.DEFAULT)) {
+            throw new IllegalArgumentException("기본 채널은 삭제할 수 없습니다.");
+        }
         channel.deleteEntity();
         searchService.deleteChannel(channel.getSection().getWorkspace().getWorkspaceId(), channel.getChannelId());
     }
@@ -293,7 +297,11 @@ public class ChannelService {
         }
         boolean value = channel.changeAccessLevel();
         channelRepository.save(channel);
-        searchService.indexChannel(channel.getSection().getWorkspace().getWorkspaceId(), channel);
+
+        ChannelDocument document = channelMapper.toDocument(channel);
+        IndexEntityMessage<ChannelDocument> indexEntityMessage = new IndexEntityMessage<>(channel.getSection().getWorkspace().getWorkspaceId(),EntityType.CHANNEL , document);
+        kafkaTemplate.send("channel_entity_search", indexEntityMessage.toJson());
+
         return value;
     }
 }

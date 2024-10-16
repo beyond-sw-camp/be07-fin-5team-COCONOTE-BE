@@ -1,6 +1,7 @@
 package com.example.coconote.api.workspace.workspace.service;
 
 import com.example.coconote.api.channel.channel.entity.Channel;
+import com.example.coconote.api.channel.channel.entity.ChannelType;
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;
 import com.example.coconote.api.channel.channel.service.ChannelService;
 import com.example.coconote.api.channel.channelMember.dto.response.ChannelMemberListResDto;
@@ -59,6 +60,7 @@ public class WorkspaceService {
     public WorkspaceListResDto workspaceCreate(WorkspaceCreateReqDto dto, String email) {
         // 이미지파일 저장하고 String 이미지URL로 바꾸는 코드
         String imgUrl = "";
+        String workspaceName = dto.getName();
         Workspace workspace = dto.toEntity(imgUrl);
         workspaceRepository.save(workspace);
 
@@ -74,14 +76,15 @@ public class WorkspaceService {
         // 기본 채널 생성
         Channel channelDefault = Channel.builder()
                 .section(sectionDefault)
-                .channelName("일반")
-                .channelInfo("일반 채널입니다.")
+                .channelName(workspaceName + "일반")
+                .channelInfo(workspaceName + "의 일반 채널입니다.")
+                .channelType(ChannelType.DEFAULT)
                 .isPublic(true)
                 .build();
         Channel channelNotice = Channel.builder()
                 .section(sectionDefault)
-                .channelName("공지사항")
-                .channelInfo("공지사항 채널입니다.")
+                .channelName(workspaceName + "공지사항")
+                .channelInfo(workspaceName + "의 공지사항 채널입니다.")
                 .isPublic(true)
                 .build();
         channelService.createDefaultFolder(channelDefault);
