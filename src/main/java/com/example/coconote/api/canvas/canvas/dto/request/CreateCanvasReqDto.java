@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class CreateCanvasReqDto {
     private String title;
     private Long parentCanvasId;
+    private Long prevCanvasId;
     private Long channelId;
-
+    private Long senderId;
 }

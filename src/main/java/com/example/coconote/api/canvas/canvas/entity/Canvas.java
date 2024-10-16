@@ -1,9 +1,11 @@
 package com.example.coconote.api.canvas.canvas.entity;
 
+import com.example.coconote.api.canvas.block.entity.Block;
 import com.example.coconote.api.canvas.canvas.dto.response.CanvasDetResDto;
 import com.example.coconote.api.canvas.canvas.dto.response.CanvasListResDto;
 import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.member.entity.Member;
+import com.example.coconote.api.search.entity.CanvasBlockDocument;
 import com.example.coconote.common.BaseEntity;
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.*;
@@ -34,6 +36,12 @@ public class Canvas extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_canvas_id")
     private Canvas parentCanvas;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "prev_canvas_id")
+//    순서를 알기 위한, 동레벨의 이전 캔버스
+//    이전 캔버스이 없다면, 최상위 캔버스!
+    private Canvas prevCanvas;
 
     @OneToMany(mappedBy = "parentCanvas", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Canvas> childCanvasList;
@@ -77,5 +85,18 @@ public class Canvas extends BaseEntity {
         this.title = title;
         this.parentCanvas = parentCanvas;
         this.isDeleted = isDeleted;
+    }
+
+    public void changePrevCanvas(Canvas canvas) {
+        this.prevCanvas = canvas;
+    }
+
+    public CanvasBlockDocument fromBlockDocEntity() {
+        return CanvasBlockDocument.builder()
+                .canvasTitle(this.title)
+                .createMemberName(this.createMember.getNickname())
+                .channelId(this.channel.getChannelId())
+                .canvasCreatedTime(this.getCreatedTime().toString())
+                .build();
     }
 }

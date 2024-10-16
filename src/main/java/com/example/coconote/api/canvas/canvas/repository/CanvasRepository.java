@@ -19,4 +19,5 @@ public interface CanvasRepository extends JpaRepository<Canvas,Long> {
     List<Canvas> findByParentCanvasIdAndIsDeleted(Long parentCanvasId, IsDeleted isDeleted);
     List<Canvas> findByParentCanvasIdAndChannelAndIsDeleted(Long parentCanvasId, Channel channel, IsDeleted isDeleted);
 
+    Optional<Canvas> findByPrevCanvasIdAndIsDeleted(Long id, IsDeleted isDeleted);
 }

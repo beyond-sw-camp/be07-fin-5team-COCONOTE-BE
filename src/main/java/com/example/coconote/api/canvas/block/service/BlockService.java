@@ -1,22 +1,18 @@
 package com.example.coconote.api.canvas.block.service;
 
-import com.example.coconote.api.canvas.block.dto.request.ChangeOrderBlockReqDto;
-import com.example.coconote.api.canvas.block.dto.request.CreateBlockReqDto;
-import com.example.coconote.api.canvas.block.dto.request.SendBlockReqDto;
-import com.example.coconote.api.canvas.block.dto.request.UpdateBlockReqDto;
 import com.example.coconote.api.canvas.block.dto.response.BlockListResDto;
 import com.example.coconote.api.canvas.block.dto.response.CreateBlockResDto;
 import com.example.coconote.api.canvas.block.entity.Block;
-import com.example.coconote.api.canvas.block.entity.Method;
-import com.example.coconote.api.canvas.block.entity.Type;
 import com.example.coconote.api.canvas.block.repository.BlockRepository;
-import com.example.coconote.api.canvas.canvas.dto.request.ChatMessage;
+import com.example.coconote.api.canvas.canvas.dto.request.CanvasSocketReqDto;
 import com.example.coconote.api.canvas.canvas.entity.Canvas;
 import com.example.coconote.api.canvas.canvas.service.CanvasService;
 import com.example.coconote.api.search.dto.EntityType;
 import com.example.coconote.api.search.dto.IndexEntityMessage;
 import com.example.coconote.api.search.entity.CanvasBlockDocument;
 import com.example.coconote.api.search.mapper.CanvasBlockMapper;
+import com.example.coconote.api.canvas.canvas.entity.CanvasMessageMethod;
+import com.example.coconote.api.canvas.canvas.repository.CanvasRepository;
 import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.common.IsDeleted;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -39,7 +35,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class BlockService {
 
-    private final CanvasService canvasService;
+    private final CanvasRepository canvasRepository; // 순환참조로 인해 service -> repository로 변경
     private final BlockRepository blockRepository;
     private final SearchService searchService;
     private final CanvasBlockMapper canvasBlockMapper;
@@ -47,19 +43,19 @@ public class BlockService {
 
 
     @Transactional
-    public CreateBlockResDto createBlock(CreateBlockReqDto createBlockReqDto, String email) {
-        Canvas canvas = canvasService.findByIdAndIsDeletedReturnRequired(createBlockReqDto.getCanvasId());
+    public CreateBlockResDto createBlock(CanvasSocketReqDto canvasSocketReqDto) {
+        Canvas canvas = canvasRepository.findById(canvasSocketReqDto.getCanvasId()).orElseThrow(() -> new IllegalArgumentException("캔버스가 존재하지 않습니다."));
 
         Block parentBlock = null;
-        if (createBlockReqDto.getParentBlockId() != null) {
+        if (canvasSocketReqDto.getParentBlockId() != null) {
             // parentBlockId가 null이 아니면 findById 호출
-            parentBlock = blockRepository.findByFeIdAndIsDeleted(createBlockReqDto.getParentBlockId(), IsDeleted.N)
+            parentBlock = blockRepository.findByFeIdAndIsDeleted(canvasSocketReqDto.getParentBlockId(), IsDeleted.N)
                     .orElseThrow(() -> new IllegalArgumentException("해당 부모 Block이 존재하지 않습니다."));
         }
 
         Block prevBlock = null;
-        if (createBlockReqDto.getPrevBlockId() != null) {
-            prevBlock = blockRepository.findByFeIdAndIsDeleted(createBlockReqDto.getPrevBlockId(), IsDeleted.N)
+        if (canvasSocketReqDto.getPrevBlockId() != null) {
+            prevBlock = blockRepository.findByFeIdAndIsDeleted(canvasSocketReqDto.getPrevBlockId(), IsDeleted.N)
                     .orElseThrow(() -> new IllegalArgumentException("해당 이전 Block이 존재하지 않습니다."));
 
 
@@ -69,9 +65,9 @@ public class BlockService {
         // 나머지 Block 생성 로직
         Block block = Block.builder()
                 .canvas(canvas)
-                .contents(createBlockReqDto.getContents())
-                .feId(createBlockReqDto.getFeId())
-                .type(createBlockReqDto.getType())
+                .contents(canvasSocketReqDto.getBlockContents())
+                .feId(canvasSocketReqDto.getBlockFeId())
+                .type(canvasSocketReqDto.getBlockType())
                 .prevBlock(prevBlock)
                 .parentBlock(parentBlock)
                 .build();
@@ -96,12 +92,12 @@ public class BlockService {
     }
 
     @Transactional
-    public Boolean updateBlock(UpdateBlockReqDto updateBlockReqDto, String email) {
+    public Boolean updateBlock(CanvasSocketReqDto canvasSocketReqDto) {
         try {
-            Block block = blockRepository.findByFeIdAndIsDeleted(updateBlockReqDto.getFeId(), IsDeleted.N)
+            Block block = blockRepository.findByFeIdAndIsDeleted(canvasSocketReqDto.getBlockFeId(), IsDeleted.N)
                     .orElseThrow(() -> new IllegalArgumentException("해당 Block이 존재하지 않습니다."));
-            Block prevBlock = updateBlockReqDto.getPrevBlockId() != null
-                    ? blockRepository.findByFeIdAndIsDeleted(updateBlockReqDto.getPrevBlockId(), IsDeleted.N)
+            Block prevBlock = canvasSocketReqDto.getPrevBlockId() != null
+                    ? blockRepository.findByFeIdAndIsDeleted(canvasSocketReqDto.getPrevBlockId(), IsDeleted.N)
                     .orElseThrow(() -> new IllegalArgumentException("해당 Prev Block이 존재하지 않습니다."))
                     : null;
 
@@ -114,12 +110,12 @@ public class BlockService {
                 }
             }
 
-            Block parentBlock = updateBlockReqDto.getParentBlockId() != null
-                    ? blockRepository.findByFeIdAndIsDeleted(updateBlockReqDto.getParentBlockId(), IsDeleted.N)
+            Block parentBlock = canvasSocketReqDto.getParentBlockId() != null
+                    ? blockRepository.findByFeIdAndIsDeleted(canvasSocketReqDto.getParentBlockId(), IsDeleted.N)
                     .orElseThrow(() -> new IllegalArgumentException("해당 Parent Block이 존재하지 않습니다."))
                     : null;
 
-            block.updateAllInfo(prevBlock, parentBlock, updateBlockReqDto.getContents());
+            block.updateAllInfo(prevBlock, parentBlock, canvasSocketReqDto.getBlockContents());
             blockRepository.save(block);
 
             CanvasBlockDocument document = canvasBlockMapper.toDocument(block);
@@ -133,11 +129,11 @@ public class BlockService {
     }
 
     @Transactional
-    public Boolean changeOrderBlock(ChangeOrderBlockReqDto changeOrderBlockReqDto) {
+    public Boolean changeOrderBlock(CanvasSocketReqDto changeOrderBlockReqDto) {
         log.info("순서 변경!! ChangeOrderBlockReqDto {}", changeOrderBlockReqDto);
 
         // 1. feId로 현재 블록 찾기
-        Block currentBlock = blockRepository.findByFeIdAndIsDeleted(changeOrderBlockReqDto.getFeId(), IsDeleted.N)
+        Block currentBlock = blockRepository.findByFeIdAndIsDeleted(changeOrderBlockReqDto.getBlockFeId(), IsDeleted.N)
                 .orElseThrow(() -> new IllegalArgumentException("해당 Block이 존재하지 않습니다."));
 
         // 2. 새로운 prevBlockId와 nextBlockId로 블록 찾기 (없으면 null 허용)
@@ -213,7 +209,7 @@ public class BlockService {
 
 
     @Transactional
-    public Boolean deleteBlock(String feId, String email) {
+    public Boolean deleteBlock(String feId) {
         Block block = blockRepository.findByFeIdAndIsDeleted(feId, IsDeleted.N)
                 .orElseThrow(() -> new IllegalArgumentException("블록이 존재하지 않습니다."));
         Block prevLinkedBlock = blockRepository.findByPrevBlockFeIdAndIsDeleted(feId, IsDeleted.N)
@@ -335,39 +331,48 @@ public class BlockService {
         }
     }
 
-    @Transactional
-    @KafkaListener(topics = "block-topic", groupId = "websocket-group"
-            , containerFactory = "kafkaListenerContainerFactory")
-    public void consumerProductQuantity(String message) { // return 시, string 형식으로 message가 들어옴
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            // ChatMessage 객채로 맵핑
-            ChatMessage roomMessage = objectMapper.readValue(message, ChatMessage.class);
-            messagingTemplate.convertAndSend("/sub/block/room/" + roomMessage.getRoomId(), roomMessage);
-            SendBlockReqDto sendBlockReqDto = objectMapper.readValue(roomMessage.getMessage(), SendBlockReqDto.class);
-            editBlockInSocket(sendBlockReqDto);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        } catch (Exception e) {
-            //            만약, 실패했을 때 코드 추가해야함
-        }
-        System.out.println(message);
-    }
+//    block topic은 이제 사용 X
+//    @Transactional
+//    @KafkaListener(topics = "block-topic", groupId = "websocket-group"
+//            , containerFactory = "kafkaListenerContainerFactory")
+//    public void consumerProductQuantity(String message) { // return 시, string 형식으로 message가 들어옴
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        try {
+//            // ChatMessage 객채로 맵핑
+//            CanvasSocketReqDto roomMessage = objectMapper.readValue(message, ChatMessage.class);
+//            messagingTemplate.convertAndSend("/sub/block/room/" + roomMessage.getRoomId(), roomMessage);
+////            SendBlockReqDto sendBlockReqDto = objectMapper.readValue(roomMessage.getMessage(), SendBlockReqDto.class);
+//            editBlockInSocket(roomMessage);
+//        } catch (JsonProcessingException e) {
+//            throw new RuntimeException(e);
+//        } catch (Exception e) {
+//            //            만약, 실패했을 때 코드 추가해야함
+//        }
+//        System.out.println(message);
+//    }
 
-    public void editBlockInSocket(SendBlockReqDto sendBlockReqDto) {
+    public void editBlockInSocket(CanvasSocketReqDto canvasSocketReqDto) {
 //        생성, 수정, 삭제인지 type 구분해서 넣어주는 용도
-        if (sendBlockReqDto.getMethod().equals(Method.create)) { // 생성블록
-            CreateBlockReqDto createBlockReqDto = sendBlockReqDto.buildCreateBlockReqDto();
-            createBlock(createBlockReqDto, "");
-        } else if (sendBlockReqDto.getMethod().equals(Method.update)) { // 수정블록
-            UpdateBlockReqDto updateBlockReqDto = sendBlockReqDto.buildUpdateBlockReqDto();
-            updateBlock(updateBlockReqDto, "");
-        } else if (sendBlockReqDto.getMethod().equals(Method.changeOrder)) { //순서 변경 블록
-            ChangeOrderBlockReqDto changeOrderBlockReqDto = sendBlockReqDto.buildChangeOrderBlockReqDto();
-            changeOrderBlock(changeOrderBlockReqDto);
-        } else if (sendBlockReqDto.getMethod().equals(Method.delete)) { // 삭제블록
-            deleteBlock(sendBlockReqDto.getFeId(), "");
-//            log.info("삭제블록 제작 진행 중");
+//        if (sendBlockReqDto.getMethod().equals(Method.create)) { // 생성블록
+//            CreateBlockReqDto createBlockReqDto = sendBlockReqDto.buildCreateBlockReqDto();
+//            createBlock(createBlockReqDto, "");
+//        } else if (sendBlockReqDto.getMethod().equals(Method.update)) { // 수정블록
+//            UpdateBlockReqDto updateBlockReqDto = sendBlockReqDto.buildUpdateBlockReqDto();
+//            updateBlock(updateBlockReqDto, "");
+//        } else if (sendBlockReqDto.getMethod().equals(Method.changeOrder)) { //순서 변경 블록
+//            ChangeOrderBlockReqDto changeOrderBlockReqDto = sendBlockReqDto.buildChangeOrderBlockReqDto();
+//            changeOrderBlock(changeOrderBlockReqDto);
+//        } else if (sendBlockReqDto.getMethod().equals(Method.delete)) { // 삭제블록
+//            deleteBlock(sendBlockReqDto.getFeId(), "");
+////            log.info("삭제블록 제작 진행 중");
+        if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.CREATE_BLOCK)) { // 생성블록
+            createBlock(canvasSocketReqDto);
+        } else if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.UPDATE_BLOCK)) { // 수정블록
+            updateBlock(canvasSocketReqDto);
+        } else if(canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.CHANGE_ORDER_BLOCK)){ //순서 변경 블록
+            changeOrderBlock(canvasSocketReqDto);
+        } else if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.DELETE_BLOCK)) { // 삭제블록
+            deleteBlock(canvasSocketReqDto.getBlockFeId());
         } else {
             log.error("잘못된 block method");
         }

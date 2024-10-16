@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 public class UpdateCanvasReqDto {
     private String title;
     private Long parentCanvasId;
+    private Long prevCanvasId;
     private Long canvasId;
     private Long channelId;
     @Builder.Default

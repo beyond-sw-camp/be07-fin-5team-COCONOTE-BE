@@ -1,10 +1,9 @@
 package com.example.coconote.api.canvas.block.controller;
 
-import com.example.coconote.api.canvas.block.dto.request.CreateBlockReqDto;
-import com.example.coconote.api.canvas.block.dto.request.UpdateBlockReqDto;
 import com.example.coconote.api.canvas.block.dto.response.BlockListResDto;
 import com.example.coconote.api.canvas.block.dto.response.CreateBlockResDto;
 import com.example.coconote.api.canvas.block.service.BlockService;
+import com.example.coconote.api.canvas.canvas.dto.request.CanvasSocketReqDto;
 import com.example.coconote.common.CommonResDto;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -26,8 +25,8 @@ public class BlockController {
             description = "새로운 Block 생성."
     )
     @PostMapping("/create")
-    public ResponseEntity<?> createBlock(@RequestBody CreateBlockReqDto createBlockReqDto, String email){
-        CreateBlockResDto createBlockResDto = blockService.createBlock(createBlockReqDto, email);
+    public ResponseEntity<?> createBlock(@RequestBody CanvasSocketReqDto canvasSocketReqDto){
+        CreateBlockResDto createBlockResDto = blockService.createBlock(canvasSocketReqDto);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "Block이 성공적으로 생성되었습니다.", createBlockResDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }

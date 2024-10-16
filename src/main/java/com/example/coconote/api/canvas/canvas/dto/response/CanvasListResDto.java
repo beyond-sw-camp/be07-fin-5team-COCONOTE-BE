@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -14,5 +15,8 @@ import java.util.List;
 public class CanvasListResDto {
     private Long id;
     private String title;
-//    private List<CanvasListResDto> childCanvas;
+
+    @Builder.Default
+    private List<CanvasListResDto> childCanvas = new ArrayList<>();
+    private Long prevCanvasId;
 }
