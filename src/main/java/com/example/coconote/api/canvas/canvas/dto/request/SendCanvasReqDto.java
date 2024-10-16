@@ -13,7 +13,7 @@ public class SendCanvasReqDto {
     private Method method;
     private Long canvasId;
     private String title = null;
-    private String member;
+    private String sender;
 
     public CreateCanvasReqDto buildCreateCanvasReqDto() {
         return CreateCanvasReqDto.builder()
@@ -34,8 +34,8 @@ public class SendCanvasReqDto {
 
     public ChangeOrderCanvasReqDto buildChangeOrderCanvasReqDto() {
         return ChangeOrderCanvasReqDto.builder()
-                .canvasId(this.canvasId)
-                .member(this.member)
+                .id(this.canvasId)
+                .sender(this.sender)
                 .prevCanvasId(this.prevCanvasId)
                 .nextCanvasId(this.nextCanvasId)
                 .parentCanvasId(this.parentCanvasId)

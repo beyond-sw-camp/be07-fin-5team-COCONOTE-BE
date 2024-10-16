@@ -15,4 +15,5 @@ public class CreateCanvasReqDto {
     private Long prevCanvasId;
     private Long channelId;
 
+    private String sender;
 }

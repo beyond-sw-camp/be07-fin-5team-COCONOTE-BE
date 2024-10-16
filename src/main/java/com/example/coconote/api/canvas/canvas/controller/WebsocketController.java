@@ -4,9 +4,13 @@ import com.example.coconote.api.canvas.block.service.BlockService;
 import com.example.coconote.api.canvas.canvas.dto.request.ChatMessage;
 import com.example.coconote.api.canvas.canvas.dto.response.CanvasListResDto;
 import com.example.coconote.api.canvas.canvas.service.CanvasService;
+import com.example.coconote.security.token.JwtTokenProvider;
+import com.example.coconote.security.util.CustomPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,23 +28,29 @@ public class WebsocketController {
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final CanvasService canvasService;
     private final BlockService blockService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     /**
      * ⭐ 캔버스용
      * websocket "/pub/canvas/message"로 들어오는 메시징을 처리한다.
      */
     @MessageMapping("/canvas/message")
-    public void message(ChatMessage message) {
+    public void message(ChatMessage message, @Header("Authorization") String token) {
+        Long id = jwtTokenProvider.getMemberIdFromToken(token);
+        message.setSenderId(id);
+
         if (ChatMessage.MessageType.ENTER.equals(message.getType())) {
             canvasService.enterChatRoom(message.getRoomId());
-            message.setMessage(message.getSender() + "님이 입장하셨습니다.");
+//            message.setMessage(message.getSender() + "님이 입장하셨습니다.");
+        }else{
+            kafkaTemplate.send("canvas-topic", message);
         }
 //        else if(ChatMessage.MessageType.CANVAS.equals(message.getType())){
 ////            canvas 수정하거나 생성하는거 넘어감~
 //            blockService.editBlockInSocket(message);
 //            kafkaTemplate.send("block-topic", message);
 //        }
-        kafkaTemplate.send("canvas-topic", message);
+
         System.out.println(canvasService.getTopic(message.getRoomId()));
     }
 
@@ -51,7 +61,7 @@ public class WebsocketController {
     @MessageMapping("/block/message")
     public void messageBlock(ChatMessage message) {
         if (ChatMessage.MessageType.ENTER.equals(message.getType())) {
-            canvasService.enterChatRoom(message.getRoomId()); // room에 접속
+//            canvasService.enterChatRoom(message.getRoomId()); // room에 접속
 //            message.setMessage(message.getSender() + "님이 입장하셨습니다.");
         }else{
             kafkaTemplate.send("block-topic", message);
