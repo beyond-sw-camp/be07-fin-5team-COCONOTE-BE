@@ -9,6 +9,13 @@ import com.example.coconote.api.drive.entity.Folder;
 import com.example.coconote.api.drive.repository.FolderRepository;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.search.dto.EntityType;
+import com.example.coconote.api.search.dto.IndexEntityMessage;
+import com.example.coconote.api.search.entity.FileEntityDocument;
+import com.example.coconote.api.search.entity.ThreadDocument;
+import com.example.coconote.api.search.entity.WorkspaceMemberDocument;
+import com.example.coconote.api.search.mapper.FileEntityMapper;
+import com.example.coconote.api.search.mapper.WorkspaceMemberMapper;
 import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.api.workspace.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.workspace.repository.WorkspaceRepository;
@@ -25,6 +32,7 @@ import com.example.coconote.global.fileUpload.repository.FileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -56,8 +64,11 @@ public class S3Service {
     private final MemberRepository memberRepository;
     private final ChannelMemberRepository channelMemberRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
-    private final SearchService searchService;
     private final WorkspaceRepository workspaceRepository;
+    private final FileEntityMapper fileEntityMapper;
+    private final WorkspaceMemberMapper workspaceMemberMapper;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final SearchService searchService;
 
     @Value("${aws.s3.region}")
     private String region;
@@ -150,7 +161,7 @@ public class S3Service {
 
         // 폴더 검증
         Folder folder;
-        if(fileMetadataDto.getFolderId() ==null) {
+        if (fileMetadataDto.getFolderId() == null) {
             if (fileMetadataDto.getFileType() == FileType.THREAD) {
                 folder = folderRepository.findByChannelAndFolderName(channel, "쓰레드 자동업로드 폴더")
                         .orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
@@ -171,7 +182,9 @@ public class S3Service {
         List<FileEntity> savedEntities = fileRepository.saveAll(fileEntities);
         savedEntities.forEach(fileEntity -> {
             // OpenSearch에 인덱싱
-            searchService.indexFileEntity(workspace.getWorkspaceId(), fileEntity);
+            FileEntityDocument document = fileEntityMapper.toDocument(fileEntity);
+            IndexEntityMessage<FileEntityDocument> indexEntityMessage = new IndexEntityMessage<>(workspace.getWorkspaceId(), EntityType.FILE, document);
+            kafkaTemplate.send("file_entity_search", indexEntityMessage.toJson());
         });
 
         return savedEntities.stream()
@@ -201,7 +214,7 @@ public class S3Service {
 
         // 파일 삭제 권한 검증
 //        채널 매니저 이거나 파일을 업로드한 사람만 삭제 가능
-        if(channelMember.getChannelRole() != ChannelRole.MANAGER  || channel.getChannelMembers().stream().noneMatch(channelMember1 -> channelMember1.getWorkspaceMember().getMember().equals(member))) {
+        if (channelMember.getChannelRole() != ChannelRole.MANAGER || channel.getChannelMembers().stream().noneMatch(channelMember1 -> channelMember1.getWorkspaceMember().getMember().equals(member))) {
             throw new IllegalArgumentException("파일을 삭제할 권한이 없습니다.");
         }
 
@@ -213,7 +226,7 @@ public class S3Service {
     }
 
     @Transactional
-    public void hardDeleteFileS3(Long fileId ) {
+    public void hardDeleteFileS3(Long fileId) {
         FileEntity fileEntity = getFileEntityById(fileId);
         try {
             // S3에서 파일 삭제
@@ -246,7 +259,9 @@ public class S3Service {
         fileEntity.moveFolder(folder);
         fileRepository.save(fileEntity);
 
-        searchService.indexFileEntity(folder.getChannel().getSection().getWorkspace().getWorkspaceId(), fileEntity);
+        FileEntityDocument document = fileEntityMapper.toDocument(fileEntity);
+        IndexEntityMessage<FileEntityDocument> indexEntityMessage = new IndexEntityMessage<>(fileEntity.getFolder().getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.FILE, document);
+        kafkaTemplate.send("file_entity_search", indexEntityMessage.toJson());
 
         return MoveFileResDto.builder()
                 .fileId(fileEntity.getId())
@@ -272,9 +287,9 @@ public class S3Service {
         }
 
         PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(b -> b.getObjectRequest(GetObjectRequest.builder()
-                .bucket(bucketName)
-                .key(fileEntity.getFileUrl().substring(fileEntity.getFileUrl().lastIndexOf('/') + 1))
-                .build())
+                        .bucket(bucketName)
+                        .key(fileEntity.getFileUrl().substring(fileEntity.getFileUrl().lastIndexOf('/') + 1))
+                        .build())
                 .signatureDuration(Duration.ofMinutes(1)));
 
         // Presigned URL 생성
@@ -300,7 +315,7 @@ public class S3Service {
                 .orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다."));
     }
 
-    private Folder getFolderEntityById(Long folder){
+    private Folder getFolderEntityById(Long folder) {
         return folderRepository.findById(folder)
                 .orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
     }
@@ -312,7 +327,9 @@ public class S3Service {
         workspaceMember.changeProfileImage(profileImageReqDto.getProfileImage());
         workspaceMemberRepository.save(workspaceMember);
 
-        searchService.indexWorkspaceMember(workspaceMember.getWorkspace().getWorkspaceId(), workspaceMember);
+        WorkspaceMemberDocument document = workspaceMemberMapper.toDocument(workspaceMember);
+        IndexEntityMessage<WorkspaceMemberDocument> indexEntityMessage = new IndexEntityMessage<>(workspaceMember.getWorkspace().getWorkspaceId(), EntityType.FILE, document);
+        kafkaTemplate.send("workspace_member_entity_search", indexEntityMessage.toJson());
 
         return workspaceMember.fromEntity();
     }

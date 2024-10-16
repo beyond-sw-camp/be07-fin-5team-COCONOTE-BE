@@ -7,6 +7,12 @@ import com.example.coconote.api.channel.channelMember.dto.response.ChannelMember
 import com.example.coconote.api.channel.channelMember.service.ChannelMemberService;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.search.dto.EntityType;
+import com.example.coconote.api.search.dto.IndexEntityMessage;
+import com.example.coconote.api.search.entity.ChannelDocument;
+import com.example.coconote.api.search.entity.WorkspaceMemberDocument;
+import com.example.coconote.api.search.mapper.ChannelMapper;
+import com.example.coconote.api.search.mapper.WorkspaceMemberMapper;
 import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.api.section.dto.response.SectionListResDto;
 import com.example.coconote.api.section.entity.Section;
@@ -24,6 +30,7 @@ import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +50,9 @@ public class WorkspaceService {
     private final ChannelMemberService channelMemberService;
     private final SearchService searchService;
     private final ChannelService channelService;
+    private final WorkspaceMemberMapper workspaceMemberMapper;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final ChannelMapper channelMapper;
 
 
     @Transactional
@@ -81,6 +91,14 @@ public class WorkspaceService {
         sectionDefault.getChannels().add(channelDefault);
         sectionDefault.getChannels().add(channelNotice);
 
+        ChannelDocument document1 = channelMapper.toDocument(channelDefault);
+        IndexEntityMessage<ChannelDocument> indexEntityMessage1 = new IndexEntityMessage<>(channelDefault.getSection().getWorkspace().getWorkspaceId(), EntityType.CHANNEL , document1);
+        kafkaTemplate.send("channel_entity_search", indexEntityMessage1.toJson());
+
+        ChannelDocument document2 = channelMapper.toDocument(channelNotice);
+        IndexEntityMessage<ChannelDocument> indexEntityMessage2 = new IndexEntityMessage<>(channelNotice.getSection().getWorkspace().getWorkspaceId(), EntityType.CHANNEL , document2);
+        kafkaTemplate.send("channel_entity_search", indexEntityMessage2.toJson());
+
         // 워크스페이스 멤버로 영입(?)
         Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("회원을 찾을 수 없습니다."));
 
@@ -100,7 +118,9 @@ public class WorkspaceService {
 
         workspaceRepository.save(workspace);
 
-        searchService.indexWorkspaceMember(workspace.getWorkspaceId(), workspaceMember);
+        WorkspaceMemberDocument document = workspaceMemberMapper.toDocument(workspaceMember);
+        IndexEntityMessage<WorkspaceMemberDocument> indexEntityMessage = new IndexEntityMessage<>(workspaceMember.getWorkspace().getWorkspaceId(), EntityType.WORKSPACE_MEMBER , document);
+        kafkaTemplate.send("workspace_member_entity_search", indexEntityMessage.toJson());
 
         return workspace.fromEntity();
     }

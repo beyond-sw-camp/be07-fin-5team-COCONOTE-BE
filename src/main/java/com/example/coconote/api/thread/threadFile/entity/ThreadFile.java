@@ -24,6 +24,7 @@ public class ThreadFile extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "thread_id")
     private Thread thread;
 
     @Column(nullable = false, unique = true)

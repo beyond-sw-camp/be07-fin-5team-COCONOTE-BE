@@ -13,6 +13,11 @@ import com.example.coconote.api.drive.entity.Folder;
 import com.example.coconote.api.drive.repository.FolderRepository;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.search.dto.EntityType;
+import com.example.coconote.api.search.dto.IndexEntityMessage;
+import com.example.coconote.api.search.entity.ChannelDocument;
+import com.example.coconote.api.search.entity.WorkspaceMemberDocument;
+import com.example.coconote.api.search.mapper.ChannelMapper;
 import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.api.section.entity.Section;
 import com.example.coconote.api.section.repository.SectionRepository;
@@ -24,6 +29,7 @@ import com.example.coconote.common.IsDeleted;
 import com.example.coconote.global.fileUpload.repository.FileRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +54,8 @@ public class ChannelService {
     private final WorkspaceMemberRepository workspaceMemberRepository;
     private final ChannelMemberRepository channelMemberRepository;
     private final SearchService searchService;
+    private final ChannelMapper channelMapper;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Transactional
     public ChannelDetailResDto channelCreate(ChannelCreateReqDto dto, String email) {
@@ -70,7 +78,9 @@ public class ChannelService {
         channel.getChannelMembers().add(channelMember);
         channelRepository.save(channel);
 
-        searchService.indexChannel(section.getWorkspace().getWorkspaceId(), channel);
+        ChannelDocument document = channelMapper.toDocument(channel);
+        IndexEntityMessage<ChannelDocument> indexEntityMessage = new IndexEntityMessage<>(channel.getSection().getWorkspace().getWorkspaceId(), EntityType.CHANNEL, document);
+        kafkaTemplate.send("channel_entity_search", indexEntityMessage.toJson());
 
         createDefaultFolder(channel);
         ChannelDetailResDto resDto = channel.fromEntity(section);
@@ -146,19 +156,22 @@ public class ChannelService {
 
 
     @Transactional
-    public Channel channelUpdate(Long id, ChannelUpdateReqDto dto, String email) {
-        Channel channel = channelRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 채널입니다."));
-        if (!checkChannelAuthorization(id, email)) {
+    public ChannelDetailResDto channelUpdate(Long id, ChannelUpdateReqDto dto, String email) {
+        Channel channel = channelRepository.findById(id).orElseThrow(()->new EntityNotFoundException("존재하지 않는 채널입니다."));
+        if(!checkChannelAuthorization(id, email)) {
             throw new IllegalArgumentException("채널을 수정할 권한이 없습니다.");
         }
         if (channel.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 삭제된 채널입니다.");
         }
         channel.updateEntity(dto);
-
         channelRepository.save(channel);
-        searchService.indexChannel(channel.getSection().getWorkspace().getWorkspaceId(), channel);
-        return channel;
+
+        ChannelDocument document = channelMapper.toDocument(channel);
+        IndexEntityMessage<ChannelDocument> indexEntityMessage = new IndexEntityMessage<>(channel.getSection().getWorkspace().getWorkspaceId(),EntityType.CHANNEL , document);
+        kafkaTemplate.send("channel_entity_search", indexEntityMessage.toJson());
+
+        return channel.fromEntity(channel.getSection());
     }
 
 
@@ -195,15 +208,11 @@ public class ChannelService {
         if (workspace.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 삭제된 워크스페이스입니다.");
         }
-        List<Section> sections = sectionRepository.findByWorkspaceAndIsDeleted(workspace, IsDeleted.N);
         List<ChannelDetailResDto> bookmarkChannels = new ArrayList<>();
-        for (Section s : sections) {
-            if (s.getChannels() != null) {
-                for (Channel c : s.getChannels()) {
-                    ChannelMember channelMember = channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(c, workspaceMember, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("채널 회원을 찾을 수 없습니다."));
-                    if (channelMember.getIsBookmark()) {
-                        bookmarkChannels.add(c.fromEntity(s));
-                    }
+        if(workspaceMember.getChannelMembers() != null) {
+            for(ChannelMember cm : workspaceMember.getChannelMembers()) {
+                if(cm.getIsBookmark()) {
+                    bookmarkChannels.add(cm.getChannel().fromEntity(cm.getChannel().getSection()));
                 }
             }
         }
@@ -252,6 +261,11 @@ public class ChannelService {
         return channelMember != null;
     }
 
+
+    public ChannelDetailResDto channelDetail(Long channelId) {
+        Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new EntityNotFoundException("채널을 찾을 수 없습니다."));
+        return channel.fromEntity(channel.getSection());
+    }
     //    공통 메서드
     private Member getMemberByEmail(String email) {
         return memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
@@ -267,11 +281,6 @@ public class ChannelService {
 
     private Workspace getWorkspaceByWorkspaceId(Long workspaceId) {
         return workspaceRepository.findById(workspaceId).orElseThrow(() -> new IllegalArgumentException("워크스페이스가 존재하지 않습니다."));
-    }
-
-    public ChannelDetailResDto channelDetail(Long channelId) {
-        Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new EntityNotFoundException("채널을 찾을 수 없습니다."));
-        return channel.fromEntity(channel.getSection());
     }
 }
 

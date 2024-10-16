@@ -8,6 +8,8 @@ import com.example.coconote.api.canvas.canvas.entity.Canvas;
 import com.example.coconote.api.canvas.canvas.entity.CanvasMessageMethod;
 import com.example.coconote.api.canvas.canvas.entity.PostMessageType;
 import com.example.coconote.api.canvas.canvas.repository.CanvasRepository;
+import com.example.coconote.api.canvas.canvas.dto.request.ChatMessage;
+import com.example.coconote.api.canvas.canvas.dto.request.CreateCanvasReqDto;
 import com.example.coconote.api.canvas.canvas.dto.response.CanvasDetResDto;
 import com.example.coconote.api.canvas.canvas.dto.response.CanvasListResDto;
 import com.example.coconote.api.canvas.canvas.dto.response.CreateCanvasResDto;
@@ -15,8 +17,13 @@ import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.search.dto.EntityType;
+import com.example.coconote.api.search.dto.IndexEntityMessage;
+import com.example.coconote.api.search.entity.CanvasBlockDocument;
+import com.example.coconote.api.search.mapper.CanvasBlockMapper;
 import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.common.IsDeleted;
+import com.example.coconote.api.channel.channel.repository.ChannelRepository;import com.example.coconote.common.IsDeleted;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
@@ -33,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -42,9 +50,10 @@ public class CanvasService {
     private final ChannelRepository channelRepository;
     private final MemberRepository memberRepository;
     private final SearchService searchService;
+    private final CanvasBlockMapper canvasBlockMapper;
     private final BlockService blockService;
 
-    public CanvasService(CanvasRepository canvasRepository, ChannelRepository channelRepository, MemberRepository memberRepository, KafkaTemplate<String, Object> kafkaTemplate, SimpMessageSendingOperations messagingTemplate, SearchService searchService, BlockService blockService) {
+    public CanvasService(CanvasRepository canvasRepository, ChannelRepository channelRepository, MemberRepository memberRepository, KafkaTemplate<String, Object> kafkaTemplate, SimpMessageSendingOperations messagingTemplate, SearchService searchService, BlockService blockService, CanvasBlockMapper canvasBlockMapper){
         this.canvasRepository = canvasRepository;
         this.channelRepository = channelRepository;
         this.memberRepository = memberRepository;
@@ -53,6 +62,7 @@ public class CanvasService {
         this.kafkaTemplate = kafkaTemplate;
         this.messagingTemplate = messagingTemplate;
         this.searchService = searchService;
+        this.canvasBlockMapper = canvasBlockMapper;
         this.blockService = blockService;
     }
 
@@ -76,8 +86,6 @@ public class CanvasService {
         Canvas prevCanvas = null;
         if (createCanvasReqDto.getPrevCanvasId() != null) {
             prevCanvas = canvasRepository.findByIdAndIsDeleted(createCanvasReqDto.getPrevCanvasId(), IsDeleted.N).orElseThrow(() -> new IllegalArgumentException("해당 이전 Block이 존재하지 않습니다."));
-
-
         }
 
         Canvas canvas = Canvas.builder()
@@ -90,7 +98,9 @@ public class CanvasService {
 
         canvasRepository.save(canvas);
 //        검색 인덱스에 저장
-        searchService.indexCanvas(channel.getSection().getWorkspace().getWorkspaceId(), canvas);
+        CanvasBlockDocument document = canvasBlockMapper.toDocument(canvas);
+        IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(channel.getSection().getWorkspace().getWorkspaceId() , EntityType.CANVAS_BLOCK, document);
+        kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
 
         topics.put(canvas.getId(), canvas.getId());
 
@@ -344,7 +354,7 @@ public class CanvasService {
             }
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
-        } catch (Exception e) {
+        } catch (Exception e){
 //            만약, 실패했을 때 코드 추가해야함
         }
         System.out.println(message);

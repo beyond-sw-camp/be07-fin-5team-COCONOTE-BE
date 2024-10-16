@@ -43,10 +43,13 @@ public class Thread extends BaseEntity {
 //    private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "workspace_member_id")
     private WorkspaceMember workspaceMember;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "channel_id")
     private Channel channel;
+
     @Builder.Default
     @OneToMany(mappedBy = "thread", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ThreadTag> threadTags = new ArrayList<>();
@@ -59,6 +62,7 @@ public class Thread extends BaseEntity {
         List<ThreadFileDto> files = this.threadFiles.stream().map(ThreadFile::fromEntity).toList();
         return ThreadResDto.builder()
                 .id(this.id)
+                .image(this.workspaceMember.getProfileImage())
                 .memberName(this.workspaceMember.getNickname())
                 .createdTime(this.getCreatedTime().toString())
                 .content(this.content)
@@ -71,6 +75,7 @@ public class Thread extends BaseEntity {
     public ThreadResDto fromEntity(List<ThreadFileDto> files) {
         return ThreadResDto.builder()
                 .id(this.id)
+                .image(this.workspaceMember.getProfileImage())
                 .memberName(this.workspaceMember.getNickname())
                 .createdTime(this.getCreatedTime().toString())
                 .content(this.content)

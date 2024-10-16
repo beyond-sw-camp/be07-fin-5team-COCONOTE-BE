@@ -2,6 +2,11 @@ package com.example.coconote.api.workspace.mail.service;
 
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.search.dto.EntityType;
+import com.example.coconote.api.search.dto.IndexEntityMessage;
+import com.example.coconote.api.search.entity.ChannelDocument;
+import com.example.coconote.api.search.entity.WorkspaceMemberDocument;
+import com.example.coconote.api.search.mapper.WorkspaceMemberMapper;
 import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.api.workspace.mail.dto.MailReqDto;
 import com.example.coconote.api.workspace.workspace.dto.response.WorkspaceListResDto;
@@ -16,8 +21,10 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -29,6 +36,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class MailVerifyService {
 
 	private final SearchService searchService;
@@ -42,18 +50,13 @@ public class MailVerifyService {
 	private final MemberRepository memberRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceRepository workspaceRepository;
+	private final WorkspaceMemberMapper workspaceMemberMapper;
+	private final KafkaTemplate<String, Object> kafkaTemplate;
 
 	@Value("${spring.mail.auth-code-expiration-millis}")
 	private long authCodeExpirationMillis;
 
-	@Autowired
-	public MailVerifyService(JavaMailSender mailSender, MemberRepository memberRepository, WorkspaceMemberRepository workspaceMemberRepository, WorkspaceRepository workspaceRepository, SearchService searchService) {
-		this.mailSender = mailSender;
-		this.memberRepository = memberRepository;
-		this.workspaceMemberRepository = workspaceMemberRepository;
-		this.workspaceRepository = workspaceRepository;
-		this.searchService = searchService;
-	}
+
 
 	// 메일 전송
 	public void sendEmail(MailReqDto mailReqDto) {
@@ -148,11 +151,16 @@ public class MailVerifyService {
 		workspaceMember = WorkspaceMember.builder()
 				.member(member)
 				.workspace(workspace)
+				.memberName(member.getNickname())
 				.wsRole(WsRole.USER)
 				.build();
 
 		workspaceMemberRepository.save(workspaceMember);
-		searchService.indexWorkspaceMember(workspaceId, workspaceMember);
+
+		WorkspaceMemberDocument document = workspaceMemberMapper.toDocument(workspaceMember);
+		IndexEntityMessage<WorkspaceMemberDocument> indexEntityMessage = new IndexEntityMessage<>(workspace.getWorkspaceId(), EntityType.WORKSPACE_MEMBER , document);
+		kafkaTemplate.send("workspace_member_entity_search", indexEntityMessage.toJson());
+
 		return workspace.fromEntity();
 	}
 }

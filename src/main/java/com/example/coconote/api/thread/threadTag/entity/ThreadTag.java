@@ -18,9 +18,13 @@ public class ThreadTag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "thread_id")
     private Thread thread;
+
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tag_id")
     private Tag tag;
 
     public ThreadTag(Thread thread, Tag tag) {
