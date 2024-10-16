@@ -5,6 +5,7 @@ import com.example.coconote.api.canvas.canvas.dto.response.CanvasDetResDto;
 import com.example.coconote.api.canvas.canvas.dto.response.CanvasListResDto;
 import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.member.entity.Member;
+import com.example.coconote.api.search.entity.CanvasBlockDocument;
 import com.example.coconote.common.BaseEntity;
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.*;
@@ -90,4 +91,12 @@ public class Canvas extends BaseEntity {
         this.prevCanvas = canvas;
     }
 
+    public CanvasBlockDocument fromBlockDocEntity() {
+        return CanvasBlockDocument.builder()
+                .canvasTitle(this.title)
+                .createMemberName(this.createMember.getNickname())
+                .channelId(this.channel.getChannelId())
+                .canvasCreatedTime(this.getCreatedTime().toString())
+                .build();
+    }
 }

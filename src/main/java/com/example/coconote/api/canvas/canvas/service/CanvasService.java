@@ -8,8 +8,6 @@ import com.example.coconote.api.canvas.canvas.entity.Canvas;
 import com.example.coconote.api.canvas.canvas.entity.CanvasMessageMethod;
 import com.example.coconote.api.canvas.canvas.entity.PostMessageType;
 import com.example.coconote.api.canvas.canvas.repository.CanvasRepository;
-import com.example.coconote.api.canvas.canvas.dto.request.ChatMessage;
-import com.example.coconote.api.canvas.canvas.dto.request.CreateCanvasReqDto;
 import com.example.coconote.api.canvas.canvas.dto.response.CanvasDetResDto;
 import com.example.coconote.api.canvas.canvas.dto.response.CanvasListResDto;
 import com.example.coconote.api.canvas.canvas.dto.response.CreateCanvasResDto;
@@ -183,7 +181,7 @@ public class CanvasService {
             }
         }
 
-        canvas.updateInfo(canvasSocketReqDto.getCanvasTitle(), parentCanvas, canvasSocketReqDto.getIsDeleted());
+        canvas.updateInfo(canvasSocketReqDto.getCanvasTitle(), parentCanvas, IsDeleted.N);
         return canvas.fromDetEntity();
     }
 
@@ -217,7 +215,8 @@ public class CanvasService {
         if (originalNextCanvas != null) {
             originalNextCanvas.changePrevCanvas(originalPrevCanvas);
             canvasRepository.save(originalNextCanvas);
-            searchService.indexCanvas(currentCanvas.getChannel().getSection().getWorkspace().getWorkspaceId(), originalNextCanvas);
+            CanvasBlockDocument canvasBlockDocument = originalNextCanvas.fromBlockDocEntity();
+            searchService.indexCanvas(currentCanvas.getChannel().getSection().getWorkspace().getWorkspaceId(), canvasBlockDocument);
 
         }
 
@@ -230,7 +229,8 @@ public class CanvasService {
             if (nextOfNewPrevCanvas != null && !nextOfNewPrevCanvas.equals(currentCanvas)) {
                 nextOfNewPrevCanvas.changePrevCanvas(currentCanvas);
                 canvasRepository.save(nextOfNewPrevCanvas);
-                searchService.indexCanvas(currentCanvas.getChannel().getSection().getWorkspace().getWorkspaceId(), nextOfNewPrevCanvas);
+                CanvasBlockDocument canvasBlockDocument = nextOfNewPrevCanvas.fromBlockDocEntity();
+                searchService.indexCanvas(currentCanvas.getChannel().getSection().getWorkspace().getWorkspaceId(), canvasBlockDocument);
 
             }
 
@@ -245,13 +245,15 @@ public class CanvasService {
         if (newNextCanvas != null) {
             newNextCanvas.changePrevCanvas(currentCanvas);
             canvasRepository.save(newNextCanvas);
-            searchService.indexCanvas(currentCanvas.getChannel().getSection().getWorkspace().getWorkspaceId(), newNextCanvas);
+            CanvasBlockDocument canvasBlockDocument = newNextCanvas.fromBlockDocEntity();
+            searchService.indexCanvas(currentCanvas.getChannel().getSection().getWorkspace().getWorkspaceId(), canvasBlockDocument);
 
         }
 
         // 6. 현재 캔버스을 저장하여 순서 변경 적용
         canvasRepository.save(currentCanvas);
-        searchService.indexCanvas(currentCanvas.getChannel().getSection().getWorkspace().getWorkspaceId(), currentCanvas);
+        CanvasBlockDocument canvasBlockDocument = currentCanvas.fromBlockDocEntity();
+        searchService.indexCanvas(currentCanvas.getChannel().getSection().getWorkspace().getWorkspaceId(), canvasBlockDocument);
         log.info("캔버스 순서가 성공적으로 변경되었습니다.");
         return true;
     }
@@ -260,10 +262,11 @@ public class CanvasService {
     public void deleteCanvas(Long canvasId, Long memberId) {
         Canvas canvas = canvasRepository.findById(canvasId)
                 .orElseThrow(() -> new IllegalArgumentException("캔버스가 존재하지 않습니다."));
-        Canvas prevLinkedCanvas = canvasRepository.findByPrevCanvasIdAndIsDeleted(canvasId, IsDeleted.N)
+        Canvas prevLinkedCanvas = canvasRepository.findByPrevCanvasIdAndIsDeleted(canvas.getId(), IsDeleted.N)
                 .orElse(null);
 
-        // 삭제하는 canvas을 참조하고 있던 canvas의 prev 값을 현 삭제 canvas의 prev 값으로 수정
+
+        // 삭제하는 canvas가 참조하고 있던 canvas의 prev 값을 현 삭제 canvas의 prev 값으로 수정
         if (prevLinkedCanvas != null) {
             prevLinkedCanvas.changePrevCanvas(canvas.getPrevCanvas());
         }
@@ -345,7 +348,7 @@ public class CanvasService {
             System.out.println(message);
             // ChatMessage 객채로 맵핑
             CanvasSocketReqDto roomMessage = objectMapper.readValue(message, CanvasSocketReqDto.class);
-            messagingTemplate.convertAndSend("/sub/canvas/room/" + roomMessage.getCanvasId(), roomMessage);
+            messagingTemplate.convertAndSend("/sub/canvas/room/" + roomMessage.getChannelId(), roomMessage);
 //            SendCanvasReqDto sendCanvasReqDto = objectMapper.readValue(roomMessage.getMessage(), SendCanvasReqDto.class);
             if(roomMessage.getPostMessageType().equals(PostMessageType.CANVAS)){
                 editCanvasInSocket(roomMessage);
