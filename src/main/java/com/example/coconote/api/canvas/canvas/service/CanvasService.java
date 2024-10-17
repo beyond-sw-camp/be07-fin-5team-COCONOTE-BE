@@ -174,7 +174,7 @@ public class CanvasService {
 
         //        prev canvas 존재 및 이전에 해당 prev canvas을 갖고있는 canvas 주소 업데이트
         if (prevCanvas != null) {
-            Canvas originalPrevCanvasHolder = canvasRepository.findByPrevCanvasIdAndIsDeleted(prevCanvas.getId(), IsDeleted.N)
+            Canvas originalPrevCanvasHolder = canvasRepository.findByPrevCanvas_IdAndIsDeleted(prevCanvas.getId(), IsDeleted.N)
                     .orElse(null);
             if (originalPrevCanvasHolder != null) {
                 originalPrevCanvasHolder.changePrevCanvas(canvas);
@@ -208,7 +208,7 @@ public class CanvasService {
 
         // 3. 기존 prevCanvas과 nextCanvas 연결 끊기
         Canvas originalPrevCanvas = currentCanvas.getPrevCanvas();
-        Canvas originalNextCanvas = canvasRepository.findByPrevCanvasIdAndIsDeleted(currentCanvas.getId(), IsDeleted.N)
+        Canvas originalNextCanvas = canvasRepository.findByPrevCanvas_IdAndIsDeleted(currentCanvas.getId(), IsDeleted.N)
                 .orElse(null);
 
         // 기존 prevCanvas이 연결한 nextCanvas을 업데이트
@@ -222,7 +222,7 @@ public class CanvasService {
 
         // 4. 새로운 prevCanvas과의 연결 설정
         if (newPrevCanvas != null) {
-            Canvas nextOfNewPrevCanvas = canvasRepository.findByPrevCanvasIdAndIsDeleted(newPrevCanvas.getId(), IsDeleted.N)
+            Canvas nextOfNewPrevCanvas = canvasRepository.findByPrevCanvas_IdAndIsDeleted(newPrevCanvas.getId(), IsDeleted.N)
                     .orElse(null);
 
             // 새 prevCanvas이 가지고 있던 nextCanvas의 prevCanvas을 currentCanvas으로 설정
@@ -262,13 +262,18 @@ public class CanvasService {
     public void deleteCanvas(Long canvasId, Long memberId) {
         Canvas canvas = canvasRepository.findById(canvasId)
                 .orElseThrow(() -> new IllegalArgumentException("캔버스가 존재하지 않습니다."));
-        Canvas prevLinkedCanvas = canvasRepository.findByPrevCanvasIdAndIsDeleted(canvas.getId(), IsDeleted.N)
+        Canvas prevLinkedCanvas = canvasRepository.findByPrevCanvas_IdAndIsDeleted(canvas.getId(), IsDeleted.N)
                 .orElse(null);
 
 
         // 삭제하는 canvas가 참조하고 있던 canvas의 prev 값을 현 삭제 canvas의 prev 값으로 수정
         if (prevLinkedCanvas != null) {
-            prevLinkedCanvas.changePrevCanvas(canvas.getPrevCanvas());
+            Canvas canvasPrevOriginBlock = null;
+            if(canvas.getPrevCanvas() != null){ // 삭제하는 기존 캔버스의 prev canvas 값
+//                canvas.getPrevCanvas()가 자동으로 호출되지 않는 문제로 따로 변수에 호출해서 담음
+                canvasPrevOriginBlock = canvasRepository.findByIdAndIsDeleted(canvas.getPrevCanvas().getId(), IsDeleted.N).orElse(null);
+            }
+            prevLinkedCanvas.changePrevCanvas(canvasPrevOriginBlock);
         }
         canvas.markAsDeleted(); // 실제 삭제 대신 소프트 삭제 처리
         searchService.deleteCanvas(canvas.getChannel().getSection().getWorkspace().getWorkspaceId(), canvas.getId());
