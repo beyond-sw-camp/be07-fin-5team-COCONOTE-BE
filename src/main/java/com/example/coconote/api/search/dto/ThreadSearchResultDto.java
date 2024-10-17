@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -15,4 +17,6 @@ public class ThreadSearchResultDto {
     private String memberName;
     private Long channelId;
     private String createdTime;
+    private List<String> tags; // 태그 정보 추가
+
 }

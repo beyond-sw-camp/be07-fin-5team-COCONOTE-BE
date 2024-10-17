@@ -23,4 +23,6 @@ public class ThreadDocument {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private String createdTime;
     private List<String> fileUrls;
+    private List<String> tags; // 태그 정보 추가
+
 }

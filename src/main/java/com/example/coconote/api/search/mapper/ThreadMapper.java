@@ -21,6 +21,9 @@ public class ThreadMapper {
                 .fileUrls(thread.getThreadFiles().stream()
                         .map(ThreadFile::getFileURL)  // 파일 URL 추출
                         .collect(Collectors.toList()))
+                .tags(thread.getThreadTags().stream()
+                        .map(tag -> tag.getTag().getName())  // 태그 이름을 추출
+                        .collect(Collectors.toList()))
                 .build();
     }
 }

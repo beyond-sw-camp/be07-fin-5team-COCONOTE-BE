@@ -1,5 +1,9 @@
 package com.example.coconote.api.thread.threadTag.service;
 
+import com.example.coconote.api.search.dto.EntityType;
+import com.example.coconote.api.search.dto.IndexEntityMessage;
+import com.example.coconote.api.search.entity.ThreadDocument;
+import com.example.coconote.api.search.mapper.ThreadMapper;
 import com.example.coconote.api.thread.tag.entity.Tag;
 import com.example.coconote.api.thread.tag.repository.TagRepository;
 import com.example.coconote.api.thread.thread.dto.requset.ThreadReqDto;
@@ -13,6 +17,7 @@ import com.example.coconote.api.thread.threadTag.repository.ThreadTagRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,11 +30,17 @@ public class ThreadTagService {
     private final ThreadTagRepository threadTagRepository;
     private final ThreadRepository ThreadRepository;
     private final TagRepository tagRepository;
+    private final ThreadMapper threadMapper;
+    private final KafkaTemplate kafkaTemplate;
+
 
     public void addThreadTag(ThreadTagReqDto dto) {
         Thread thread = ThreadRepository.findById(dto.getThreadId()).get();
         Tag tag = tagRepository.findById(dto.getTagId()).get();
         threadTagRepository.save(new ThreadTag(thread, tag));
+        ThreadDocument document = threadMapper.toDocument(thread);  // toDocument로 미리 변환
+        IndexEntityMessage<ThreadDocument> indexEntityMessage = new IndexEntityMessage<>(thread.getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.THREAD, document);
+        kafkaTemplate.send("thread_entity_search", indexEntityMessage.toJson());
     }
 
     public void deleteThreadTag(Long id) {
