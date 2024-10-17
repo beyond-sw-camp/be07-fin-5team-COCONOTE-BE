@@ -525,6 +525,20 @@ public class SearchService {
                             .channelId(document.source().getChannelId())
                             .createdTime(document.source().getCreatedTime())
                             .tags(document.source().getTags())
+                            .fileUrls(document.source().getFileUrls()) // 파일 URL 추가
+                            .childThreads(document.source().getChildThreads().stream() // 자식 쓰레드 추가
+                                    .map(child -> ThreadSearchResultDto.builder()
+                                            .threadId(child.getThreadId())
+                                            .content(child.getContent())
+                                            .memberName(child.getMemberName())
+                                            .channelId(child.getChannelId())
+                                            .createdTime(child.getCreatedTime())
+                                            .tags(child.getTags())
+                                            .fileUrls(child.getFileUrls())
+                                            .parentThreadId(child.getParentThreadId())
+                                            .build())
+                                    .collect(Collectors.toList()))
+                            .parentThreadId(document.source().getParentThreadId()) // 부모 쓰레드 ID 추가
                             .build())
                     .collect(Collectors.toList());
 
