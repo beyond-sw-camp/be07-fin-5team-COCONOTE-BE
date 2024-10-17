@@ -1,6 +1,7 @@
 package com.example.coconote.api.thread.thread.controller;
 
 
+import com.example.coconote.api.thread.thread.dto.requset.ThreadPageReqDto;
 import com.example.coconote.api.thread.thread.dto.requset.ThreadReqDto;
 import com.example.coconote.api.thread.thread.dto.response.ThreadResDto;
 import com.example.coconote.api.thread.thread.service.ThreadService;
@@ -41,6 +42,14 @@ public class ThreadController {
     @GetMapping("/list/{channelId}")
     public ResponseEntity<?> listThreads(@PathVariable Long channelId, Pageable pageable, @AuthenticationPrincipal CustomPrincipal member) {
         Page<ThreadResDto> ThreadListResDtos = threadService.threadList(channelId, pageable);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "쓰레드 목록이 성공적으로 반환되었습니다.", ThreadListResDtos);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
+    @Operation(summary= "특정 쓰레드 페이지 반환")
+    @PostMapping("/list")
+    public ResponseEntity<?> pageThreads(@RequestBody ThreadPageReqDto dto, @AuthenticationPrincipal CustomPrincipal member) {
+        Page<ThreadResDto> ThreadListResDtos = threadService.threadPage(dto);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "쓰레드 목록이 성공적으로 반환되었습니다.", ThreadListResDtos);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }

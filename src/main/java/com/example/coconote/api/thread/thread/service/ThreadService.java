@@ -9,6 +9,7 @@ import com.example.coconote.api.search.dto.IndexEntityMessage;
 import com.example.coconote.api.search.entity.ThreadDocument;
 import com.example.coconote.api.search.mapper.ThreadMapper;
 import com.example.coconote.api.search.service.SearchService;
+import com.example.coconote.api.thread.thread.dto.requset.ThreadPageReqDto;
 import com.example.coconote.api.thread.thread.dto.requset.ThreadReqDto;
 import com.example.coconote.api.thread.thread.dto.response.ThreadResDto;
 import com.example.coconote.api.thread.thread.entity.MessageType;
@@ -27,6 +28,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -83,6 +85,23 @@ public class ThreadService {
 
     public Page<ThreadResDto> threadList(Long channelId, Pageable pageable) {
         Channel channel = channelRepository.findById(channelId).orElseThrow(()->new EntityNotFoundException("channel not found"));
+        Page<Thread> threads = threadRepository.findAllByChannelAndIsDeletedAndParentIsNullOrderByCreatedTimeDesc(channel, IsDeleted.N, pageable);
+        Page<ThreadResDto> threadResDtos = threads.map(thread -> {
+            List<Thread> childThreads = threadRepository.findAllByParentAndIsDeleted(thread, IsDeleted.N);
+            List<ThreadResDto> childThreadResDtos = childThreads.stream().map(Thread::fromEntity).toList();
+            List<ThreadFileDto> threadFileDtos = thread.getThreadFiles().stream().filter(f -> f.getIsDeleted()==IsDeleted.N).map(ThreadFile::fromEntity).toList();
+            return thread.fromEntity(childThreadResDtos,threadFileDtos);
+        });
+        return threadResDtos;
+    }
+
+    public Page<ThreadResDto> threadPage(ThreadPageReqDto dto) {
+        Channel channel = channelRepository.findById(dto.getChannelId()).orElseThrow(()->new EntityNotFoundException("channel not found"));
+
+        Long count = threadRepository.countByChannelAndParentIsNullAndIdGreaterThanEqual(channel, dto.getThreadId(), IsDeleted.N);
+        Long page = (count-1)/dto.getPageSize();
+        Pageable pageable = PageRequest.of(Math.toIntExact(page), Math.toIntExact(dto.getPageSize()));
+
         Page<Thread> threads = threadRepository.findAllByChannelAndIsDeletedAndParentIsNullOrderByCreatedTimeDesc(channel, IsDeleted.N, pageable);
         Page<ThreadResDto> threadResDtos = threads.map(thread -> {
             List<Thread> childThreads = threadRepository.findAllByParentAndIsDeleted(thread, IsDeleted.N);
