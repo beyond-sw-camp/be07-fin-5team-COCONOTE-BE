@@ -1,7 +1,7 @@
 version: '3'
 services:
   zookeeper:
-    image: wurstmeister/zookeeper
+    image: zookeeper
     ports:
       - "2181:2181"
     restart: unless-stopped
@@ -11,7 +11,7 @@ services:
     ports:
       - "9092:9092"
     expose:
-      - "9093"
+      - "9092"
     environment:
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
@@ -25,21 +25,25 @@ services:
       - "9999:8080"  # Kafka UI가 9999 포트로 동작합니다
     environment:
       KAFKA_CLUSTERS_0_NAME: local  # Kafka 클러스터 이름
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9093  # 내부 네트워크에서 Kafka 브로커와의 연결 정보
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092  # 내부 네트워크에서 Kafka 브로커와의 연결 정보
       KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181  # Zookeeper 정보
     restart: unless-stopped
-  mariadb:
-    image: mariadb:latest
-    container_name: mariadb
+#  mariadb:
+#    image: mariadb:latest
+#    container_name: mariadb
+#    ports:
+#      - "3306:3306"
+#    environment:
+#      MYSQL_ROOT_PASSWORD: coconote1234  # 루트 사용자 비밀번호
+#      MYSQL_DATABASE: coconote_db  # 생성할 데이터베이스 이름
+#      MYSQL_USER: root  # 사용자 이름
+#    volumes:
+#      - db_data:/var/lib/mysql
+#    restart: unless-stopped
+  redis:
+    image: redis:latest
+    container_name: redis
     ports:
-      - "3306:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: coconote1234  # 루트 사용자 비밀번호
-      MYSQL_DATABASE: coconote_db  # 생성할 데이터베이스 이름
-      MYSQL_USER: root  # 사용자 이름
-    volumes:
-      - db_data:/var/lib/mysql
-    restart: unless-stopped
-
-volumes:
-  db_data:
+      - "6379:6379"  # Redis 기본 포트
+#volumes:
+#  db_data:

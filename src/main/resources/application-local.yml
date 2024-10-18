@@ -39,6 +39,10 @@ spring:
         default_batch_fetch_size: 500
         jdbc:
           batch_size: 100
+  data:
+    redis:
+      host: ${local.redis.host}
+      port: ${local.redis.port}
   mail:
     host: ${MAIL_HOST}
     port: ${MAIL_PORT}
