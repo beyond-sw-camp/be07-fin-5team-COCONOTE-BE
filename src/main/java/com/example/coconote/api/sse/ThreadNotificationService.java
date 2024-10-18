@@ -82,34 +82,40 @@ public class ThreadNotificationService {
         return emitter;
     }
 
-    public void sendNotification(Long userId, Long workspaceId, Long channelId, String message, String channelName, String memberName) {
+    public void sendNotification(Long senderId, Long workspaceId, Long channelId, String message, String channelName, String memberName) {
         // 알림 객체 생성
-        NotificationDto notificationDto = new NotificationDto(userId, workspaceId, channelId, message, channelName, memberName);
+        NotificationDto notificationDto = new NotificationDto(senderId, workspaceId, channelId, message, channelName, memberName);
 
         try {
             // JSON 형식의 알림 메시지 생성
             String notificationMessage = objectMapper.writeValueAsString(notificationDto);
 
-            // Redis에 사용자별로 알림 임시 저장 (채널 단위로 저장)
-            String userKey = getUserChannelKey(userId, channelId);
-            listOperations.rightPush(userKey, notificationMessage);
-
-            Long notificationCount = listOperations.size(userKey);
-            log.info("User {} for channel {} has {} unread notifications", userId, channelId, notificationCount);
-
-            // Redis Pub/Sub을 통해 알림 발송
-            redisTemplate.convertAndSend(topic.getTopic(), notificationMessage);
-
             // 해당 워크스페이스의 모든 구독자에게 알림 전송
             Map<Long, SseEmitter> emitters = workspaceEmitters.getOrDefault(workspaceId, new ConcurrentHashMap<>());
-            for (SseEmitter emitter : emitters.values()) {
-                sendNotificationToEmitter(emitter, notificationMessage);
+            for (Map.Entry<Long, SseEmitter> entry : emitters.entrySet()) {
+                Long userId = entry.getKey();
+                if (!userId.equals(senderId)) { // 발신자와 수신자가 같지 않은 경우에만 알림 저장 및 전송
+                    // Redis에 사용자별로 알림 임시 저장 (채널 단위로 저장)
+                    String userKey = getUserChannelKey(userId, channelId);
+                    listOperations.rightPush(userKey, notificationMessage);
+
+                    // 사용자별 읽지 않은 알림 개수 확인
+                    Long notificationCount = listOperations.size(userKey);
+                    log.info("User {} for channel {} has {} unread notifications", userId, channelId, notificationCount);
+
+                    // 알림 전송
+                    sendNotificationToEmitter(entry.getValue(), notificationMessage);
+                }
             }
+            // 발신자 정보가 포함된 알림 메시지를 Redis Pub/Sub을 통해 발송
+            redisTemplate.convertAndSend(topic.getTopic(), notificationMessage);
+
             log.info("Notification sent to workspace {} for channel {}: {}", workspaceId, channelId, notificationMessage);
         } catch (JsonProcessingException e) {
             log.error("Notification JSON 변환 실패: ", e);
         }
     }
+
 
     public void markNotificationAsRead(Long userId, Long channelId) {
         // Redis에서 해당 사용자의 채널에 대한 읽지 않은 알림을 삭제
