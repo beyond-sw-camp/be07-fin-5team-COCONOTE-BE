@@ -323,6 +323,7 @@ public class SearchService {
                         .memberName(document.source().getMemberName())
                         .channelId(document.source().getChannelId())
                         .createdTime(document.source().getCreatedTime())
+                        .parentThreadId(document.source().getParentThreadId())
                         .tags(document.source().getTags())
                         .build())
                 .collect(Collectors.toList());
