@@ -4,9 +4,11 @@ import com.example.coconote.api.search.dto.*;
 import com.example.coconote.api.search.entity.*;
 import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.common.CommonResDto;
+import com.example.coconote.security.util.CustomPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -99,4 +101,17 @@ public class SearchController {
         SearchResultWithTotal<?> canvasBlockResults = searchService.searchCanvasAndBlocks(workspaceId, keyword, page, size);
         return ResponseEntity.ok(new CommonResDto(HttpStatus.OK, "Search Successful", canvasBlockResults));
     }
+
+    // 태그를 통한 쓰레드 검색 API
+    @GetMapping("/search/threads/by-tags")
+    public ResponseEntity<?> searchThreadsByTags(
+            @RequestParam Long workspaceId,
+            @RequestParam List<String> tags,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @AuthenticationPrincipal CustomPrincipal member) {
+        SearchResultWithTotal<ThreadSearchResultDto> threadResults = searchService.searchThreadsByTags(workspaceId, tags, page, size);
+        return ResponseEntity.ok(new CommonResDto(HttpStatus.OK, "Search Successful", threadResults));
+    }
+
 }

@@ -38,6 +38,10 @@ public class Thread extends BaseEntity {
 //    private List<String> files;
     @ManyToOne(fetch = FetchType.LAZY)
     private Thread parent;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)
+    private List<Thread> childThreads = new ArrayList<>(); // 자식 쓰레드 목록
     //TODO:추후 워크스페이스-유저로 변경
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    private Member member;

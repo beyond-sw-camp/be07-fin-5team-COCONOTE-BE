@@ -1,12 +1,9 @@
 package com.example.coconote.api.search.service;
 
-import com.example.coconote.api.canvas.block.entity.Block;
-import com.example.coconote.api.canvas.canvas.entity.Canvas;
-import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.search.dto.*;
 import com.example.coconote.api.search.entity.*;
 import com.example.coconote.api.search.mapper.*;
-import com.example.coconote.global.fileUpload.entity.FileEntity;
+import com.example.coconote.api.thread.thread.entity.Thread;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -14,6 +11,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opensearch.client.opensearch.OpenSearchClient;
+import org.opensearch.client.opensearch._types.FieldValue;
+import org.opensearch.client.opensearch._types.query_dsl.TermsQueryField;
 import org.opensearch.client.opensearch._types.query_dsl.TextQueryType;
 import org.opensearch.client.opensearch.core.SearchResponse;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -122,10 +121,6 @@ public class SearchService {
             throw new RuntimeException("Error processing Kafka message", e);
         }
     }
-
-
-
-
 
 
     // 공통 인덱스 저장 메서드
@@ -328,6 +323,7 @@ public class SearchService {
                         .memberName(document.source().getMemberName())
                         .channelId(document.source().getChannelId())
                         .createdTime(document.source().getCreatedTime())
+                        .tags(document.source().getTags())
                         .build())
                 .collect(Collectors.toList());
 
@@ -489,5 +485,67 @@ public class SearchService {
         String alias = getAliasForWorkspace(workspaceId);
         String documentId = generateDocumentId("block", blockId);
         deleteDocument(alias, documentId);
+    }
+
+
+    public SearchResultWithTotal<ThreadSearchResultDto> searchThreadsByTags(Long workspaceId, List<String> tags, int page, int size) {
+        String alias = getAliasForWorkspace(workspaceId);
+
+        try {
+            // OpenSearch 쿼리 빌더에서 태그 조건을 추가
+            SearchResponse<ThreadDocument> response = openSearchClient.search(s -> s
+                            .index(alias)
+                            .from(page * size) // 페이징 처리 (시작 위치)
+                            .size(size) // 한 페이지에 반환할 결과 개수
+                            .query(q -> q
+                                    .bool(b -> {
+                                        // for문을 사용하여 각각의 태그에 대해 should 조건 추가
+                                        for (String tag : tags) {
+                                            b.should(sq -> sq
+                                                    .term(t -> t
+                                                            .field("tags")
+                                                            .value(FieldValue.of(tag))
+                                                    )
+                                            );
+                                        }
+                                        // 최소한 하나 이상의 태그가 일치하는 결과만 반환
+                                        b.minimumShouldMatch(String.valueOf(tags.size()));
+                                        return b;
+                                    })
+                            ),
+                    ThreadDocument.class
+            );
+
+            // 검색 결과를 DTO로 변환
+            List<ThreadSearchResultDto> threads = response.hits().hits().stream()
+                    .map(document -> ThreadSearchResultDto.builder()
+                            .threadId(document.source().getThreadId())
+                            .content(document.source().getContent())
+                            .memberName(document.source().getMemberName())
+                            .channelId(document.source().getChannelId())
+                            .createdTime(document.source().getCreatedTime())
+                            .tags(document.source().getTags())
+                            .fileUrls(document.source().getFileUrls()) // 파일 URL 추가
+                            .childThreads(document.source().getChildThreads().stream() // 자식 쓰레드 추가
+                                    .map(child -> ThreadSearchResultDto.builder()
+                                            .threadId(child.getThreadId())
+                                            .content(child.getContent())
+                                            .memberName(child.getMemberName())
+                                            .channelId(child.getChannelId())
+                                            .createdTime(child.getCreatedTime())
+                                            .tags(child.getTags())
+                                            .fileUrls(child.getFileUrls())
+                                            .parentThreadId(child.getParentThreadId())
+                                            .build())
+                                    .collect(Collectors.toList()))
+                            .parentThreadId(document.source().getParentThreadId()) // 부모 쓰레드 ID 추가
+                            .build())
+                    .collect(Collectors.toList());
+
+            return new SearchResultWithTotal<>(threads, response.hits().total().value());
+
+        } catch (IOException e) {
+            throw new RuntimeException("OpenSearch 검색 중 오류가 발생했습니다.", e);
+        }
     }
 }

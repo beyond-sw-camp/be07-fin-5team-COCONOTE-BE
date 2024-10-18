@@ -2,6 +2,11 @@ package com.example.coconote.api.thread.tag.service;
 
 import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;
+import com.example.coconote.api.search.dto.EntityType;
+import com.example.coconote.api.search.dto.IndexEntityMessage;
+import com.example.coconote.api.search.entity.ThreadDocument;
+import com.example.coconote.api.search.mapper.ThreadMapper;
+import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.api.thread.tag.dto.request.TagCreateReqDto;
 import com.example.coconote.api.thread.tag.dto.request.TagUpdateReqDto;
 import com.example.coconote.api.thread.tag.dto.response.TagResDto;
@@ -17,6 +22,7 @@ import com.example.coconote.api.thread.threadTag.repository.ThreadTagRepository;
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +37,9 @@ public class TagService {
     private final ChannelRepository channelRepository;
     private final ThreadRepository threadRepository;
     private final ThreadTagRepository threadTagRepository;
+    private final ThreadMapper threadMapper;
+    private final KafkaTemplate kafkaTemplate;
+
 
     public Tag createTag(TagCreateReqDto dto) {
         Channel channel = channelRepository.findById(dto.getChannelId()).orElseThrow(()->new EntityNotFoundException("Channel not found"));
@@ -51,6 +60,11 @@ public class TagService {
         }
         Thread thread = threadRepository.findById(dto.getThreadId()).orElseThrow(()->new EntityNotFoundException("Thread not found"));
         ThreadTag threadTag = threadTagRepository.save(new ThreadTag(thread, tag));
+
+        ThreadDocument document = threadMapper.toDocument(thread);  // toDocument로 미리 변환
+        IndexEntityMessage<ThreadDocument> indexEntityMessage = new IndexEntityMessage<>(thread.getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.THREAD, document);
+        kafkaTemplate.send("thread_entity_search", indexEntityMessage.toJson());
+
         return ThreadResDto.builder()
                 .type(messageType)
                 .threadTagId(threadTag.getId())
