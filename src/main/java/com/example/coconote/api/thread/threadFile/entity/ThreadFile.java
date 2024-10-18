@@ -27,7 +27,7 @@ public class ThreadFile extends BaseEntity {
     @JoinColumn(name = "thread_id")
     private Thread thread;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private Long fileID;
 
     private String fileURL;
