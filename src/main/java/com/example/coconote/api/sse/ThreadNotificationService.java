@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -43,6 +44,7 @@ public class ThreadNotificationService {
         return emitter;
     }
 
+    @Async
     public void sendNotification(Long userId, Long workspaceId, Long channelId, String message, String channelName, String memberName) {
         // JSON 형식의 알림 메시지 생성
         String notificationMessage = String.format(
