@@ -75,5 +75,13 @@ public class FileController {
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
+    @Operation(summary = "파일 이름 변경 API")
+    @PatchMapping("/{fileId}/rename")
+    public ResponseEntity<?> renameFile(@PathVariable Long fileId, @RequestBody RenameFileReqDto renameFileReqDto, @AuthenticationPrincipal CustomPrincipal member) {
+        s3Service.renameFile(fileId, renameFileReqDto.getNewFileName(), member.getEmail());
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "File renamed successfully", null);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
 
 }

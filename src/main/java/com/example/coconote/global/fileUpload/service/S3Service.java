@@ -321,6 +321,32 @@ public class S3Service {
     }
 
     @Transactional
+    public void renameFile(Long fileId, String newFileName, String email) {
+        Member member = getMemberByEmail(email);
+        FileEntity fileEntity = getFileEntityById(fileId);
+
+        // 파일 이름 변경 권한 검증
+        boolean hasPermission = fileEntity.getCreator().equals(member);
+        if (!hasPermission) {
+            throw new IllegalArgumentException("파일을 변경할 권한이 없습니다.");
+        }
+
+        // 기존 파일 확장자 유지
+        String originalFileName = fileEntity.getFileName();
+        String fileExtension = getFileExtension(originalFileName);
+        String newFileNameWithExtension = newFileName +"."+ fileExtension;
+
+        // 파일 이름 변경
+        fileEntity.renameFile(newFileNameWithExtension);
+        fileRepository.save(fileEntity);
+
+        // 인덱싱 업데이트
+        FileEntityDocument document = fileEntityMapper.toDocument(fileEntity);
+        IndexEntityMessage<FileEntityDocument> indexEntityMessage = new IndexEntityMessage<>(fileEntity.getFolder().getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.FILE, document);
+        kafkaTemplate.send("file_entity_search", indexEntityMessage.toJson());
+    }
+
+    @Transactional
     public WorkspaceMemberResDto saveProfileImage(ProfileImageReqDto profileImageReqDto, String email) {
         WorkspaceMember workspaceMember = workspaceMemberRepository.findById(profileImageReqDto.getWorkspaceMemberId())
                 .orElseThrow(() -> new IllegalArgumentException("워크스페이스 멤버를 찾을 수 없습니다."));
