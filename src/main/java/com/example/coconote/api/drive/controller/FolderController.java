@@ -17,7 +17,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/drive/folder")
+@RequestMapping("/api/v1/")
 @RequiredArgsConstructor
 public class FolderController {
     private final FolderService folderService;
@@ -26,14 +26,14 @@ public class FolderController {
             summary = "폴더 생성",
             description = "새로운 폴더를 생성. `parentFolderId`가 null이면 최상위 폴더로 간주"
     )
-    @PostMapping("/create")
+    @PostMapping("/drive/folder/create")
     public ResponseEntity<?> createFolder(@RequestBody CreateFolderReqDto createFolderReqDto, @AuthenticationPrincipal CustomPrincipal member) {
         FolderCreateResDto folderCreateResDto = folderService.createFolder(createFolderReqDto, member.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "폴더가 성공적으로 생성되었습니다..", folderCreateResDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }
 
-    @PatchMapping("/{folderId}/update/name")
+    @PatchMapping("/drive/folder/{folderId}/update/name")
     public ResponseEntity<?> updateFolderName(@PathVariable Long folderId, @RequestParam String folderName, @AuthenticationPrincipal CustomPrincipal member) {
         FolderChangeNameResDto folderChangeNameResDto = folderService.updateFolderName(folderId, folderName, member.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "폴더 이름이 성공적으로 수정되었습니다.", folderChangeNameResDto);
@@ -41,14 +41,14 @@ public class FolderController {
 
     }
 
-    @PatchMapping("/move")
+    @PatchMapping("/drive/folder/move")
     public ResponseEntity<?> moveFolder(@RequestBody MoveFolderReqDto moveFolderReqDto, @AuthenticationPrincipal CustomPrincipal member) {
         MoveFolderResDto response = folderService.moveFolder(moveFolderReqDto.getFolderId(), moveFolderReqDto.getParentId(), member.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "폴더가 성공적으로 이동되었습니다.", response);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{folderId}")
+    @DeleteMapping("/drive/folder/{folderId}")
     public ResponseEntity<?> deleteFolder(@PathVariable Long folderId, @AuthenticationPrincipal CustomPrincipal member) {
         folderService.deleteFolder(folderId, member.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "폴더가 성공적으로 삭제되었습니다.", null);
@@ -56,10 +56,21 @@ public class FolderController {
     }
 
     //    해당 폴더에 속한 폴더 및 파일 조회
-    @GetMapping("/{folderId}")
+    @GetMapping("/drive/folder/{folderId}")
     public ResponseEntity<?> getFolder(@PathVariable Long folderId, @AuthenticationPrincipal CustomPrincipal member) {
         FolderAllListResDto response = folderService.getAllFolderList(folderId, member.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "폴더 조회 성공", response);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
+    @Operation (
+            summary = "root 폴더 조회",
+            description = "root 폴더에 속한 폴더 및 파일 조회"
+    )
+    @GetMapping("/channel/{channelId}/drive/folder/root-folder")
+    public ResponseEntity<?> getRootFolder(@PathVariable Long channelId, @AuthenticationPrincipal CustomPrincipal member) {
+        FolderAllListResDto response = folderService.getRootFolder(channelId, member.getEmail());
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "root 폴더 조회 성공", response);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 

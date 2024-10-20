@@ -197,6 +197,15 @@ public class FolderService {
     }
 
 
-
-
+    @Transactional
+    public FolderAllListResDto getRootFolder(Long channelId, String email) {
+        Channel channel = getChannelByChannelId(channelId);
+        Member member = getMemberByEmail(email);
+        Workspace workspace = getWorkspaceByChannel(channel);
+        WorkspaceMember workspaceMember = getWorkspaceMember(member, workspace);
+        checkChannelMember(workspaceMember, channel);
+        Folder rootFolder = folderRepository.findByChannelAndParentFolderIsNull(channel)
+                .orElseThrow(() -> new IllegalArgumentException("루트 폴더가 존재하지 않습니다."));
+        return getFolderAllListResDto(rootFolder, folderRepository, fileRepository);
+    }
 }

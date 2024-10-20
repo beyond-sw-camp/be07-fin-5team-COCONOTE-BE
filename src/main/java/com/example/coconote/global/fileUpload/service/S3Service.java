@@ -25,6 +25,7 @@ import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMe
 import com.example.coconote.common.IsDeleted;
 import com.example.coconote.global.fileUpload.dto.request.*;
 import com.example.coconote.global.fileUpload.dto.response.FileMetadataResDto;
+import com.example.coconote.global.fileUpload.dto.response.FolderLocationResDto;
 import com.example.coconote.global.fileUpload.dto.response.MoveFileResDto;
 import com.example.coconote.global.fileUpload.entity.FileEntity;
 import com.example.coconote.global.fileUpload.entity.FileType;
@@ -358,5 +359,15 @@ public class S3Service {
         kafkaTemplate.send("workspace_member_entity_search", indexEntityMessage.toJson());
 
         return workspaceMember.fromEntity();
+    }
+
+    @Transactional
+    public FolderLocationResDto getFileLocation(Long fileId, String email) {
+        Member member = getMemberByEmail(email);
+        FileEntity fileEntity = getFileEntityById(fileId);
+        Folder folder = fileEntity.getFolder();
+        Channel channel = folder.getChannel();
+
+        return FolderLocationResDto.fromEntity(fileEntity.getFolder(), channel);
     }
 }

@@ -15,6 +15,7 @@ public class FileEntityMapper {
                 .fileUrl(fileEntity.getFileUrl())
                 .folderId(fileEntity.getFolder() != null ? fileEntity.getFolder().getId() : null)
                 .creatorId(fileEntity.getCreator() != null ? fileEntity.getCreator().getId() : null)
+                .channelId(fileEntity.getFolder().getChannel() != null ? fileEntity.getFolder().getChannel().getChannelId() : null)
                 .isDeleted(fileEntity.getIsDeleted() == IsDeleted.Y)
                 .deletedTime(fileEntity.getDeletedTime())
                 .build();
