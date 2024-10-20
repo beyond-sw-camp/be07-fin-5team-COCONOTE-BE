@@ -12,9 +12,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.FieldValue;
+import org.opensearch.client.opensearch._types.query_dsl.MultiMatchQuery;
 import org.opensearch.client.opensearch._types.query_dsl.TermsQueryField;
 import org.opensearch.client.opensearch._types.query_dsl.TextQueryType;
+import org.opensearch.client.opensearch.core.ExistsRequest;
 import org.opensearch.client.opensearch.core.SearchResponse;
+import org.opensearch.client.opensearch.indices.CreateIndexRequest;
+import org.opensearch.client.opensearch.indices.CreateIndexResponse;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -126,6 +130,10 @@ public class SearchService {
     // 공통 인덱스 저장 메서드
     private <T> void indexDocument(String alias, String documentId, T document) {
         try {
+            // 인덱스가 존재하지 않으면 Nori 분석기를 포함하여 생성
+            createIndexWithNoriAnalyzerIfNotExists(Long.parseLong(alias.replace("workspace_", "")));
+
+            // 문서를 인덱싱
             openSearchClient.index(i -> i.index(alias).id(documentId).document(document));
         } catch (IOException e) {
             throw new RuntimeException("OpenSearch 인덱싱 중 오류가 발생했습니다.", e);
@@ -150,18 +158,24 @@ public class SearchService {
                             .from(page * size) // 페이징 처리 (시작 위치)
                             .size(size) // 한 페이지에 반환할 결과 개수
                             .query(q -> q
-                                    .bool(b -> {
-                                        fields.forEach(field -> {
-                                            if (field.equals("email")) {
-                                                // 이메일 필드에 match 쿼리 사용
-                                                b.should(sh -> sh.matchPhrasePrefix(m -> m.field(field).query(keyword)));
-                                            } else {
-                                                // 다른 필드는 여전히 wildcard 검색 사용
-                                                b.should(sh -> sh.wildcard(w -> w.field(field).value("*" + keyword + "*")));
-                                            }
-                                        });
-                                        return b.minimumShouldMatch("1");
-                                    })
+                                            .bool(b -> {
+                                                fields.forEach(field -> {
+                                                    if (field.equals("email")) {
+                                                        // 이메일 필드에 match 쿼리 사용
+                                                        b.should(sh -> sh.matchPhrasePrefix(m -> m.field(field).query(keyword)));
+                                                    } else {
+                                                        // 다른 필드에도 match_phrase_prefix 쿼리 사용
+//                                                b.should(sh -> sh.matchPhrasePrefix(m -> m.field(field).query(keyword)));
+                                                        // 다른 필드에는 multi_match 쿼리 사용
+                                                        b.should(sh -> sh.multiMatch(mm -> mm
+                                                                .query(keyword)
+                                                                .fields(fields)
+                                                                .type(TextQueryType.PhrasePrefix) // TextQueryType 사용
+                                                        ));
+                                                    }
+                                                });
+                                                return b.minimumShouldMatch("1");
+                                            })
                             ),
                     documentClass
             );
@@ -257,6 +271,7 @@ public class SearchService {
                         .fileName(document.source().getFileName())
                         .fileUrl(document.source().getFileUrl())
                         .folderId(document.source().getFolderId())
+                        .channelId(document.source().getChannelId())
                         .build())
                 .collect(Collectors.toList());
 
@@ -384,9 +399,49 @@ public class SearchService {
                 .build();
     }
 
+    // Nori 분석기를 적용하여 인덱스를 생성하는 메서드
+    private void createIndexWithNoriAnalyzerIfNotExists(Long workspaceId) {
+        String alias = getAliasForWorkspace(workspaceId);
+
+        try {
+            // 인덱스 존재 여부 확인
+            boolean indexExists = openSearchClient.indices().exists(e -> e.index(alias)).value();
+
+            // 인덱스가 존재하지 않으면 생성
+            if (!indexExists) {
+                // Nori 분석기를 적용한 인덱스 매핑 설정
+                openSearchClient.indices().create(c -> c
+                        .index(alias)
+                        .settings(s -> s
+                                .analysis(a -> a
+                                        .analyzer("nori_analyzer", na -> na
+                                                .custom(ca -> ca
+                                                        .tokenizer("nori_tokenizer")
+                                                )
+                                        )
+                                )
+                        )
+                        .mappings(m -> m
+                                .properties("content", p -> p
+                                        .text(t -> t
+                                                .analyzer("nori_analyzer")
+                                        )
+                                )
+                        )
+                );
+                log.info("Index created with Nori analyzer: {}", alias);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to create index with Nori analyzer.", e);
+        }
+    }
+
+
     // 워크스페이스 멤버 인덱스 저장
     @Async
     public void indexWorkspaceMember(Long workspaceId, WorkspaceMemberDocument document) {
+        // 인덱스가 존재하지 않으면 Nori 분석기를 적용하여 생성
+        createIndexWithNoriAnalyzerIfNotExists(workspaceId);
         String alias = getAliasForWorkspace(workspaceId);
         String documentId = generateDocumentId("workspaceMember", document.getWorkspaceMemberId());  // threadId를 Long으로 변환
         log.info("Indexing Workspace Member - Alias: {}, Document ID: {}", alias, documentId);
@@ -422,6 +477,7 @@ public class SearchService {
     // 채널 인덱스 저장
     @Async
     public CompletableFuture<Void> indexChannel(Long workspaceId, ChannelDocument document) {
+        createIndexWithNoriAnalyzerIfNotExists(workspaceId);
         String alias = getAliasForWorkspace(workspaceId);
         String documentId = generateDocumentId("channel", Long.valueOf(document.getChannelId()));
         return CompletableFuture.runAsync(() -> {

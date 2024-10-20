@@ -14,4 +14,5 @@ public class FileSearchResultDto {
     private String fileName;
     private String fileUrl;
     private Long folderId;
+    private Long channelId;
 }

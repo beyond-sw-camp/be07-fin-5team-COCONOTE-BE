@@ -94,13 +94,6 @@ public class WorkspaceService {
         sectionDefault.getChannels().add(channelDefault);
         sectionDefault.getChannels().add(channelNotice);
 
-        ChannelDocument document1 = channelMapper.toDocument(channelDefault);
-        IndexEntityMessage<ChannelDocument> indexEntityMessage1 = new IndexEntityMessage<>(channelDefault.getSection().getWorkspace().getWorkspaceId(), EntityType.CHANNEL , document1);
-        kafkaTemplate.send("channel_entity_search", indexEntityMessage1.toJson());
-
-        ChannelDocument document2 = channelMapper.toDocument(channelNotice);
-        IndexEntityMessage<ChannelDocument> indexEntityMessage2 = new IndexEntityMessage<>(channelNotice.getSection().getWorkspace().getWorkspaceId(), EntityType.CHANNEL , document2);
-        kafkaTemplate.send("channel_entity_search", indexEntityMessage2.toJson());
 
         // 워크스페이스 멤버로 영입(?)
         Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("회원을 찾을 수 없습니다."));
@@ -125,6 +118,14 @@ public class WorkspaceService {
         WorkspaceMemberDocument document = workspaceMemberMapper.toDocument(workspaceMember);
         IndexEntityMessage<WorkspaceMemberDocument> indexEntityMessage = new IndexEntityMessage<>(workspaceMember.getWorkspace().getWorkspaceId(), EntityType.WORKSPACE_MEMBER , document);
         kafkaTemplate.send("workspace_member_entity_search", indexEntityMessage.toJson());
+
+        ChannelDocument document1 = channelMapper.toDocument(channelDefault);
+        IndexEntityMessage<ChannelDocument> indexEntityMessage1 = new IndexEntityMessage<>(channelDefault.getSection().getWorkspace().getWorkspaceId(), EntityType.CHANNEL , document1);
+        kafkaTemplate.send("channel_entity_search", indexEntityMessage1.toJson());
+
+        ChannelDocument document2 = channelMapper.toDocument(channelNotice);
+        IndexEntityMessage<ChannelDocument> indexEntityMessage2 = new IndexEntityMessage<>(channelNotice.getSection().getWorkspace().getWorkspaceId(), EntityType.CHANNEL , document2);
+        kafkaTemplate.send("channel_entity_search", indexEntityMessage2.toJson());
 
         return workspace.fromEntity();
     }
