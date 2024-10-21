@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -55,15 +56,26 @@ public class ChannelMemberService {
         if(workspaceMember.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 워크스페이스를 탈퇴한 회원입니다.");
         }
-        if(channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, workspaceMember, IsDeleted.N).isPresent()) {
-            throw new IllegalArgumentException("이미 채널에 가입되어 있는 회원입니다.");
+
+        Optional<ChannelMember> optionalChannelMember = channelMemberRepository.findByChannelAndWorkspaceMember(channel, workspaceMember);
+        if (optionalChannelMember.isEmpty()){
+            ChannelMember newChannelMember = ChannelMember.builder()
+                    .workspaceMember(workspaceMember)
+                    .channel(channel)
+                    .build();
+            channelMemberRepository.save(newChannelMember);
+            return newChannelMember.fromEntity();
+        } else {
+            ChannelMember channelMember = optionalChannelMember.get();
+            if (channelMember.getIsDeleted().equals(IsDeleted.N)) {
+                throw new IllegalArgumentException("이미 채널에 가입되어 있는 회원입니다.");
+            } else if (channelMember.getIsDeleted().equals(IsDeleted.Y)) {
+                channelMember.undeleteEntity();
+                channelMemberRepository.save(channelMember);
+                return channelMember.fromEntity();
+            }
         }
-        ChannelMember channelMember = ChannelMember.builder()
-                .workspaceMember(workspaceMember)
-                .channel(channel)
-                .build();
-        channelMemberRepository.save(channelMember);
-        return channelMember.fromEntity();
+        return null;
     }
 
     public List<ChannelMemberListResDto> channelMemberList(Long channelId) {

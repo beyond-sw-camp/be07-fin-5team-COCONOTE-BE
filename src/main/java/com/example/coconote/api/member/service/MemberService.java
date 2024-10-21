@@ -50,6 +50,7 @@ public class MemberService {
 
         for (ChannelMember cm : workspaceMember.getChannelMembers()) {
             if (cm.getChannel().equals(channel)) {
+                System.out.println("Optional.of(cm.fromEntity()) : " + Optional.of(cm.fromEntity()));
                 return Optional.of(cm.fromEntity());
             }
         }

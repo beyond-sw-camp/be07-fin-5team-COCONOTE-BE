@@ -19,6 +19,4 @@ public class ChannelMemberListResDto {
     private ChannelRole channelRole;
     private Boolean isBookmark;
     private WorkspaceMemberResDto memberInfo;
-
-
 }
