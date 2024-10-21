@@ -247,7 +247,6 @@ public class ChannelService {
         for(Section s : workspace.getSections()) {
             if(s.getSectionType().equals(SectionType.DEFAULT) && s.getChannels()!=null) {
                 for(Channel c : s.getChannels()) {
-                    System.out.println("c = " + c.toString());
                     if(c.getChannelType().equals(ChannelType.DEFAULT)) {
                         return c.fromEntity(s);					}
                 }
