@@ -95,20 +95,4 @@ public class Channel extends BaseEntity {
             }
         }
     }
-
-    @Override
-    public String toString() {
-        return "Channel{" +
-                "channelId=" + channelId +
-                ", channelName='" + channelName + '\'' +
-                ", channelInfo='" + channelInfo + '\'' +
-                ", isPublic=" + isPublic +
-                ", sectionId=" + (section != null ? section.getSectionId() : "null") +
-                ", channelType=" + channelType +
-                ", folderCount=" + (folders != null ? folders.size() : "null") +
-                ", channelMemberCount=" + (channelMembers != null ? channelMembers.size() : "null") +
-                '}';
-    }
-
 }
-
