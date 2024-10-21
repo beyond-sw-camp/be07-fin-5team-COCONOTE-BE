@@ -1,5 +1,6 @@
 package com.example.coconote.api.channel.channelMember.controller;
 
+import com.example.coconote.api.channel.channelMember.dto.request.ChannelMemberRoleReqDto;
 import com.example.coconote.api.channel.channelMember.dto.response.ChannelMemberListResDto;
 import com.example.coconote.api.channel.channelMember.service.ChannelMemberService;
 import com.example.coconote.common.CommonResDto;
@@ -48,15 +49,10 @@ public class ChannelMemberController {
 
 
     @Operation(summary= "채널 관리자 권한 부여/박탈")
-    @PatchMapping("/channel/member/role/{id}") // 채널 관리자 권한 부여/삭제
-    public ResponseEntity<Object> channelMemberChangeRole(@PathVariable Long id) {
-        CommonResDto commonResDto;
-        Boolean value = channelMemberService.channelMemberChangeRole(id);
-        if(value) {
-            commonResDto = new CommonResDto(HttpStatus.OK, "role is successfully changed to manager", value);
-        }else{
-            commonResDto = new CommonResDto(HttpStatus.OK, "role is successfully changed to user", value);
-        }
+    @PatchMapping("/channel/member/role") // 채널 관리자 권한 부여/삭제
+    public ResponseEntity<Object> channelMemberChangeRole(@RequestBody ChannelMemberRoleReqDto dto) {
+        ChannelMemberListResDto resDto = channelMemberService.channelMemberChangeRole(dto);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "role is successfully changed", resDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 

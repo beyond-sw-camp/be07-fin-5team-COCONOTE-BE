@@ -24,4 +24,5 @@ public class WorkspaceMemberResDto {
     private String profileImage;
     private WsRole wsRole;
     private List<Long> channels;
+    private String email;
 }

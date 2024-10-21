@@ -49,8 +49,6 @@ public class WorkspaceMember extends BaseEntity {
 
     private String profileImage;
 
-    private Boolean isInvited;
-
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private WsRole wsRole = WsRole.USER;
@@ -75,6 +73,7 @@ public class WorkspaceMember extends BaseEntity {
                 .profileImage(this.profileImage)
                 .wsRole(this.wsRole)
                 .channels(myChannels)
+                .email(this.member.getEmail())
                 .build();
     }
 

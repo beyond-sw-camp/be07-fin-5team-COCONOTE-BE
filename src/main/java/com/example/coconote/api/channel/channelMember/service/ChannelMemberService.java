@@ -3,6 +3,7 @@ package com.example.coconote.api.channel.channelMember.service;
 import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channel.entity.ChannelType;
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;
+import com.example.coconote.api.channel.channelMember.dto.request.ChannelMemberRoleReqDto;
 import com.example.coconote.api.channel.channelMember.dto.response.ChannelMemberListResDto;
 import com.example.coconote.api.channel.channelMember.entity.ChannelMember;
 import com.example.coconote.api.channel.channelMember.entity.ChannelRole;
@@ -80,12 +81,12 @@ public class ChannelMemberService {
         return resDtos;
     }
 
-    public Boolean channelMemberChangeRole(Long id) {
-        ChannelMember channelMember = channelMemberRepository.findById(id).orElseThrow(()->new EntityNotFoundException("존재하지 않는 회원입니다."));
+    public ChannelMemberListResDto channelMemberChangeRole(ChannelMemberRoleReqDto dto) {
+        ChannelMember channelMember = channelMemberRepository.findById(dto.getId()).orElseThrow(()->new EntityNotFoundException("존재하지 않는 회원입니다."));
         if(channelMember.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 채널을 탈퇴한 회원입니다.");
         }
-        return channelMember.changeRole();
+        return channelMember.changeRole(dto.getChannelRole());
     }
 
     public Boolean channelBookmark(Long channelId, String email) {
