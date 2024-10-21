@@ -19,6 +19,7 @@ public class FileEntityDocument {
     private String fileUrl;
     private Long folderId;
     private Long creatorId;
+    private Long channelId;
     private Boolean isDeleted;
     private LocalDateTime deletedTime;
 }

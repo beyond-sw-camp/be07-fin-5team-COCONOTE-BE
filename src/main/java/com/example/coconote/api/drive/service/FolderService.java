@@ -116,10 +116,15 @@ public class FolderService {
         }
 
         if(folder.getFolderName().equals("캔버스 자동업로드 폴더") || folder.getFolderName().equals("쓰레드 자동업로드 폴더")){
-            throw new IllegalArgumentException("이 폴더는 삭제할 수 없습니다.");
+            throw new IllegalArgumentException("이 폴더는 이동할 수 없습니다.");
         }
 //        채널 멤버인지 확인
         checkChannelMember(workspaceMember, parentFolder.getChannel());
+
+//        이동하려는 폴더랑 이동되는 폴더가 같은지 확인
+        if (folder.getId().equals(parentFolder.getId())) {
+            throw new IllegalArgumentException("폴더가 같습니다.");
+        }
 
         if (!folder.getChannel().getChannelId().equals(parentFolder.getChannel().getChannelId())) {
             throw new IllegalArgumentException("폴더가 다른 채널에 있습니다.");
@@ -192,6 +197,15 @@ public class FolderService {
     }
 
 
-
-
+    @Transactional
+    public FolderAllListResDto getRootFolder(Long channelId, String email) {
+        Channel channel = getChannelByChannelId(channelId);
+        Member member = getMemberByEmail(email);
+        Workspace workspace = getWorkspaceByChannel(channel);
+        WorkspaceMember workspaceMember = getWorkspaceMember(member, workspace);
+        checkChannelMember(workspaceMember, channel);
+        Folder rootFolder = folderRepository.findByChannelAndParentFolderIsNull(channel)
+                .orElseThrow(() -> new IllegalArgumentException("루트 폴더가 존재하지 않습니다."));
+        return getFolderAllListResDto(rootFolder, folderRepository, fileRepository);
+    }
 }

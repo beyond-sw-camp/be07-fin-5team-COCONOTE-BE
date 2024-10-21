@@ -4,6 +4,7 @@ import com.example.coconote.api.workspace.workspaceMember.dto.response.Workspace
 import com.example.coconote.common.CommonResDto;
 import com.example.coconote.global.fileUpload.dto.request.*;
 import com.example.coconote.global.fileUpload.dto.response.FileMetadataResDto;
+import com.example.coconote.global.fileUpload.dto.response.FolderLocationResDto;
 import com.example.coconote.global.fileUpload.dto.response.MoveFileResDto;
 import com.example.coconote.global.fileUpload.service.S3Service;
 import com.example.coconote.security.util.CustomPrincipal;
@@ -72,6 +73,22 @@ public class FileController {
     public ResponseEntity<?> getPresignedUrlToDownload (@PathVariable Long fileId, @AuthenticationPrincipal CustomPrincipal member) {
         String presignedUrl = s3Service.getPresignedUrlToDownload(fileId, member.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "Presigned URL generated successfully", presignedUrl);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
+    @Operation(summary = "파일 이름 변경 API")
+    @PatchMapping("/{fileId}/rename")
+    public ResponseEntity<?> renameFile(@PathVariable Long fileId, @RequestBody RenameFileReqDto renameFileReqDto, @AuthenticationPrincipal CustomPrincipal member) {
+        s3Service.renameFile(fileId, renameFileReqDto.getNewFileName(), member.getEmail());
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "File renamed successfully", null);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
+    @Operation (summary = "파일 아이디를 통해 폴더위치 조회 API")
+    @GetMapping("/{fileId}/location")
+    public ResponseEntity<?> getFileLocation(@PathVariable Long fileId, @AuthenticationPrincipal CustomPrincipal member) {
+        FolderLocationResDto response = s3Service.getFileLocation(fileId, member.getEmail());
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "File location retrieved successfully", response);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 

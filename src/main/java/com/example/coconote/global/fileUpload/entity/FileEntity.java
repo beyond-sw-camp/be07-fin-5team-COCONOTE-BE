@@ -40,4 +40,8 @@ public class FileEntity extends BaseEntity {
         this.isDeleted = IsDeleted.Y;
         this.deletedTime = LocalDateTime.now();
     }
+
+    public void renameFile(String newFileName) {
+        this.fileName = newFileName;
+    }
 }
