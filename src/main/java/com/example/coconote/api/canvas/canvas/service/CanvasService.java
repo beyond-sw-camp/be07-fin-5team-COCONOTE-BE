@@ -1,7 +1,5 @@
 package com.example.coconote.api.canvas.canvas.service;
 
-import com.example.coconote.api.canvas.block.entity.Block;
-import com.example.coconote.api.canvas.block.entity.Method;
 import com.example.coconote.api.canvas.block.service.BlockService;
 import com.example.coconote.api.canvas.canvas.dto.request.*;
 import com.example.coconote.api.canvas.canvas.entity.Canvas;
@@ -20,8 +18,11 @@ import com.example.coconote.api.search.dto.IndexEntityMessage;
 import com.example.coconote.api.search.entity.CanvasBlockDocument;
 import com.example.coconote.api.search.mapper.CanvasBlockMapper;
 import com.example.coconote.api.search.service.SearchService;
+import com.example.coconote.api.workspace.workspace.entity.Workspace;
+import com.example.coconote.api.workspace.workspace.repository.WorkspaceRepository;
+import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
+import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
 import com.example.coconote.common.IsDeleted;
-import com.example.coconote.api.channel.channel.repository.ChannelRepository;import com.example.coconote.common.IsDeleted;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
@@ -38,7 +39,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -50,8 +50,10 @@ public class CanvasService {
     private final SearchService searchService;
     private final CanvasBlockMapper canvasBlockMapper;
     private final BlockService blockService;
+    private final WorkspaceMemberRepository workspaceMemberRepository;
+    private final WorkspaceRepository workspaceRepository;
 
-    public CanvasService(CanvasRepository canvasRepository, ChannelRepository channelRepository, MemberRepository memberRepository, KafkaTemplate<String, Object> kafkaTemplate, SimpMessageSendingOperations messagingTemplate, SearchService searchService, BlockService blockService, CanvasBlockMapper canvasBlockMapper){
+    public CanvasService(CanvasRepository canvasRepository, ChannelRepository channelRepository, MemberRepository memberRepository, KafkaTemplate<String, Object> kafkaTemplate, SimpMessageSendingOperations messagingTemplate, SearchService searchService, BlockService blockService, CanvasBlockMapper canvasBlockMapper, WorkspaceMemberRepository workspaceMemberRepository, WorkspaceRepository workspaceRepository){
         this.canvasRepository = canvasRepository;
         this.channelRepository = channelRepository;
         this.memberRepository = memberRepository;
@@ -62,13 +64,17 @@ public class CanvasService {
         this.searchService = searchService;
         this.canvasBlockMapper = canvasBlockMapper;
         this.blockService = blockService;
+        this.workspaceMemberRepository = workspaceMemberRepository;
+        this.workspaceRepository = workspaceRepository;
     }
 
     @Transactional
     public CreateCanvasResDto createCanvas(CanvasSocketReqDto createCanvasReqDto, Long memberId) {
         Channel channel = channelRepository.findById(createCanvasReqDto.getChannelId()).orElseThrow(() -> new IllegalArgumentException("채널이 존재하지 않습니다."));
 
-        Member member = getMemberById(memberId);
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("해당멤버가 없습니다."));
+        Workspace workspace = workspaceRepository.findById(createCanvasReqDto.getWorkspaceId()).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스가 없습니다."));
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스 멤버가 없습니다."));
         Canvas parentCanvas = null;
         // 부모 캔버스 조회 (parentCanvasId가 null이 아닐 경우에만)
         if (createCanvasReqDto.getParentCanvasId() != null) {
@@ -91,7 +97,7 @@ public class CanvasService {
                 .parentCanvas(parentCanvas)
                 .prevCanvas(prevCanvas)
                 .channel(channel)
-                .createMember(member)
+                .workspaceMember(workspaceMember)
                 .build();
 
         canvasRepository.save(canvas);
@@ -353,6 +359,13 @@ public class CanvasService {
             System.out.println(message);
             // ChatMessage 객채로 맵핑
             CanvasSocketReqDto roomMessage = objectMapper.readValue(message, CanvasSocketReqDto.class);
+
+            Member member = memberRepository.findById(roomMessage.getSenderId()).orElseThrow(() -> new EntityNotFoundException("해당멤버가 없습니다."));
+            Workspace workspace = workspaceRepository.findById(roomMessage.getWorkspaceId()).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스가 없습니다."));
+            WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스 멤버가 없습니다."));
+
+            roomMessage.setWorkspaceMemberId(workspaceMember.getWorkspaceMemberId());
+
             messagingTemplate.convertAndSend("/sub/canvas/room/" + roomMessage.getChannelId(), roomMessage);
 //            SendCanvasReqDto sendCanvasReqDto = objectMapper.readValue(roomMessage.getMessage(), SendCanvasReqDto.class);
             if(roomMessage.getPostMessageType().equals(PostMessageType.CANVAS)){
@@ -371,13 +384,13 @@ public class CanvasService {
     public void editCanvasInSocket(CanvasSocketReqDto canvasSocketReqDto) {
 //        생성, 수정, 삭제인지 type 구분해서 넣어주는 용도
         if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.CREATE_CANVAS)) { // 생성 캔버스
-            createCanvas(canvasSocketReqDto, canvasSocketReqDto.getSenderId());
+            createCanvas(canvasSocketReqDto, canvasSocketReqDto.getWorkspaceMemberId());
         } else if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.UPDATE_CANVAS)) { // 수정 캔버스
-            updateCanvas(canvasSocketReqDto, canvasSocketReqDto.getSenderId());
+            updateCanvas(canvasSocketReqDto, canvasSocketReqDto.getWorkspaceMemberId());
         } else if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.CHANGE_ORDER_CANVAS)) { //순서 변경  캔버스
-            changeOrderCanvas(canvasSocketReqDto, canvasSocketReqDto.getSenderId());
+            changeOrderCanvas(canvasSocketReqDto, canvasSocketReqDto.getWorkspaceMemberId());
         } else if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.DELETE_CANVAS)) { // 삭제 캔버스
-            deleteCanvas(canvasSocketReqDto.getCanvasId(), canvasSocketReqDto.getSenderId());
+            deleteCanvas(canvasSocketReqDto.getCanvasId(), canvasSocketReqDto.getWorkspaceMemberId());
         } else {
             log.error("잘못된 canvas method");
         }

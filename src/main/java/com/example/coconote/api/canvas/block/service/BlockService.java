@@ -7,6 +7,8 @@ import com.example.coconote.api.canvas.block.repository.BlockRepository;
 import com.example.coconote.api.canvas.canvas.dto.request.CanvasSocketReqDto;
 import com.example.coconote.api.canvas.canvas.entity.Canvas;
 import com.example.coconote.api.canvas.canvas.service.CanvasService;
+import com.example.coconote.api.member.entity.Member;
+import com.example.coconote.api.member.repository.MemberRepository;
 import com.example.coconote.api.search.dto.EntityType;
 import com.example.coconote.api.search.dto.IndexEntityMessage;
 import com.example.coconote.api.search.entity.CanvasBlockDocument;
@@ -14,10 +16,15 @@ import com.example.coconote.api.search.mapper.CanvasBlockMapper;
 import com.example.coconote.api.canvas.canvas.entity.CanvasMessageMethod;
 import com.example.coconote.api.canvas.canvas.repository.CanvasRepository;
 import com.example.coconote.api.search.service.SearchService;
+import com.example.coconote.api.workspace.workspace.entity.Workspace;
+import com.example.coconote.api.workspace.workspace.repository.WorkspaceRepository;
+import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
+import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
 import com.example.coconote.common.IsDeleted;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -40,11 +47,16 @@ public class BlockService {
     private final SearchService searchService;
     private final CanvasBlockMapper canvasBlockMapper;
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final MemberRepository memberRepository;
+    private final WorkspaceRepository workspaceRepository;
+    private final WorkspaceMemberRepository workspaceMemberRepository;
 
 
     @Transactional
-    public CreateBlockResDto createBlock(CanvasSocketReqDto canvasSocketReqDto) {
+    public CreateBlockResDto createBlock(CanvasSocketReqDto canvasSocketReqDto, Long workspaceMemberId) {
         Canvas canvas = canvasRepository.findById(canvasSocketReqDto.getCanvasId()).orElseThrow(() -> new IllegalArgumentException("캔버스가 존재하지 않습니다."));
+
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByWorkspaceMemberIdAndIsDeleted(workspaceMemberId, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스 멤버가 없습니다."));
 
         Block parentBlock = null;
         if (canvasSocketReqDto.getParentBlockId() != null) {
@@ -70,6 +82,9 @@ public class BlockService {
                 .type(canvasSocketReqDto.getBlockType())
                 .prevBlock(prevBlock)
                 .parentBlock(parentBlock)
+                .level(canvasSocketReqDto.getLevel() != null && canvasSocketReqDto.getLevel() > 0 ? canvasSocketReqDto.getLevel() : 0)
+                .indent(canvasSocketReqDto.getIndent())
+                .workspaceMember(workspaceMember)
                 .build();
 
 //        prev block 존재 및 이전에 해당 prev block을 갖고있는 block 주소 업데이트
@@ -92,8 +107,10 @@ public class BlockService {
     }
 
     @Transactional
-    public Boolean updateBlock(CanvasSocketReqDto canvasSocketReqDto) {
+    public Boolean updateBlock(CanvasSocketReqDto canvasSocketReqDto, Long workspaceMemberId) {
         try {
+            WorkspaceMember workspaceMember = workspaceMemberRepository.findByWorkspaceMemberIdAndIsDeleted(workspaceMemberId, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스 멤버가 없습니다."));
+
             Block block = blockRepository.findByFeIdAndIsDeleted(canvasSocketReqDto.getBlockFeId(), IsDeleted.N)
                     .orElseThrow(() -> new IllegalArgumentException("해당 Block이 존재하지 않습니다."));
             Block prevBlock = canvasSocketReqDto.getPrevBlockId() != null
@@ -115,7 +132,7 @@ public class BlockService {
                     .orElseThrow(() -> new IllegalArgumentException("해당 Parent Block이 존재하지 않습니다."))
                     : null;
 
-            block.updateAllInfo(prevBlock, parentBlock, canvasSocketReqDto.getBlockContents());
+            block.updateAllInfo(prevBlock, parentBlock, canvasSocketReqDto.getBlockContents(), canvasSocketReqDto.getLevel(), canvasSocketReqDto.getIndent());
             blockRepository.save(block);
 
             CanvasBlockDocument document = canvasBlockMapper.toDocument(block);
@@ -129,7 +146,7 @@ public class BlockService {
     }
 
     @Transactional
-    public Boolean changeOrderBlock(CanvasSocketReqDto changeOrderBlockReqDto) {
+    public Boolean changeOrderBlock(CanvasSocketReqDto changeOrderBlockReqDto, Long memberId) {
         log.info("순서 변경!! ChangeOrderBlockReqDto {}", changeOrderBlockReqDto);
 
         // 1. feId로 현재 블록 찾기
@@ -263,7 +280,7 @@ public class BlockService {
                 .content(block.getContents())
                 .feId(block.getFeId())
                 .type(block.getType())
-                .member(block.getMember())
+                .workspaceMember(block.getWorkspaceMember())
                 .prevBlockFeId(block.getPrevBlock() != null ? block.getPrevBlock().getFeId() : null)
                 .build();
     }
@@ -366,11 +383,11 @@ public class BlockService {
 //            deleteBlock(sendBlockReqDto.getFeId(), "");
 ////            log.info("삭제블록 제작 진행 중");
         if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.CREATE_BLOCK)) { // 생성블록
-            createBlock(canvasSocketReqDto);
+            createBlock(canvasSocketReqDto, canvasSocketReqDto.getWorkspaceMemberId());
         } else if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.UPDATE_BLOCK)) { // 수정블록
-            updateBlock(canvasSocketReqDto);
-        } else if(canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.CHANGE_ORDER_BLOCK)){ //순서 변경 블록
-            changeOrderBlock(canvasSocketReqDto);
+            updateBlock(canvasSocketReqDto, canvasSocketReqDto.getWorkspaceMemberId());
+        } else if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.CHANGE_ORDER_BLOCK)) { //순서 변경 블록
+            changeOrderBlock(canvasSocketReqDto, canvasSocketReqDto.getWorkspaceMemberId());
         } else if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.DELETE_BLOCK)) { // 삭제블록
             deleteBlock(canvasSocketReqDto.getBlockFeId());
         } else {

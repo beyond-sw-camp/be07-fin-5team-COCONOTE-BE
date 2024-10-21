@@ -14,7 +14,7 @@ public class CanvasBlockMapper {
                 .id("canvas-" + canvas.getId())
                 .type("canvas")
                 .canvasTitle(canvas.getTitle())
-                .createMemberName(canvas.getCreateMember().getNickname())
+                .createMemberName(canvas.getWorkspaceMember().getNickname())
                 .channelId(canvas.getChannel().getChannelId())
                 .canvasCreatedTime(canvas.getCreatedTime().toString())
                 .build();
@@ -26,7 +26,7 @@ public class CanvasBlockMapper {
                 .id("block-" + block.getId())
                 .type("block")
                 .blockContents(block.getContents())
-                .blockMember(block.getMember())
+                .blockMember(block.getWorkspaceMember())
                 .canvasId(String.valueOf(block.getCanvas().getId()))
                 .prevBlockId(block.getPrevBlock() != null ? String.valueOf(block.getPrevBlock().getId()) : null)
                 .parentBlockId(block.getParentBlock() != null ? String.valueOf(block.getParentBlock().getId()) : null)

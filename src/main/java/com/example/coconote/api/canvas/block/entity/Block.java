@@ -2,6 +2,7 @@ package com.example.coconote.api.canvas.block.entity;
 
 import com.example.coconote.api.canvas.block.dto.response.BlockListResDto;
 import com.example.coconote.api.canvas.canvas.entity.Canvas;
+import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import com.example.coconote.common.BaseEntity;
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.*;
@@ -33,8 +34,9 @@ public class Block extends BaseEntity {
     @Column(length = 5000)
     private String contents;
 
-    //    ⭐ 추후 로그인 붙일 때 변경
-    private String member;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "workspace_member_id")
+    private WorkspaceMember workspaceMember;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "prev_block_fe_id")
@@ -51,6 +53,7 @@ public class Block extends BaseEntity {
     private Type type;
 
     private Integer level; // front 태그에 level이 필요한 경우 사용
+    private Integer indent; // front tap 기능을 위해 추가
 
     @Column(unique = true)
     private String feId; // 프론트에서 적용해주는 uuid 형식의 block id
@@ -72,7 +75,7 @@ public class Block extends BaseEntity {
         this.prevBlock = block;
     }
 
-    public void updateAllInfo(Block prevBlock, Block parentBlock, String contents) {
+    public void updateAllInfo(Block prevBlock, Block parentBlock, String contents, Integer level, Integer indent) {
         if(this.prevBlock == null || (this.prevBlock != null && !Objects.equals(this.prevBlock.getId(), prevBlock.getId()))){
             this.prevBlock = prevBlock;
         }
@@ -84,6 +87,14 @@ public class Block extends BaseEntity {
         if(!Objects.equals(this.contents, contents)){
             this.contents = contents;
         }
+
+        if(!Objects.equals(this.level, level) && level != null && level > 0){
+            this.level = level;
+        }
+
+        if(!Objects.equals(this.indent, indent)){
+            this.indent = indent;
+        }
     }
 
     public BlockListResDto fromEntity() {
@@ -91,7 +102,7 @@ public class Block extends BaseEntity {
                 .feId(this.feId)
                 .type(this.getType())
                 .content(this.contents)
-                .member(this.member)
+                .workspaceMember(this.workspaceMember)
                 .prevBlockFeId(this.prevBlock != null ? this.prevBlock.getFeId() : null) // 이전 블록의 feId 설정
                 .build();
     }
@@ -101,7 +112,7 @@ public class Block extends BaseEntity {
                 .id(this.id)
                 .canvas(this.canvas)
                 .contents(this.contents)
-                .member(this.member)
+                .workspaceMember(this.workspaceMember)
                 .prevBlock(this.prevBlock)
                 .parentBlock(this.parentBlock)
                 .type(this.type)

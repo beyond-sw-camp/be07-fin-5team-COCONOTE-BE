@@ -6,6 +6,7 @@ import com.example.coconote.api.canvas.canvas.dto.response.CanvasListResDto;
 import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.search.entity.CanvasBlockDocument;
+import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import com.example.coconote.common.BaseEntity;
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.*;
@@ -30,8 +31,8 @@ public class Canvas extends BaseEntity {
     private String title;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "create_member_id")
-    private Member createMember;
+    @JoinColumn(name = "workspace_member_id")
+    private WorkspaceMember workspaceMember;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_canvas_id")
@@ -94,7 +95,7 @@ public class Canvas extends BaseEntity {
     public CanvasBlockDocument fromBlockDocEntity() {
         return CanvasBlockDocument.builder()
                 .canvasTitle(this.title)
-                .createMemberName(this.createMember.getNickname())
+                .createMemberName(this.workspaceMember.getNickname())
                 .channelId(this.channel.getChannelId())
                 .canvasCreatedTime(this.getCreatedTime().toString())
                 .build();

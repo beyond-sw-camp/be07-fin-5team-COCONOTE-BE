@@ -4,11 +4,21 @@ import com.example.coconote.api.canvas.block.dto.response.BlockListResDto;
 import com.example.coconote.api.canvas.block.dto.response.CreateBlockResDto;
 import com.example.coconote.api.canvas.block.service.BlockService;
 import com.example.coconote.api.canvas.canvas.dto.request.CanvasSocketReqDto;
+import com.example.coconote.api.member.entity.Member;
+import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.workspace.workspace.entity.Workspace;
+import com.example.coconote.api.workspace.workspace.repository.WorkspaceRepository;
+import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
+import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
 import com.example.coconote.common.CommonResDto;
+import com.example.coconote.common.IsDeleted;
+import com.example.coconote.security.util.CustomPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,14 +29,21 @@ import java.util.List;
 public class BlockController {
 
     private final BlockService blockService;
+    private final MemberRepository memberRepository;
+    private final WorkspaceRepository workspaceRepository;
+    private final WorkspaceMemberRepository workspaceMemberRepository;
 
     @Operation(
             summary = "Block 생성",
             description = "새로운 Block 생성."
     )
     @PostMapping("/create")
-    public ResponseEntity<?> createBlock(@RequestBody CanvasSocketReqDto canvasSocketReqDto){
-        CreateBlockResDto createBlockResDto = blockService.createBlock(canvasSocketReqDto);
+    public ResponseEntity<?> createBlock(@RequestBody CanvasSocketReqDto canvasSocketReqDto, @AuthenticationPrincipal CustomPrincipal member){
+        Long memberId = member.getMemberId();
+        Member sendMember = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("해당멤버가 없습니다."));
+        Workspace workspace = workspaceRepository.findById(canvasSocketReqDto.getWorkspaceId()).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스가 없습니다."));
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(sendMember, workspace, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스 멤버가 없습니다."));
+        CreateBlockResDto createBlockResDto = blockService.createBlock(canvasSocketReqDto, workspaceMember.getWorkspaceMemberId());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "Block이 성공적으로 생성되었습니다.", createBlockResDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
     }
