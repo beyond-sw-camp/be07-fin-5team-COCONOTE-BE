@@ -101,9 +101,9 @@ public class CanvasService {
 
         canvasRepository.save(canvas);
 //        검색 인덱스에 저장
-        CanvasBlockDocument document = canvasBlockMapper.toDocument(canvas);
-        IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(channel.getSection().getWorkspace().getWorkspaceId() , EntityType.CANVAS_BLOCK, document);
-        kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
+//        CanvasBlockDocument document = canvasBlockMapper.toDocument(canvas);
+//        IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(channel.getSection().getWorkspace().getWorkspaceId() , EntityType.CANVAS_BLOCK, document);
+//        kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
 
         topics.put(canvas.getId(), canvas.getId());
 
@@ -281,7 +281,7 @@ public class CanvasService {
             prevLinkedCanvas.changePrevCanvas(canvasPrevOriginBlock);
         }
         canvas.markAsDeleted(); // 실제 삭제 대신 소프트 삭제 처리
-        searchService.deleteCanvas(canvas.getChannel().getSection().getWorkspace().getWorkspaceId(), canvas.getId());
+//        searchService.deleteCanvas(canvas.getChannel().getSection().getWorkspace().getWorkspaceId(), canvas.getId());
     }
 
 

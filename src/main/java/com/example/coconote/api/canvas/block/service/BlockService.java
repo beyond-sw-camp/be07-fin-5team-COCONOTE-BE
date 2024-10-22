@@ -56,6 +56,10 @@ public class BlockService {
     public CreateBlockResDto createBlock(CanvasSocketReqDto canvasSocketReqDto, Long workspaceMemberId) {
         Canvas canvas = canvasRepository.findById(canvasSocketReqDto.getCanvasId()).orElseThrow(() -> new IllegalArgumentException("캔버스가 존재하지 않습니다."));
 
+        Block checkBlock = blockRepository.findByFeIdAndIsDeleted(canvasSocketReqDto.getBlockFeId(), IsDeleted.N).orElse(null);
+        if(checkBlock != null){
+            throw new IllegalArgumentException("이미 있는 block 입니다.");
+        }
         WorkspaceMember workspaceMember = workspaceMemberRepository.findByWorkspaceMemberIdAndIsDeleted(workspaceMemberId, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스 멤버가 없습니다."));
 
         Block parentBlock = null;
