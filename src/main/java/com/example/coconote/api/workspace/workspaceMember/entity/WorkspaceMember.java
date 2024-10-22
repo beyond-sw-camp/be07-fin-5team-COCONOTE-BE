@@ -85,15 +85,11 @@ public class WorkspaceMember extends BaseEntity {
         this.profileImage = dto.getProfileImage();
     }
 
-    public boolean changeRole() { // 권한 상승(?)하면 true
-        if(this.wsRole.equals(WsRole.USER)) {
-            this.wsRole = WsRole.SMANAGER;
-            return true;
-        }else {
-            this.wsRole = WsRole.USER;
-            return false;
-        }
+    public WorkspaceMemberResDto changeRole(WsRole wsRole) {
+        this.wsRole = wsRole;
+        return this.fromEntity();
     }
+
 
     public void deleteEntity() {
         this.isDeleted = IsDeleted.Y;
