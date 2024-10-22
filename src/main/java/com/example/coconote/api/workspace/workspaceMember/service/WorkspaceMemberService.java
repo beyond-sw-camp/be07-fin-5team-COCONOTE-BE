@@ -9,6 +9,7 @@ import com.example.coconote.api.search.mapper.WorkspaceMemberMapper;
 import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.api.workspace.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.workspace.repository.WorkspaceRepository;
+import com.example.coconote.api.workspace.workspaceMember.dto.request.WorkspaceMemberRoleReqDto;
 import com.example.coconote.api.workspace.workspaceMember.dto.response.WorkspaceMemberResDto;
 import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
@@ -17,14 +18,10 @@ import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.opensearch.client.opensearch.OpenSearchClient;
-import org.opensearch.client.opensearch.core.DeleteResponse;
-import org.opensearch.client.opensearch.core.IndexResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -107,8 +104,8 @@ public class WorkspaceMemberService {
 
 
     @Transactional
-    public Boolean workspaceMemberChangeRole(Long id) {
-        WorkspaceMember workspaceMember = workspaceMemberRepository.findById(id).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+    public WorkspaceMemberResDto workspaceMemberChangeRole(WorkspaceMemberRoleReqDto dto) {
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findById(dto.getId()).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
         if(workspaceMember.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 워크스페이스에서 탈퇴한 회원입니다.");
         }
@@ -117,8 +114,7 @@ public class WorkspaceMemberService {
 // OpenSearch에 인덱싱
         searchService.deleteWorkspaceMember(workspaceMember.getWorkspace().getWorkspaceId() ,workspaceMember.getWorkspaceMemberId());
 
-
-        return workspaceMember.changeRole();
+        return workspaceMember.changeRole(dto.getWsRole());
     }
 
     @Transactional

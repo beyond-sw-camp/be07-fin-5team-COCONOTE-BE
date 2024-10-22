@@ -4,7 +4,9 @@ import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channel.entity.ChannelType;
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;
 import com.example.coconote.api.channel.channel.service.ChannelService;
+import com.example.coconote.api.channel.channelMember.dto.request.ChannelMemberRoleReqDto;
 import com.example.coconote.api.channel.channelMember.dto.response.ChannelMemberListResDto;
+import com.example.coconote.api.channel.channelMember.entity.ChannelRole;
 import com.example.coconote.api.channel.channelMember.service.ChannelMemberService;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
@@ -108,9 +110,10 @@ public class WorkspaceService {
         workspace.getWorkspaceMembers().add(workspaceMember);
 
         ChannelMemberListResDto channelMemberDefault = channelMemberService.channelMemberCreate(channelDefault.getChannelId(), email);
-        channelMemberService.channelMemberChangeRole(channelMemberDefault.getId());
+        channelMemberService.channelMemberChangeRole(new ChannelMemberRoleReqDto(channelMemberDefault.getId(), ChannelRole.MANAGER));
         ChannelMemberListResDto channelMemberNotice = channelMemberService.channelMemberCreate(channelNotice.getChannelId(), email);
-        channelMemberService.channelMemberChangeRole(channelMemberNotice.getId());
+        channelMemberService.channelMemberChangeRole(new ChannelMemberRoleReqDto(channelMemberNotice.getId(), ChannelRole.MANAGER));
+
 
 
         workspaceRepository.save(workspace);

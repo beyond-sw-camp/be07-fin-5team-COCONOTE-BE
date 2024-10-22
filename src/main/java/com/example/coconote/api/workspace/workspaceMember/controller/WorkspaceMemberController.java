@@ -2,6 +2,7 @@ package com.example.coconote.api.workspace.workspaceMember.controller;
 
 import com.example.coconote.api.workspace.mail.service.MailVerifyService;
 import com.example.coconote.api.workspace.workspace.dto.response.WorkspaceListResDto;
+import com.example.coconote.api.workspace.workspaceMember.dto.request.WorkspaceMemberRoleReqDto;
 import com.example.coconote.api.workspace.workspaceMember.dto.response.WorkspaceMemberResDto;
 import com.example.coconote.api.workspace.workspaceMember.service.WorkspaceMemberService;
 import com.example.coconote.api.workspace.workspaceMember.dto.request.WorkspaceMemberUpdateReqDto;
@@ -10,7 +11,6 @@ import com.example.coconote.security.util.CustomPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -86,16 +86,11 @@ public class WorkspaceMemberController {
     }
 
 
-    @Operation(summary= "웤스 회원 관리자 권한 부여/삭제")
-    @PatchMapping("/workspace/member/changerole/{id}")
-    public ResponseEntity<Object> workspaceMemberChangeRole(@PathVariable Long id) {
-        CommonResDto commonResDto;
-        Boolean value = workspaceMemberService.workspaceMemberChangeRole(id);
-        if(value) {
-            commonResDto = new CommonResDto(HttpStatus.OK, "role is successfully changed to sManager", value);
-        }else{
-            commonResDto = new CommonResDto(HttpStatus.OK, "role is successfully changed to user", value);
-        }
+    @Operation(summary= "웤스 관리자 권한 부여/박탈")
+    @PatchMapping("/workspace/member/role") // 채널 관리자 권한 부여/삭제
+    public ResponseEntity<Object> workspaceMemberChangeRole(@RequestBody WorkspaceMemberRoleReqDto dto) {
+        WorkspaceMemberResDto resDto = workspaceMemberService.workspaceMemberChangeRole(dto);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "role is successfully changed", resDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 

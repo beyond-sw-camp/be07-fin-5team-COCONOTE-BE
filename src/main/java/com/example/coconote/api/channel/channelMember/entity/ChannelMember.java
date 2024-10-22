@@ -49,14 +49,15 @@ public class ChannelMember extends BaseEntity {
     }
 
 
-    public boolean changeRole() { // 권한이 상승(?)했으면 true 반환
-        if(this.channelRole.equals(ChannelRole.USER)) {
-            this.channelRole = ChannelRole.MANAGER;
-            return true;
-        }else {
-            this.channelRole = ChannelRole.USER;
-            return false;
-        }
+    public ChannelMemberListResDto changeRole(ChannelRole channelRole) {
+        this.channelRole = channelRole;
+        return ChannelMemberListResDto.builder()
+                .id(this.id)
+                .channelId(this.channel.getChannelId())
+                .channelRole(this.channelRole)
+                .isBookmark(this.isBookmark)
+                .memberInfo(this.workspaceMember.fromEntity())
+                .build();
     }
 
     public boolean bookmarkMyChannel() { // 추가됐으면 true return
