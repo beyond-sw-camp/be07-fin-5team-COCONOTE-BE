@@ -71,7 +71,7 @@ public class ChannelMemberService {
             if (channelMember.getIsDeleted().equals(IsDeleted.N)) {
                 throw new IllegalArgumentException("이미 채널에 가입되어 있는 회원입니다.");
             } else if (channelMember.getIsDeleted().equals(IsDeleted.Y)) {
-                channelMember.undeleteEntity();
+                channelMember.restoreEntity();
                 channelMemberRepository.save(channelMember);
                 return channelMember.fromEntity();
             }
@@ -154,6 +154,11 @@ public class ChannelMemberService {
 //        같은 워크스페이스의 회원만 초대 가능
         if (!Objects.equals(selfWorkspaceMember.getWorkspace().getWorkspaceId(), workspaceMember.getWorkspace().getWorkspaceId())) {
             throw new IllegalArgumentException("같은 워크스페이스의 회원만 초대할 수 있습니다.");
+        }
+        if(channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, workspaceMember, IsDeleted.Y).isPresent()) {
+            ChannelMember channelMemberCameBack = channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, workspaceMember, IsDeleted.Y).orElseThrow(()-> new EntityNotFoundException("없는 채널 회원입니다."));
+            channelMemberCameBack.restoreEntity();
+            return channelMemberCameBack.fromEntity();
         }
         ChannelMember channelMember = ChannelMember.builder()
                 .channel(channel)

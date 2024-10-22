@@ -81,9 +81,9 @@ public class Channel extends BaseEntity {
         this.channelInfo = dto.getChannelInfo();
     }
 
-    public Boolean changeAccessLevel() {
-        this.isPublic = !this.isPublic;
-        return this.isPublic;
+    public ChannelDetailResDto changeAccessLevel(Boolean isPublic) {
+        this.isPublic = isPublic;
+        return this.fromEntity(this.getSection());
     }
 
     public void deleteEntity() {

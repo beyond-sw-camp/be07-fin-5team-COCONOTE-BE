@@ -1,5 +1,6 @@
 package com.example.coconote.api.channel.channel.service;
 
+import com.example.coconote.api.channel.channel.dto.request.ChannelAccessReqDto;
 import com.example.coconote.api.channel.channel.dto.request.ChannelCreateReqDto;
 import com.example.coconote.api.channel.channel.dto.request.ChannelUpdateReqDto;
 import com.example.coconote.api.channel.channel.dto.response.ChannelDetailResDto;
@@ -289,23 +290,23 @@ public class ChannelService {
         return workspaceRepository.findById(workspaceId).orElseThrow(() -> new IllegalArgumentException("워크스페이스가 존재하지 않습니다."));
     }
 
-    public Boolean channelChangeAccessLevel(Long id, String email) {
-        Channel channel = channelRepository.findById(id).orElseThrow(()->new EntityNotFoundException("존재하지 않는 채널입니다."));
-        System.out.println("1 ok");
-        if(!checkChannelAuthorization(id, email)) {
+    public ChannelDetailResDto channelChangeAccessLevel(ChannelAccessReqDto dto, String email) {
+        Channel channel = channelRepository.findById(dto.getChannelId()).orElseThrow(()->new EntityNotFoundException("존재하지 않는 채널입니다."));
+        if(!checkChannelAuthorization(dto.getChannelId(), email)) {
             throw new IllegalArgumentException("채널을 수정할 권한이 없습니다.");
         }
         if (channel.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 삭제된 채널입니다.");
         }
-        boolean value = channel.changeAccessLevel();
+
+        channel.changeAccessLevel(dto.getIsPublic());
         channelRepository.save(channel);
 
         ChannelDocument document = channelMapper.toDocument(channel);
         IndexEntityMessage<ChannelDocument> indexEntityMessage = new IndexEntityMessage<>(channel.getSection().getWorkspace().getWorkspaceId(),EntityType.CHANNEL , document);
         kafkaTemplate.send("channel_entity_search", indexEntityMessage.toJson());
 
-        return value;
+        return channel.fromEntity(channel.getSection());
     }
 }
 
