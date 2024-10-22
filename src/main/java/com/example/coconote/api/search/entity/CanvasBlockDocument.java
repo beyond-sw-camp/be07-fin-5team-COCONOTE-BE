@@ -1,5 +1,6 @@
 package com.example.coconote.api.search.entity;
 
+import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,7 +24,7 @@ public class CanvasBlockDocument {
 
     // Block 관련 필드
     private String blockContents;
-    private String blockMember;
+    private WorkspaceMember blockMember;
     private String canvasId;  // Block이 속한 Canvas ID
     private String prevBlockId;
     private String parentBlockId;

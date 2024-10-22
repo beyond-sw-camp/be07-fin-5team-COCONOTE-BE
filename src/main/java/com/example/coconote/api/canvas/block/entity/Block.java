@@ -2,6 +2,7 @@ package com.example.coconote.api.canvas.block.entity;
 
 import com.example.coconote.api.canvas.block.dto.response.BlockListResDto;
 import com.example.coconote.api.canvas.canvas.entity.Canvas;
+import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import com.example.coconote.common.BaseEntity;
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.*;
@@ -11,6 +12,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -33,8 +35,9 @@ public class Block extends BaseEntity {
     @Column(length = 5000)
     private String contents;
 
-    //    ⭐ 추후 로그인 붙일 때 변경
-    private String member;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "workspace_member_id")
+    private WorkspaceMember workspaceMember;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "prev_block_fe_id")
@@ -51,6 +54,7 @@ public class Block extends BaseEntity {
     private Type type;
 
     private Integer level; // front 태그에 level이 필요한 경우 사용
+    private Integer indent; // front tap 기능을 위해 추가
 
     @Column(unique = true)
     private String feId; // 프론트에서 적용해주는 uuid 형식의 block id
@@ -73,15 +77,15 @@ public class Block extends BaseEntity {
     }
 
     public void updateAllInfo(Block prevBlock, Block parentBlock, String contents) {
-        if(this.prevBlock == null || (this.prevBlock != null && !Objects.equals(this.prevBlock.getId(), prevBlock.getId()))){
+        if (this.prevBlock == null || (this.prevBlock != null && !Objects.equals(this.prevBlock.getId(), prevBlock.getId()))) {
             this.prevBlock = prevBlock;
         }
 
-        if(this.parentBlock != null && !Objects.equals(this.parentBlock.getId(), parentBlock.getId())){
+        if (this.parentBlock != null && !Objects.equals(this.parentBlock.getId(), parentBlock.getId())) {
             this.parentBlock = parentBlock;
         }
 
-        if(!Objects.equals(this.contents, contents)){
+        if (!Objects.equals(this.contents, contents)) {
             this.contents = contents;
         }
     }
@@ -89,9 +93,11 @@ public class Block extends BaseEntity {
     public BlockListResDto fromEntity() {
         return BlockListResDto.builder()
                 .feId(this.feId)
+                .indent(this.indent)
+                .level(this.level)
                 .type(this.getType())
                 .content(this.contents)
-                .member(this.member)
+                .workspaceMemberId(this.workspaceMember != null ? this.workspaceMember.getWorkspaceMemberId() : null)
                 .prevBlockFeId(this.prevBlock != null ? this.prevBlock.getFeId() : null) // 이전 블록의 feId 설정
                 .build();
     }
@@ -101,12 +107,16 @@ public class Block extends BaseEntity {
                 .id(this.id)
                 .canvas(this.canvas)
                 .contents(this.contents)
-                .member(this.member)
+                .workspaceMember(this.workspaceMember)
                 .prevBlock(this.prevBlock)
                 .parentBlock(this.parentBlock)
                 .type(this.type)
                 .level(this.level)
                 .feId(this.feId)
                 .build();
+    }
+
+    public void patchBlockIndent(Integer indent) {
+        this.indent = indent;
     }
 }
