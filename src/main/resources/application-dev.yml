@@ -15,6 +15,10 @@ spring:
   config:
     activate:
       on-profile: dev
+  data:
+    redis:
+      host: ${dev.redis.host}
+      port: ${dev.redis.port}
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
     url: ${dev.datasource.url}  # dev 환경의 데이터베이스 URL
