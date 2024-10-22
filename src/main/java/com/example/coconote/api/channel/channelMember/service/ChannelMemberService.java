@@ -38,8 +38,6 @@ public class ChannelMemberService {
     public ChannelMemberService(ChannelMemberRepository channelMemberRepository,
                                 WorkspaceMemberRepository workspaceMemberRepository,
                                 ChannelRepository channelRepository,
-                                SectionRepository sectionRepository,
-                                WorkspaceRepository workspaceRepository,
                                 MemberRepository memberRepository) {
         this.channelMemberRepository = channelMemberRepository;
         this.workspaceMemberRepository = workspaceMemberRepository;
@@ -68,15 +66,14 @@ public class ChannelMemberService {
             return newChannelMember.fromEntity();
         } else {
             ChannelMember channelMember = optionalChannelMember.get();
-            if (channelMember.getIsDeleted().equals(IsDeleted.N)) {
-                throw new IllegalArgumentException("이미 채널에 가입되어 있는 회원입니다.");
-            } else if (channelMember.getIsDeleted().equals(IsDeleted.Y)) {
+            if (channelMember.getIsDeleted().equals(IsDeleted.Y)) {
                 channelMember.restoreEntity();
                 channelMemberRepository.save(channelMember);
                 return channelMember.fromEntity();
+            } else {
+                throw new IllegalArgumentException("이미 채널에 가입되어 있는 회원입니다.");
             }
         }
-        return null;
     }
 
     public List<ChannelMemberListResDto> channelMemberList(Long channelId) {
