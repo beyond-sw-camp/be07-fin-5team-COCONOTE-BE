@@ -24,6 +24,7 @@ import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember
 import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
 import com.example.coconote.common.IsDeleted;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityNotFoundException;
@@ -355,8 +356,9 @@ public class CanvasService {
             , containerFactory = "kafkaListenerContainerFactory")
     public void consumerProductQuantity(String message) { // return 시, string 형식으로 message가 들어옴
         ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         try {
-            System.out.println(message);
+            System.out.println("Kafka 이후 메세지"+ message + "/" + message.toString());
             // ChatMessage 객채로 맵핑
             CanvasSocketReqDto roomMessage = objectMapper.readValue(message, CanvasSocketReqDto.class);
 
@@ -374,9 +376,11 @@ public class CanvasService {
                 blockService.editBlockInSocket(roomMessage);
             }
         } catch (JsonProcessingException e) {
+            log.error("JSON 처리 오류: {}", e.getMessage());
             throw new RuntimeException(e);
-        } catch (Exception e){
-//            만약, 실패했을 때 코드 추가해야함
+        } catch (Exception e) {
+            log.error("알 수 없는 오류: {}", e.getMessage());
+            throw e;  // 예외를 다시 던져 트랜잭션을 롤백하도록 함
         }
         System.out.println(message);
     }

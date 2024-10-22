@@ -23,7 +23,7 @@ public class BlockListResDto {
     private String feId; // front 종속 id
     private Type type;
 
-    private WorkspaceMember workspaceMember;
+    private Long workspaceMemberId;
 
     @Builder.Default
     private List<BlockListResDto> childBlock = new ArrayList<>();

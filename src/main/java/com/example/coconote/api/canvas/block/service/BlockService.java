@@ -82,8 +82,8 @@ public class BlockService {
                 .type(canvasSocketReqDto.getBlockType())
                 .prevBlock(prevBlock)
                 .parentBlock(parentBlock)
-                .level(canvasSocketReqDto.getLevel() != null && canvasSocketReqDto.getLevel() > 0 ? canvasSocketReqDto.getLevel() : 0)
-                .indent(canvasSocketReqDto.getIndent())
+                .level(canvasSocketReqDto.getBlockLevel() != null && canvasSocketReqDto.getBlockLevel() > 0 ? canvasSocketReqDto.getBlockLevel() : 0)
+                .indent(canvasSocketReqDto.getBlockIndent())
                 .workspaceMember(workspaceMember)
                 .build();
 
@@ -101,7 +101,7 @@ public class BlockService {
 //        검색 인덱스에 저장
         CanvasBlockDocument document = canvasBlockMapper.toDocument(block);
         IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(canvas.getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.CANVAS_BLOCK, document);
-        kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
+//        kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage);
 
         return CreateBlockResDto.fromEntity(block);
     }
@@ -132,17 +132,28 @@ public class BlockService {
                     .orElseThrow(() -> new IllegalArgumentException("해당 Parent Block이 존재하지 않습니다."))
                     : null;
 
-            block.updateAllInfo(prevBlock, parentBlock, canvasSocketReqDto.getBlockContents(), canvasSocketReqDto.getLevel(), canvasSocketReqDto.getIndent());
+            block.updateAllInfo(prevBlock, parentBlock, canvasSocketReqDto.getBlockContents(), canvasSocketReqDto.getBlockLevel(), canvasSocketReqDto.getBlockIndent());
             blockRepository.save(block);
 
             CanvasBlockDocument document = canvasBlockMapper.toDocument(block);
             IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(block.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.CANVAS_BLOCK, document);
-            kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
+//            kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
 
         } catch (Exception e) {
             log.info(e.getMessage());
         }
         return true;
+    }
+
+    @Transactional
+    public Boolean patchBlockDetails(CanvasSocketReqDto canvasSocketReqDto, Long workspaceMemberId) {
+        Block block = blockRepository.findByFeIdAndIsDeleted(canvasSocketReqDto.getBlockFeId(), IsDeleted.N)
+                .orElseThrow(() -> new IllegalArgumentException("해당 Block이 존재하지 않습니다."));
+        if(canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.UPDATE_INDENT_BLOCK)){
+            block.patchBlockIndent(canvasSocketReqDto.getBlockIndent());
+            return true;
+        }
+        return false;
     }
 
     @Transactional
@@ -178,7 +189,7 @@ public class BlockService {
 
             CanvasBlockDocument document = canvasBlockMapper.toDocument(originalNextBlock);
             IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(originalNextBlock.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.CANVAS_BLOCK, document);
-            kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
+//            kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
         }
 
         // 4. 새로운 prevBlock과의 연결 설정
@@ -193,7 +204,7 @@ public class BlockService {
 
                 CanvasBlockDocument document = canvasBlockMapper.toDocument(nextOfNewPrevBlock);
                 IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(nextOfNewPrevBlock.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.CANVAS_BLOCK, document);
-                kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
+//                kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
             }
 
             // 현재 블록의 prevBlock을 새로운 prevBlock으로 설정
@@ -210,7 +221,7 @@ public class BlockService {
 
             CanvasBlockDocument document = canvasBlockMapper.toDocument(newNextBlock);
             IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(newNextBlock.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.CANVAS_BLOCK, document);
-            kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
+//            kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
         }
 
         // 6. 현재 블록을 저장하여 순서 변경 적용
@@ -218,7 +229,7 @@ public class BlockService {
 
         CanvasBlockDocument document = canvasBlockMapper.toDocument(currentBlock);
         IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(currentBlock.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.CANVAS_BLOCK, document);
-        kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
+//        kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
         log.info("블록 순서가 성공적으로 변경되었습니다.");
 
         return true;
@@ -280,7 +291,7 @@ public class BlockService {
                 .content(block.getContents())
                 .feId(block.getFeId())
                 .type(block.getType())
-                .workspaceMember(block.getWorkspaceMember())
+                .workspaceMemberId(block.getWorkspaceMember() != null ? block.getWorkspaceMember().getWorkspaceMemberId() : 0)
                 .prevBlockFeId(block.getPrevBlock() != null ? block.getPrevBlock().getFeId() : null)
                 .build();
     }
@@ -348,44 +359,14 @@ public class BlockService {
         }
     }
 
-//    block topic은 이제 사용 X
-//    @Transactional
-//    @KafkaListener(topics = "block-topic", groupId = "websocket-group"
-//            , containerFactory = "kafkaListenerContainerFactory")
-//    public void consumerProductQuantity(String message) { // return 시, string 형식으로 message가 들어옴
-//        ObjectMapper objectMapper = new ObjectMapper();
-//        try {
-//            // ChatMessage 객채로 맵핑
-//            CanvasSocketReqDto roomMessage = objectMapper.readValue(message, ChatMessage.class);
-//            messagingTemplate.convertAndSend("/sub/block/room/" + roomMessage.getRoomId(), roomMessage);
-////            SendBlockReqDto sendBlockReqDto = objectMapper.readValue(roomMessage.getMessage(), SendBlockReqDto.class);
-//            editBlockInSocket(roomMessage);
-//        } catch (JsonProcessingException e) {
-//            throw new RuntimeException(e);
-//        } catch (Exception e) {
-//            //            만약, 실패했을 때 코드 추가해야함
-//        }
-//        System.out.println(message);
-//    }
-
     public void editBlockInSocket(CanvasSocketReqDto canvasSocketReqDto) {
 //        생성, 수정, 삭제인지 type 구분해서 넣어주는 용도
-//        if (sendBlockReqDto.getMethod().equals(Method.create)) { // 생성블록
-//            CreateBlockReqDto createBlockReqDto = sendBlockReqDto.buildCreateBlockReqDto();
-//            createBlock(createBlockReqDto, "");
-//        } else if (sendBlockReqDto.getMethod().equals(Method.update)) { // 수정블록
-//            UpdateBlockReqDto updateBlockReqDto = sendBlockReqDto.buildUpdateBlockReqDto();
-//            updateBlock(updateBlockReqDto, "");
-//        } else if (sendBlockReqDto.getMethod().equals(Method.changeOrder)) { //순서 변경 블록
-//            ChangeOrderBlockReqDto changeOrderBlockReqDto = sendBlockReqDto.buildChangeOrderBlockReqDto();
-//            changeOrderBlock(changeOrderBlockReqDto);
-//        } else if (sendBlockReqDto.getMethod().equals(Method.delete)) { // 삭제블록
-//            deleteBlock(sendBlockReqDto.getFeId(), "");
-////            log.info("삭제블록 제작 진행 중");
         if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.CREATE_BLOCK)) { // 생성블록
             createBlock(canvasSocketReqDto, canvasSocketReqDto.getWorkspaceMemberId());
         } else if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.UPDATE_BLOCK)) { // 수정블록
             updateBlock(canvasSocketReqDto, canvasSocketReqDto.getWorkspaceMemberId());
+        } else if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.UPDATE_INDENT_BLOCK)) { // 수정블록
+            patchBlockDetails(canvasSocketReqDto, canvasSocketReqDto.getWorkspaceMemberId());
         } else if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.CHANGE_ORDER_BLOCK)) { //순서 변경 블록
             changeOrderBlock(canvasSocketReqDto, canvasSocketReqDto.getWorkspaceMemberId());
         } else if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.DELETE_BLOCK)) { // 삭제블록

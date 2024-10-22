@@ -4,6 +4,7 @@ import com.example.coconote.api.canvas.block.entity.Type;
 import com.example.coconote.api.canvas.canvas.entity.CanvasMessageMethod;
 import com.example.coconote.api.canvas.canvas.entity.PostMessageType;
 import com.example.coconote.common.IsDeleted;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -44,8 +45,8 @@ public class CanvasSocketReqDto {
     private String blockContents;
     private Type blockType;
     @Builder.Default
-    private Integer level = 0; //front의 h태그 기능을 위해 추가
+    private Integer blockLevel = 0; //front의 h태그 기능을 위해 추가
     @Builder.Default
-    private Integer indent = 0; //front의 tap 기능을 위해 추가
+    private Integer blockIndent = 0; //front의 tap 기능을 위해 추가
 
 }

@@ -8,6 +8,7 @@ import com.example.coconote.api.canvas.canvas.service.CanvasService;
 import com.example.coconote.security.token.JwtTokenProvider;
 import com.example.coconote.security.util.CustomPrincipal;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -23,6 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
 @Controller
+@Slf4j
 public class WebsocketController {
 
 
@@ -40,6 +42,7 @@ public class WebsocketController {
         Long id = jwtTokenProvider.getMemberIdFromToken(token);
         message.setSenderId(id);
 
+        log.info("카프카 이전 message : " + message.toString());
         kafkaTemplate.send("canvas-topic", message);
 //        if ((message.getMethod() == CanvasMessageMethod.ENTER)) {
 //            canvasService.enterChatRoom(message.getCanvasId());
@@ -53,7 +56,6 @@ public class WebsocketController {
 //            kafkaTemplate.send("block-topic", message);
 //        }
 
-        System.out.println(canvasService.getTopic(message.getCanvasId()));
     }
 
     /**

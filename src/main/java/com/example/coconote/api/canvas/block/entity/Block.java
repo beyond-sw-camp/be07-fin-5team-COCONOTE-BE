@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -76,23 +77,23 @@ public class Block extends BaseEntity {
     }
 
     public void updateAllInfo(Block prevBlock, Block parentBlock, String contents, Integer level, Integer indent) {
-        if(this.prevBlock == null || (this.prevBlock != null && !Objects.equals(this.prevBlock.getId(), prevBlock.getId()))){
+        if (this.prevBlock == null || (this.prevBlock != null && !Objects.equals(this.prevBlock.getId(), prevBlock.getId()))) {
             this.prevBlock = prevBlock;
         }
 
-        if(this.parentBlock != null && !Objects.equals(this.parentBlock.getId(), parentBlock.getId())){
+        if (this.parentBlock != null && !Objects.equals(this.parentBlock.getId(), parentBlock.getId())) {
             this.parentBlock = parentBlock;
         }
 
-        if(!Objects.equals(this.contents, contents)){
+        if (!Objects.equals(this.contents, contents)) {
             this.contents = contents;
         }
 
-        if(!Objects.equals(this.level, level) && level != null && level > 0){
+        if (!Objects.equals(this.level, level) && level != null && level > 0) {
             this.level = level;
         }
 
-        if(!Objects.equals(this.indent, indent)){
+        if (!Objects.equals(this.indent, indent)) {
             this.indent = indent;
         }
     }
@@ -102,7 +103,7 @@ public class Block extends BaseEntity {
                 .feId(this.feId)
                 .type(this.getType())
                 .content(this.contents)
-                .workspaceMember(this.workspaceMember)
+                .workspaceMemberId(this.workspaceMember != null ? this.workspaceMember.getWorkspaceMemberId() : null)
                 .prevBlockFeId(this.prevBlock != null ? this.prevBlock.getFeId() : null) // 이전 블록의 feId 설정
                 .build();
     }
@@ -119,5 +120,9 @@ public class Block extends BaseEntity {
                 .level(this.level)
                 .feId(this.feId)
                 .build();
+    }
+
+    public void patchBlockIndent(Integer indent) {
+        this.indent = indent;
     }
 }

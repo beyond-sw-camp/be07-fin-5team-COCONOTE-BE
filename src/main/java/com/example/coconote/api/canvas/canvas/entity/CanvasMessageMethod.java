@@ -8,6 +8,7 @@ public enum CanvasMessageMethod {
     DELETE_CANVAS,
     CREATE_BLOCK,
     UPDATE_BLOCK,
+    UPDATE_INDENT_BLOCK,
     CHANGE_ORDER_BLOCK,
     DELETE_BLOCK,
 }
