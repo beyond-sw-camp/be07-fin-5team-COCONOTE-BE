@@ -1,8 +1,13 @@
 package com.example.coconote.api.sse;
 
+import com.example.coconote.api.channel.channel.entity.Channel;
+import com.example.coconote.api.thread.thread.entity.Thread;
+import com.example.coconote.api.workspace.workspace.entity.Workspace;
+import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.jdbc.Work;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -74,11 +79,20 @@ public class ThreadNotificationService {
         }, 0, 30, TimeUnit.SECONDS);
     }
 
-    public void sendNotification(Long senderId, Long workspaceId, Long channelId, String message, String channelName, String memberName) {
-        NotificationDto notification = new NotificationDto(senderId, workspaceId, channelId, message, channelName, memberName);
+    public void sendNotification(Workspace workspace, WorkspaceMember workspaceMember, Channel channel, Thread thread) {
+        NotificationDto notification =  NotificationDto.builder()
+                .userId(workspaceMember.getWorkspaceMemberId())
+                .workspaceId(workspace.getWorkspaceId())
+                .channelId(channel.getChannelId())
+                .channelName(channel.getChannelName())
+                .threadId(thread.getId())
+                .parentThreadId(thread.getParent() != null ? thread.getParent().getId() : null) // parent가 null인지 확인
+                .message(thread.getContent())
+                .memberName(workspaceMember.getMemberName())
+                .build();
         try {
             String notificationMessage = objectMapper.writeValueAsString(notification);
-            broadcastNotification(workspaceId, senderId, channelId, notificationMessage);
+            broadcastNotification(workspace.getWorkspaceId(),workspaceMember.getWorkspaceMemberId(),channel.getChannelId(), notificationMessage);
             redisTemplate.convertAndSend(topic.getTopic(), notificationMessage);
         } catch (JsonProcessingException e) {
             log.error("Failed to convert notification to JSON", e);
