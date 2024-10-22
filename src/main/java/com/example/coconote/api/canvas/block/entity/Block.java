@@ -76,7 +76,7 @@ public class Block extends BaseEntity {
         this.prevBlock = block;
     }
 
-    public void updateAllInfo(Block prevBlock, Block parentBlock, String contents, Integer level, Integer indent) {
+    public void updateAllInfo(Block prevBlock, Block parentBlock, String contents) {
         if (this.prevBlock == null || (this.prevBlock != null && !Objects.equals(this.prevBlock.getId(), prevBlock.getId()))) {
             this.prevBlock = prevBlock;
         }
@@ -88,19 +88,13 @@ public class Block extends BaseEntity {
         if (!Objects.equals(this.contents, contents)) {
             this.contents = contents;
         }
-
-        if (!Objects.equals(this.level, level) && level != null && level > 0) {
-            this.level = level;
-        }
-
-        if (!Objects.equals(this.indent, indent)) {
-            this.indent = indent;
-        }
     }
 
     public BlockListResDto fromEntity() {
         return BlockListResDto.builder()
                 .feId(this.feId)
+                .indent(this.indent)
+                .level(this.level)
                 .type(this.getType())
                 .content(this.contents)
                 .workspaceMemberId(this.workspaceMember != null ? this.workspaceMember.getWorkspaceMemberId() : null)

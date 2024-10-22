@@ -30,5 +30,8 @@ public class BlockListResDto {
 
     private String prevBlockFeId; // 이전 블록의 feId
 
+    private Integer level;
+    private Integer indent;
+
 }
 

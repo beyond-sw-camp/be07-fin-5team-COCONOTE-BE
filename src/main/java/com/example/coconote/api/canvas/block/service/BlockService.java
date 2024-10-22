@@ -132,7 +132,7 @@ public class BlockService {
                     .orElseThrow(() -> new IllegalArgumentException("해당 Parent Block이 존재하지 않습니다."))
                     : null;
 
-            block.updateAllInfo(prevBlock, parentBlock, canvasSocketReqDto.getBlockContents(), canvasSocketReqDto.getBlockLevel(), canvasSocketReqDto.getBlockIndent());
+            block.updateAllInfo(prevBlock, parentBlock, canvasSocketReqDto.getBlockContents());
             blockRepository.save(block);
 
             CanvasBlockDocument document = canvasBlockMapper.toDocument(block);
@@ -291,6 +291,8 @@ public class BlockService {
                 .content(block.getContents())
                 .feId(block.getFeId())
                 .type(block.getType())
+                .level(block.getLevel())
+                .indent(block.getIndent())
                 .workspaceMemberId(block.getWorkspaceMember() != null ? block.getWorkspaceMember().getWorkspaceMemberId() : 0)
                 .prevBlockFeId(block.getPrevBlock() != null ? block.getPrevBlock().getFeId() : null)
                 .build();
