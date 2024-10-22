@@ -14,7 +14,9 @@ public class NotificationDto {
         private Long userId;
         private Long workspaceId;
         private Long channelId;
-        private String message;
         private String channelName;
+        private Long threadId;
+        private Long parentThreadId;
+        private String message;
         private String memberName;
 }

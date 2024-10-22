@@ -82,9 +82,9 @@ public class ThreadService {
             }
             return thread.fromEntity(dto.getFiles());
         }
-        threadNotificationService.sendNotification(workspaceMember.getWorkspaceMemberId(),workspace.getWorkspaceId(), channel.getChannelId(), thread.getContent(), channel.getChannelName(), workspaceMember.getNickname());
+        threadNotificationService.sendNotification(workspace, workspaceMember, channel, thread);
 
-            return thread.fromEntity();
+        return thread.fromEntity();
     }
 
     public Page<ThreadResDto> threadList(Long channelId, Pageable pageable) {
@@ -100,18 +100,18 @@ public class ThreadService {
     }
 
     public Page<ThreadResDto> threadPage(ThreadPageReqDto dto) {
-        Channel channel = channelRepository.findById(dto.getChannelId()).orElseThrow(()->new EntityNotFoundException("channel not found"));
+        Channel channel = channelRepository.findById(dto.getChannelId()).orElseThrow(() -> new EntityNotFoundException("channel not found"));
 
         Long count = threadRepository.countByChannelAndParentIsNullAndIdGreaterThanEqual(channel, dto.getThreadId(), IsDeleted.N);
-        Long page = (count-1)/dto.getPageSize();
+        Long page = (count - 1) / dto.getPageSize();
         Pageable pageable = PageRequest.of(Math.toIntExact(page), Math.toIntExact(dto.getPageSize()));
 
         Page<Thread> threads = threadRepository.findAllByChannelAndIsDeletedAndParentIsNullOrderByCreatedTimeDesc(channel, IsDeleted.N, pageable);
         Page<ThreadResDto> threadResDtos = threads.map(thread -> {
             List<Thread> childThreads = threadRepository.findAllByParentAndIsDeleted(thread, IsDeleted.N);
             List<ThreadResDto> childThreadResDtos = childThreads.stream().map(Thread::fromEntity).toList();
-            List<ThreadFileDto> threadFileDtos = thread.getThreadFiles().stream().filter(f -> f.getIsDeleted()==IsDeleted.N).map(ThreadFile::fromEntity).toList();
-            return thread.fromEntity(childThreadResDtos,threadFileDtos);
+            List<ThreadFileDto> threadFileDtos = thread.getThreadFiles().stream().filter(f -> f.getIsDeleted() == IsDeleted.N).map(ThreadFile::fromEntity).toList();
+            return thread.fromEntity(childThreadResDtos, threadFileDtos);
         });
         return threadResDtos;
     }
