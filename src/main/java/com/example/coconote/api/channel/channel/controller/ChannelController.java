@@ -1,5 +1,6 @@
 package com.example.coconote.api.channel.channel.controller;
 
+import com.example.coconote.api.channel.channel.dto.request.ChannelAccessReqDto;
 import com.example.coconote.api.channel.channel.dto.request.ChannelCreateReqDto;
 import com.example.coconote.api.channel.channel.dto.request.ChannelUpdateReqDto;
 import com.example.coconote.api.channel.channel.dto.response.ChannelDetailResDto;
@@ -62,17 +63,13 @@ public class ChannelController {
     }
 
     @Operation(summary= "채널 공개 범위 수정")
-    @PatchMapping("/channel/access/{id}")
-    public ResponseEntity<Object> channelChangeAccessLevel(@PathVariable Long id, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
-        CommonResDto commonResDto;
-        Boolean value = channelService.channelChangeAccessLevel(id, customPrincipal.getEmail());
-        if(value) {
-            commonResDto = new CommonResDto(HttpStatus.OK, "access level of this channel is now public", value);
-        }else{
-            commonResDto = new CommonResDto(HttpStatus.OK, "access level of this channel is now private", value);
-        }
+    @PatchMapping("/channel/access")
+    public ResponseEntity<Object> channelChangeAccessLevel(@RequestBody ChannelAccessReqDto dto, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        ChannelDetailResDto resDto = channelService.channelChangeAccessLevel(dto, customPrincipal.getEmail());
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "channel is successfully updated", resDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
+
 
     @Operation(summary= "채널 삭제")
     @DeleteMapping("/channel/delete/{id}") // 댓글 삭제
