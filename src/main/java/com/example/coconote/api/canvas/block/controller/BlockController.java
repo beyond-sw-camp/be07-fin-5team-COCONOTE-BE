@@ -33,20 +33,20 @@ public class BlockController {
     private final WorkspaceRepository workspaceRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
 
-    @Operation(
-            summary = "Block 생성",
-            description = "새로운 Block 생성."
-    )
-    @PostMapping("/create")
-    public ResponseEntity<?> createBlock(@RequestBody CanvasSocketReqDto canvasSocketReqDto, @AuthenticationPrincipal CustomPrincipal member){
-        Long memberId = member.getMemberId();
-        Member sendMember = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("해당멤버가 없습니다."));
-        Workspace workspace = workspaceRepository.findById(canvasSocketReqDto.getWorkspaceId()).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스가 없습니다."));
-        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(sendMember, workspace, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스 멤버가 없습니다."));
-        CreateBlockResDto createBlockResDto = blockService.createBlock(canvasSocketReqDto, workspaceMember.getWorkspaceMemberId());
-        CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "Block이 성공적으로 생성되었습니다.", createBlockResDto);
-        return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
-    }
+//    @Operation(
+//            summary = "Block 생성",
+//            description = "새로운 Block 생성."
+//    )
+//    @PostMapping("/create")
+//    public ResponseEntity<?> createBlock(@RequestBody CanvasSocketReqDto canvasSocketReqDto, @AuthenticationPrincipal CustomPrincipal member){
+//        Long memberId = member.getMemberId();
+//        Member sendMember = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("해당멤버가 없습니다."));
+//        Workspace workspace = workspaceRepository.findById(canvasSocketReqDto.getWorkspaceId()).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스가 없습니다."));
+//        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(sendMember, workspace, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스 멤버가 없습니다."));
+//        CreateBlockResDto createBlockResDto = blockService.createBlock(canvasSocketReqDto, workspaceMember.getWorkspaceMemberId());
+//        CommonResDto commonResDto = new CommonResDto(HttpStatus.CREATED, "Block이 성공적으로 생성되었습니다.", createBlockResDto);
+//        return new ResponseEntity<>(commonResDto, HttpStatus.CREATED);
+//    }
 
 //    @Operation(
 //            summary = "Block Update",
