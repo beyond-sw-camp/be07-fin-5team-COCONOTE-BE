@@ -87,7 +87,7 @@ public class ChannelMemberService {
             if (channelMember.getIsDeleted().equals(IsDeleted.N)) {
                 throw new IllegalArgumentException("이미 채널에 가입되어 있는 회원입니다.");
             } else if (channelMember.getIsDeleted().equals(IsDeleted.Y)) {
-                channelMember.undeleteEntity();
+                channelMember.restoreEntity();
                 channelMemberRepository.save(channelMember);
                 return channelMember.fromEntity();
             }
