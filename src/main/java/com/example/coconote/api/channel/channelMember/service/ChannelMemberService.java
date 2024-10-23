@@ -45,6 +45,7 @@ public class ChannelMemberService {
                                 SectionRepository sectionRepository,
                                 MemberRepository memberRepository,
                                 WorkspaceRepository workspaceRepository) {
+
         this.channelMemberRepository = channelMemberRepository;
         this.workspaceMemberRepository = workspaceMemberRepository;
         this.channelRepository = channelRepository;
@@ -93,6 +94,7 @@ public class ChannelMemberService {
         }
         return null;
     }
+
 
     public List<ChannelMemberListResDto> channelMemberList(Long channelId) {
         Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new EntityNotFoundException("채널이 존재하지 않습니다."));
@@ -184,6 +186,11 @@ public class ChannelMemberService {
         if(workspaceMember.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 탈퇴한 회원입니다.");
         }
+        if(channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, workspaceMember, IsDeleted.Y).isPresent()) {
+            ChannelMember channelMemberCameBack = channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, workspaceMember, IsDeleted.Y).orElseThrow(()-> new EntityNotFoundException("없는 채널 회원입니다."));
+            channelMemberCameBack.restoreEntity();
+            return channelMemberCameBack.fromEntity();
+        }
         if(channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, workspaceMember, IsDeleted.N).isPresent()) {
             throw new IllegalArgumentException("이미 채널에 가입되어 있는 회원입니다.");
         }
@@ -191,6 +198,7 @@ public class ChannelMemberService {
         if (!Objects.equals(selfWorkspaceMember.getWorkspace().getWorkspaceId(), workspaceMember.getWorkspace().getWorkspaceId())) {
             throw new IllegalArgumentException("같은 워크스페이스의 회원만 초대할 수 있습니다.");
         }
+
         ChannelMember channelMember = ChannelMember.builder()
                 .channel(channel)
                 .workspaceMember(workspaceMember)

@@ -58,6 +58,11 @@ public class WorkspaceMemberService {
         if(workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N).isPresent()) {
             throw new IllegalArgumentException("이미 워크스페이스에 가입되어 있는 회원입니다.");
         }
+        if(workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.Y).isPresent()) {
+            WorkspaceMember workspaceMemberCameBack = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.Y).orElseThrow(()-> new EntityNotFoundException("없는 회원입니다."));
+            workspaceMemberCameBack.restoreEntity();
+            return workspaceMemberCameBack.fromEntity();
+        }
 
         WorkspaceMember workspaceMember = WorkspaceMember.builder()
                 .workspace(workspace)

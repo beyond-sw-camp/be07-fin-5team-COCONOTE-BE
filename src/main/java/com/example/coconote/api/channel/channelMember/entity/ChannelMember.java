@@ -75,8 +75,9 @@ public class ChannelMember extends BaseEntity {
         this.deletedTime = LocalDateTime.now();
     }
 
-    public void undeleteEntity() {
+    public void restoreEntity() {
         this.isDeleted = IsDeleted.N;
         this.deletedTime = null;
     }
+
 }
