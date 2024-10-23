@@ -64,35 +64,20 @@ public class ChannelMemberService {
             throw new IllegalArgumentException("이미 워크스페이스를 탈퇴한 회원입니다.");
         }
 
-        Optional<ChannelMember> optionalChannelMember = channelMemberRepository.findByChannelAndWorkspaceMember(channel, workspaceMember);
-        if (optionalChannelMember.isEmpty()){
-                ChannelMember newChannelMember;
-            if (workspaceMember.getWsRole() == WsRole.PMANAGER || workspaceMember.getWsRole() == WsRole.SMANAGER) {
-                newChannelMember = ChannelMember.builder()
+
+        ChannelMember channelMemberDeleted = channelMemberRepository.findByChannelAndWorkspaceMember(channel, workspaceMember).orElse(
+                ChannelMember.builder()
                         .workspaceMember(workspaceMember)
-                        .channelRole(ChannelRole.MANAGER)
                         .channel(channel)
-                        .build();
-            } else {
-                newChannelMember = ChannelMember.builder()
-                        .workspaceMember(workspaceMember)
-                        .channelRole(ChannelRole.USER)
-                        .channel(channel)
-                        .build();
-            }
-            channelMemberRepository.save(newChannelMember);
-            return newChannelMember.fromEntity();
-        } else {
-            ChannelMember channelMember = optionalChannelMember.get();
-            if (channelMember.getIsDeleted().equals(IsDeleted.N)) {
-                throw new IllegalArgumentException("이미 채널에 가입되어 있는 회원입니다.");
-            } else if (channelMember.getIsDeleted().equals(IsDeleted.Y)) {
-                channelMember.restoreEntity();
-                channelMemberRepository.save(channelMember);
-                return channelMember.fromEntity();
-            }
-        }
-        return null;
+                        .build());
+
+        if (channelMemberDeleted.getIsDeleted().equals(IsDeleted.Y)) {
+            channelMemberDeleted.restoreEntity();
+            return channelMemberDeleted.fromEntity();
+        };
+        channelMemberRepository.save(channelMemberDeleted);
+        return channelMemberDeleted.fromEntity();
+
     }
 
 
