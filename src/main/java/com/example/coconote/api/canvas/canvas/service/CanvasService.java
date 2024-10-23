@@ -70,12 +70,10 @@ public class CanvasService {
     }
 
     @Transactional
-    public CreateCanvasResDto createCanvas(CanvasSocketReqDto createCanvasReqDto, Long memberId) {
+    public CreateCanvasResDto createCanvas(CanvasSocketReqDto createCanvasReqDto, Long workspaceMemberId) {
         Channel channel = channelRepository.findById(createCanvasReqDto.getChannelId()).orElseThrow(() -> new IllegalArgumentException("채널이 존재하지 않습니다."));
 
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("해당멤버가 없습니다."));
-        Workspace workspace = workspaceRepository.findById(createCanvasReqDto.getWorkspaceId()).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스가 없습니다."));
-        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스 멤버가 없습니다."));
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByWorkspaceMemberIdAndIsDeleted(workspaceMemberId, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스 멤버가 없습니다."));
         Canvas parentCanvas = null;
         // 부모 캔버스 조회 (parentCanvasId가 null이 아닐 경우에만)
         if (createCanvasReqDto.getParentCanvasId() != null) {
