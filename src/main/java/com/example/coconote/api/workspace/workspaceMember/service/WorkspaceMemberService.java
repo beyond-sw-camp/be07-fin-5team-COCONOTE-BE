@@ -12,11 +12,14 @@ import com.example.coconote.api.workspace.workspace.repository.WorkspaceReposito
 import com.example.coconote.api.workspace.workspaceMember.dto.request.WorkspaceMemberRoleReqDto;
 import com.example.coconote.api.workspace.workspaceMember.dto.response.WorkspaceMemberResDto;
 import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
+import com.example.coconote.api.workspace.workspaceMember.entity.WsRole;
 import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
 import com.example.coconote.api.workspace.workspaceMember.dto.request.WorkspaceMemberUpdateReqDto;
 import com.example.coconote.common.IsDeleted;
+import com.example.coconote.security.util.CustomPrincipal;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.jdbc.Work;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -104,24 +107,44 @@ public class WorkspaceMemberService {
 
 
     @Transactional
-    public WorkspaceMemberResDto workspaceMemberChangeRole(WorkspaceMemberRoleReqDto dto) {
-        WorkspaceMember workspaceMember = workspaceMemberRepository.findById(dto.getId()).orElseThrow(()->new EntityNotFoundException("찾을 수 없습니다."));
+    public WorkspaceMemberResDto workspaceMemberChangeRole(WorkspaceMemberRoleReqDto dto, CustomPrincipal customPrincipal) {
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findById(dto.getId()).orElseThrow(()->new EntityNotFoundException("대상의 WorkspaceMember 정보를 찾을 수 없습니다."));
         if(workspaceMember.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 워크스페이스에서 탈퇴한 회원입니다.");
         }
-
+        if (workspaceMember.getWsRole() == WsRole.PMANAGER || workspaceMember.getWsRole() == WsRole.SMANAGER) {
+            throw new IllegalArgumentException("워크스페이스 소유자는 강등할 수 없습니다.");
+        }
+        Workspace workspace = workspaceMember.getWorkspace();
+        Member myMember = memberRepository.findById(customPrincipal.getMemberId()).orElseThrow(() -> new EntityNotFoundException("사용자의 Member 정보를 찾을 수 없습니다."));
+        WorkspaceMember myWorkspaceMember = workspaceMemberRepository.findByMemberAndWorkspace(myMember, workspace).orElseThrow(() -> new EntityNotFoundException("사용자의 WorkspaceMember 정보를 찾을 수 없습니다."));
+        if (myWorkspaceMember.getWsRole().equals(WsRole.USER)
+                || (myWorkspaceMember.getWsRole().equals(WsRole.SMANAGER) && workspaceMember.getWsRole().equals(WsRole.PMANAGER))) {
+            throw new IllegalArgumentException("권한 부여/박탈의 권한이 없습니다.");
+        }
+        if (workspaceMember.equals(myWorkspaceMember)) {
+            throw new IllegalArgumentException("권한 부여/박탈의 권한이 없습니다.");
+        }
         workspaceMemberRepository.save(workspaceMember);
-// OpenSearch에 인덱싱
+        // OpenSearch 에 인덱싱
         searchService.deleteWorkspaceMember(workspaceMember.getWorkspace().getWorkspaceId() ,workspaceMember.getWorkspaceMemberId());
-
         return workspaceMember.changeRole(dto.getWsRole());
     }
 
     @Transactional
-    public void workspaceMemberDelete(Long id) {
+    public void workspaceMemberDelete(Long id, CustomPrincipal customPrincipal) {
         WorkspaceMember workspaceMember = workspaceMemberRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("찾을 수 없습니다."));
         if (workspaceMember.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 워크스페이스에서 탈퇴한 회원입니다.");
+        }
+        Member myMember = memberRepository.findById(customPrincipal.getMemberId()).orElseThrow(() -> new EntityNotFoundException("사용자의 Member 정보를 찾을 수 없습니다."));
+        Workspace myWorkspace = workspaceMember.getWorkspace();
+        WorkspaceMember myWorkspaceMember = workspaceMemberRepository.findByMemberAndWorkspace(myMember, myWorkspace).orElseThrow(() -> new EntityNotFoundException("사용자의 WorkspcaeMember의 정보를 찾을 수 없습니다."));
+        if (myWorkspaceMember.getWsRole().equals(WsRole.USER) || (workspaceMember.getWsRole().equals(WsRole.PMANAGER))) {
+            throw new IllegalArgumentException("강퇴 권한이 없습니다.");
+        }
+        if (workspaceMember.equals(myWorkspaceMember)) {
+            throw new IllegalArgumentException("강퇴 권한이 없습니다.");
         }
 
         workspaceMember.deleteEntity();
@@ -146,6 +169,9 @@ public class WorkspaceMemberService {
         Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("회원을 찾을 수 없습니다."));
         Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(()-> new EntityNotFoundException("워크스페이스를 찾을 수 없습니다."));
         WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("존재하지 않는 워크스페이스 회원입니다."));
+        if (workspaceMember.getWsRole().equals(WsRole.PMANAGER)) {
+            throw new IllegalArgumentException("워크스페이스 소유자는 탈퇴할 수 없습니다.");
+        }
         workspaceMember.deleteEntity();
     }
 }

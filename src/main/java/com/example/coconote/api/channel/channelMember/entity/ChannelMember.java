@@ -72,8 +72,6 @@ public class ChannelMember extends BaseEntity {
 
     public void deleteEntity() {
         this.isDeleted = IsDeleted.Y;
-        this.isBookmark = false;
-        this.channelRole = ChannelRole.USER;
         this.deletedTime = LocalDateTime.now();
     }
 
