@@ -19,6 +19,7 @@ public class ThreadDocument {
     private String threadId;  // OpenSearch 문서 ID
     private String content;
     private String memberName;
+    private String profileImageUrl;
     private Long channelId;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private String createdTime;

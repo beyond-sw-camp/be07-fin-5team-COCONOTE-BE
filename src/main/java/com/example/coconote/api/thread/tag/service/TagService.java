@@ -61,7 +61,7 @@ public class TagService {
         Thread thread = threadRepository.findById(dto.getThreadId()).orElseThrow(()->new EntityNotFoundException("Thread not found"));
         ThreadTag threadTag = threadTagRepository.save(new ThreadTag(thread, tag));
 
-        ThreadDocument document = threadMapper.toDocument(thread);  // toDocument로 미리 변환
+        ThreadDocument document = threadMapper.toDocument(thread, thread.getWorkspaceMember().getProfileImage());  // toDocument로 미리 변환
         IndexEntityMessage<ThreadDocument> indexEntityMessage = new IndexEntityMessage<>(thread.getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.THREAD, document);
         kafkaTemplate.send("thread_entity_search", indexEntityMessage.toJson());
 
