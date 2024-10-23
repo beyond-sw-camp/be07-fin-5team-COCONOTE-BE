@@ -11,10 +11,13 @@ import com.example.coconote.api.channel.channelMember.repository.ChannelMemberRe
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
 import com.example.coconote.api.section.repository.SectionRepository;
+import com.example.coconote.api.workspace.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.workspace.repository.WorkspaceRepository;
 import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
+import com.example.coconote.api.workspace.workspaceMember.entity.WsRole;
 import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
 import com.example.coconote.common.IsDeleted;
+import com.example.coconote.security.util.CustomPrincipal;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,16 +36,21 @@ public class ChannelMemberService {
     private final WorkspaceMemberRepository workspaceMemberRepository;
     private final ChannelRepository channelRepository;
     private final MemberRepository memberRepository;
+    private final WorkspaceRepository workspaceRepository;
 
     @Autowired
     public ChannelMemberService(ChannelMemberRepository channelMemberRepository,
                                 WorkspaceMemberRepository workspaceMemberRepository,
                                 ChannelRepository channelRepository,
-                                MemberRepository memberRepository) {
+                                SectionRepository sectionRepository,
+                                MemberRepository memberRepository,
+                                WorkspaceRepository workspaceRepository) {
+
         this.channelMemberRepository = channelMemberRepository;
         this.workspaceMemberRepository = workspaceMemberRepository;
         this.channelRepository = channelRepository;
         this.memberRepository = memberRepository;
+        this.workspaceRepository = workspaceRepository;
     }
 
     public ChannelMemberListResDto channelMemberCreate(Long channelId, String email) {
@@ -56,6 +64,7 @@ public class ChannelMemberService {
             throw new IllegalArgumentException("이미 워크스페이스를 탈퇴한 회원입니다.");
         }
 
+
         ChannelMember channelMemberDeleted = channelMemberRepository.findByChannelAndWorkspaceMember(channel, workspaceMember).orElse(
                 ChannelMember.builder()
                         .workspaceMember(workspaceMember)
@@ -68,6 +77,7 @@ public class ChannelMemberService {
         };
         channelMemberRepository.save(channelMemberDeleted);
         return channelMemberDeleted.fromEntity();
+
     }
 
 
@@ -85,10 +95,25 @@ public class ChannelMemberService {
         return resDtos;
     }
 
-    public ChannelMemberListResDto channelMemberChangeRole(ChannelMemberRoleReqDto dto) {
+    public ChannelMemberListResDto channelMemberChangeRole(ChannelMemberRoleReqDto dto, String email) {
         ChannelMember channelMember = channelMemberRepository.findById(dto.getId()).orElseThrow(()->new EntityNotFoundException("존재하지 않는 회원입니다."));
         if(channelMember.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 채널을 탈퇴한 회원입니다.");
+        }
+        if (channelMember.getWorkspaceMember().getWsRole() == WsRole.SMANAGER || channelMember.getWorkspaceMember().getWsRole() == WsRole.PMANAGER) {
+            throw new IllegalArgumentException("워크스페이스 관리자는 변경할 수 없습니다.");
+        }
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findById(dto.getId()).orElseThrow(() -> new EntityNotFoundException("대상의 WorkspaceMember의 정보를 찾을 수 없습니다."));
+        Channel channel = channelMember.getChannel();
+        Member myMember = memberRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("사용자의 Member 정보를 찾을 수 없습니다."));
+        Workspace myWorkspace = workspaceMember.getWorkspace();
+        WorkspaceMember myWorkspaceMember = workspaceMemberRepository.findByMemberAndWorkspace(myMember, myWorkspace).orElseThrow(() -> new EntityNotFoundException("사용자의 Workspace 정보를 찾을 수 없습니다."));
+        ChannelMember myChannelMember = channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, myWorkspaceMember, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("사용자의 ChannelMember 정보를 찾을 수 없습니다."));
+        if (myChannelMember.getChannelRole().equals(ChannelRole.USER)) {
+            throw new IllegalArgumentException("변경 권한이 없습니다.");
+        }
+        if (myChannelMember.equals(channelMember)) {
+            throw new IllegalArgumentException("변경 권한이 없습니다.");
         }
         return channelMember.changeRole(dto.getChannelRole());
     }
@@ -113,8 +138,14 @@ public class ChannelMemberService {
         if(deleter.getChannelRole().equals(ChannelRole.USER)) {
             throw new IllegalArgumentException("회원을 강퇴시킬 권한이 없습니다.");
         }
+        if (workspaceMember.getWsRole() == WsRole.SMANAGER || workspaceMember.getWsRole() == WsRole.PMANAGER) {
+            throw new IllegalArgumentException("워크스페이스 관리자는 강퇴할 수 없습니다.");
+        }
         if(channel.getChannelType().equals(ChannelType.DEFAULT)) {
             throw new IllegalArgumentException("기본 채널에서는 다른 회원을 퇴장시킬 수 없습니다.");
+        }
+        if (deleter.equals(channelMember)) {
+            throw new IllegalArgumentException("강퇴 권한이 없습니다.");
         }
         channelMember.deleteEntity();
     }
