@@ -88,16 +88,16 @@ public class WorkspaceMemberController {
 
     @Operation(summary= "웤스 관리자 권한 부여/박탈")
     @PatchMapping("/workspace/member/role") // 채널 관리자 권한 부여/삭제
-    public ResponseEntity<Object> workspaceMemberChangeRole(@RequestBody WorkspaceMemberRoleReqDto dto) {
-        WorkspaceMemberResDto resDto = workspaceMemberService.workspaceMemberChangeRole(dto);
+    public ResponseEntity<Object> workspaceMemberChangeRole(@RequestBody WorkspaceMemberRoleReqDto dto, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        WorkspaceMemberResDto resDto = workspaceMemberService.workspaceMemberChangeRole(dto, customPrincipal);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "role is successfully changed", resDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 
     @Operation(summary= "웤스 회원 강퇴")
     @DeleteMapping("/workspace/member/delete/{id}")
-    public ResponseEntity<Object> workspaceMemberDelete(@PathVariable Long id) {
-        workspaceMemberService.workspaceMemberDelete(id);
+    public ResponseEntity<Object> workspaceMemberDelete(@PathVariable Long id, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        workspaceMemberService.workspaceMemberDelete(id, customPrincipal);
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "member is successfully deleted", null);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }

@@ -50,8 +50,8 @@ public class ChannelMemberController {
 
     @Operation(summary= "채널 관리자 권한 부여/박탈")
     @PatchMapping("/channel/member/role") // 채널 관리자 권한 부여/삭제
-    public ResponseEntity<Object> channelMemberChangeRole(@RequestBody ChannelMemberRoleReqDto dto) {
-        ChannelMemberListResDto resDto = channelMemberService.channelMemberChangeRole(dto);
+    public ResponseEntity<Object> channelMemberChangeRole(@RequestBody ChannelMemberRoleReqDto dto, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        ChannelMemberListResDto resDto = channelMemberService.channelMemberChangeRole(dto, customPrincipal.getEmail());
         CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "role is successfully changed", resDto);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
