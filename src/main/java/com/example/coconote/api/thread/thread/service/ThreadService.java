@@ -82,7 +82,7 @@ public class ThreadService {
             }
             return thread.fromEntity(dto.getFiles());
         }
-        threadNotificationService.sendNotification(workspace, workspaceMember, channel, thread);
+        threadNotificationService.sendNotification(workspaceMember, workspace, channel, thread, parentThread);
 
         return thread.fromEntity();
     }
