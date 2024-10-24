@@ -16,4 +16,6 @@ public interface ChannelMemberRepository extends JpaRepository<ChannelMember, Lo
     Optional<ChannelMember> findByChannelAndWorkspaceMember(Channel channel, WorkspaceMember workspaceMember);
     List<ChannelMember> findByWorkspaceMemberAndIsDeleted(WorkspaceMember workspaceMember, IsDeleted isDeleted);
     Optional<ChannelMember> findByIdAndIsDeleted(Long channelMemberId, IsDeleted isDeleted);
+
+    boolean existsByWorkspaceMember_WorkspaceMemberIdAndChannel_ChannelId(Long userId, Long channelId);
 }
