@@ -1,5 +1,6 @@
 package com.example.coconote.api.sse;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
