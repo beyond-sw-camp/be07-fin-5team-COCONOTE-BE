@@ -75,6 +75,10 @@ public class ChannelMemberService {
             channelMemberDeleted.restoreEntity();
             return channelMemberDeleted.fromEntity();
         };
+
+        if(workspaceMember.getWsRole().equals(WsRole.PMANAGER) || workspaceMember.getWsRole().equals(WsRole.SMANAGER)) {
+            channelMemberDeleted.changeRole(ChannelRole.MANAGER);
+        }
         channelMemberRepository.save(channelMemberDeleted);
         return channelMemberDeleted.fromEntity();
 
