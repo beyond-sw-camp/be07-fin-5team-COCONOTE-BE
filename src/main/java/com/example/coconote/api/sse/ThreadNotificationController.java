@@ -32,20 +32,25 @@ public class ThreadNotificationController {
         return threadNotificationService.subscribe(memberId, workspaceId);
     }
 
-//    // 사용자별 채널 알림 삭제 엔드포인트: 사용자가 특정 채널의 알림을 확인했을 때 호출
-//    @DeleteMapping("/channel/{channelId}")
-//    public ResponseEntity<Void> clearChannelNotifications(@PathVariable Long channelId, @AuthenticationPrincipal CustomPrincipal member) {
-//        threadNotificationService.markNotificationAsRead(member.getMemberId(), channelId);
-//        log.info("Clear notifications for member {} and channel {}", member.getMemberId(), channelId);
-//        return ResponseEntity.noContent().build();
-//    }
+    // 사용자별 채널의 읽지 않은 알림 수를 반환하는 엔드포인트
+    @GetMapping("/unread/count/{channelId}")
+    public ResponseEntity<Long> getUnreadCount(@PathVariable Long channelId ,@AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        Long memberId = customPrincipal.getMemberId();
 
-//    // 사용자별 채널의 읽지 않은 알림 수를 반환하는 엔드포인트
-//    @GetMapping("/channel/{channelId}/count")
-//    public ResponseEntity<Long> getUnreadNotificationCount(@PathVariable Long channelId, @AuthenticationPrincipal CustomPrincipal member) {
-//        Long unreadCount = threadNotificationService.getUnreadNotificationCount(member.getMemberId(), channelId);
-//        log.info("Unread notification count for member {} and channel {}: {}", member.getMemberId(), channelId, unreadCount);
-//        return ResponseEntity.ok(unreadCount);
-//    }
+        // Redis에서 읽지 않은 알림 수 조회
+        Long unreadCount = threadNotificationService.getUnreadCount(memberId, channelId);
+        return ResponseEntity.ok(unreadCount);
+    }
+
+    // 사용자별 채널 알림 삭제 엔드포인트: 사용자가 특정 채널의 알림을 확인했을 때 호출
+    @DeleteMapping("/mark-as-read/{channelId}")
+    public ResponseEntity<Void> markAsRead(@PathVariable Long channelId, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+        Long memberId = customPrincipal.getMemberId();
+
+        // Redis에서 해당 채널의 읽지 않은 알림 수를 삭제
+        threadNotificationService.markAsRead(memberId, channelId);
+        return ResponseEntity.noContent().build();
+    }
+
 }
 

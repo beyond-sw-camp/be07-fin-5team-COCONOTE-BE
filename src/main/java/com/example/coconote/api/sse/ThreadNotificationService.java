@@ -1,9 +1,12 @@
 package com.example.coconote.api.sse;
 
 import com.example.coconote.api.channel.channel.entity.Channel;
+import com.example.coconote.api.channel.channelMember.repository.ChannelMemberRepository;
+import com.example.coconote.api.search.mapper.WorkspaceMemberMapper;
 import com.example.coconote.api.thread.thread.entity.Thread;
 import com.example.coconote.api.workspace.workspace.entity.Workspace;
 import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
+import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
@@ -28,11 +31,13 @@ public class ThreadNotificationService {
     private final Map<Long, Map<Long, SseEmitter>> emitters = new ConcurrentHashMap<>();
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ChannelMemberRepository channelMemberRepository;
+    private final WorkspaceMemberRepository workspaceMemberRepository;
 
     // 사용자별 워크스페이스 알림 구독
     public SseEmitter subscribe(Long memberId, Long workspaceId) {
         // 타임아웃을 30분으로 설정
-        SseEmitter emitter = new SseEmitter(15 * 60 * 1000L);
+        SseEmitter emitter = new SseEmitter( 30 * 60 * 1000L); 
 
         // 워크스페이스 단위로 SseEmitter 저장
         Map<Long, SseEmitter> workspaceEmitters = emitters.computeIfAbsent(workspaceId, w -> new ConcurrentHashMap<>());
@@ -40,7 +45,8 @@ public class ThreadNotificationService {
         // 이미 존재하는 Emitter가 있는지 확인
         if (workspaceEmitters.containsKey(memberId)) {
             log.warn("Emitter already exists for memberId={}, workspaceId={}", memberId, workspaceId);
-            return workspaceEmitters.get(memberId); // 기존 Emitter 반환
+//            emitter 갱신
+            removeEmitter(workspaceId, memberId);
         }
 
         workspaceEmitters.put(memberId, emitter);
@@ -126,6 +132,9 @@ public class ThreadNotificationService {
             log.info("Sending redisMessage: {}", messageJson);
             redisTemplate.convertAndSend("notification-channel", messageJson);
             log.info("Notification sent successfully: {}", notification);
+
+//            redis에 읽지 않은 알림 수 증가
+            incrementUnreadCount(member.getWorkspaceMemberId(), channel.getChannelId());
         } catch (JsonProcessingException e) {
             log.error("Failed to convert notification to JSON", e);
         }
@@ -151,6 +160,16 @@ public class ThreadNotificationService {
 
         if (emitters.containsKey(workspaceId)) {
             emitters.get(workspaceId).forEach((memberId, emitter) -> {
+                // 받는 사용자가 해당 채널에 가입되었는지 확인
+                Long channelId = extractChannelIdFromNotification(notificationJson);
+//                워크스페이스 아이디와 멤버 아이디로 워크스페이스 멤버를 찾는다.
+                WorkspaceMember workspaceMember = workspaceMemberRepository.findByWorkspace_WorkspaceIdAndMember_Id(workspaceId, memberId);
+
+                if (!isUserSubscribedToChannel(workspaceMember.getWorkspaceMemberId(), channelId)) {
+                    log.info("User {} is not subscribed to channel {}. Skipping notification.", memberId, channelId);
+                    return; // 채널에 가입되지 않은 경우 알림 전송 중단
+                }
+
                 try {
                     emitter.send(SseEmitter.event()
                             .name("notification")
@@ -166,6 +185,40 @@ public class ThreadNotificationService {
         }
     }
 
+
+    // 알림 JSON에서 채널 ID를 추출하는 메서드
+    private Long extractChannelIdFromNotification(String notificationJson) {
+        try {
+            Map<String, Object> notificationMap = objectMapper.readValue(notificationJson, Map.class);
+            return Long.valueOf(notificationMap.get("channelId").toString());
+        } catch (Exception e) {
+            log.error("Failed to extract channelId from notification JSON", e);
+            return null;
+        }
+    }
+
+    // 사용자가 해당 채널에 가입되어 있는지 확인하는 메서드
+    private boolean isUserSubscribedToChannel(Long userId, Long channelId) {
+        return channelMemberRepository.existsByWorkspaceMember_WorkspaceMemberIdAndChannel_ChannelId(userId, channelId);
+    }
+
+    // Redis에 읽지 않은 알림 수 증가
+    private void incrementUnreadCount(Long userId, Long channelId) {
+        redisTemplate.opsForValue().increment("unread_notifications:" + userId + ":" + channelId);
+    }
+
+    // 사용자와 채널에 대한 읽지 않은 알림 수를 Redis에서 가져오는 메서드
+    public Long getUnreadCount(Long userId, Long channelId) {
+        String key = "unread_notifications:" + userId + ":" + channelId;
+        String count = redisTemplate.opsForValue().get(key);
+        return count != null ? Long.valueOf(count) : 0L;
+    }
+
+    // 사용자와 채널에 대한 읽지 않은 알림 수를 Redis에서 삭제하는 메서드
+    public void markAsRead(Long userId, Long channelId) {
+        String key = "unread_notifications:" + userId + ":" + channelId;
+        redisTemplate.delete(key); // 읽음 처리
+    }
 
     // Emitter 개수 로그 출력 메서드
     private void logEmitterCount(Long workspaceId, int count) {
