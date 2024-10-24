@@ -126,6 +126,9 @@ public class ThreadNotificationService {
             log.info("Sending redisMessage: {}", messageJson);
             redisTemplate.convertAndSend("notification-channel", messageJson);
             log.info("Notification sent successfully: {}", notification);
+
+//            redis에 읽지 않은 알림 수 증가
+            incrementUnreadCount(member.getWorkspaceMemberId(), channel.getChannelId());
         } catch (JsonProcessingException e) {
             log.error("Failed to convert notification to JSON", e);
         }
@@ -166,6 +169,23 @@ public class ThreadNotificationService {
         }
     }
 
+    // Redis에 읽지 않은 알림 수 증가
+    private void incrementUnreadCount(Long userId, Long channelId) {
+        redisTemplate.opsForValue().increment("unread_notifications:" + userId + ":" + channelId);
+    }
+
+    // 사용자와 채널에 대한 읽지 않은 알림 수를 Redis에서 가져오는 메서드
+    public Long getUnreadCount(Long userId, Long channelId) {
+        String key = "unread_notifications:" + userId + ":" + channelId;
+        String count = redisTemplate.opsForValue().get(key);
+        return count != null ? Long.valueOf(count) : 0L;
+    }
+
+    // 사용자와 채널에 대한 읽지 않은 알림 수를 Redis에서 삭제하는 메서드
+    public void markAsRead(Long userId, Long channelId) {
+        String key = "unread_notifications:" + userId + ":" + channelId;
+        redisTemplate.delete(key); // 읽음 처리
+    }
 
     // Emitter 개수 로그 출력 메서드
     private void logEmitterCount(Long workspaceId, int count) {
