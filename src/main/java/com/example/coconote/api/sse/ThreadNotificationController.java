@@ -43,8 +43,8 @@ public class ThreadNotificationController {
     }
 
     // 사용자별 채널 알림 삭제 엔드포인트: 사용자가 특정 채널의 알림을 확인했을 때 호출
-    @PostMapping("/markAsRead")
-    public ResponseEntity<Void> markAsRead(@RequestParam("channelId") Long channelId, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+    @DeleteMapping("/mark-as-read/{channelId}")
+    public ResponseEntity<Void> markAsRead(@PathVariable Long channelId, @AuthenticationPrincipal CustomPrincipal customPrincipal) {
         Long memberId = customPrincipal.getMemberId();
 
         // Redis에서 해당 채널의 읽지 않은 알림 수를 삭제
