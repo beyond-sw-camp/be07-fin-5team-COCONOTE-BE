@@ -345,8 +345,8 @@ public class CanvasService {
 
     private final SimpMessageSendingOperations messagingTemplate;
 
-    @KafkaListener(topics = "canvas-topic", groupId = "websocket-group"
-            , containerFactory = "kafkaListenerContainerFactory")
+    @Transactional
+    @KafkaListener(topics = "canvas-topic", groupId = "websocket-group")
     public void consumerProductQuantity(String message) { // return 시, string 형식으로 message가 들어옴
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
