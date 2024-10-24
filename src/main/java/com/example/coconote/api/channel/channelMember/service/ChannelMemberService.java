@@ -101,17 +101,18 @@ public class ChannelMemberService {
 
     public ChannelMemberListResDto channelMemberChangeRole(ChannelMemberRoleReqDto dto, String email) {
         ChannelMember channelMember = channelMemberRepository.findById(dto.getId()).orElseThrow(()->new EntityNotFoundException("존재하지 않는 회원입니다."));
+//      채널멤버 =>  채널, 워크스페이스 멤버
         if(channelMember.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 채널을 탈퇴한 회원입니다.");
         }
         if (channelMember.getWorkspaceMember().getWsRole() == WsRole.SMANAGER || channelMember.getWorkspaceMember().getWsRole() == WsRole.PMANAGER) {
             throw new IllegalArgumentException("워크스페이스 관리자는 변경할 수 없습니다.");
         }
-        WorkspaceMember workspaceMember = workspaceMemberRepository.findById(dto.getId()).orElseThrow(() -> new EntityNotFoundException("대상의 WorkspaceMember의 정보를 찾을 수 없습니다."));
+        WorkspaceMember workspaceMember = channelMember.getWorkspaceMember();
+        Workspace workspace = workspaceMember.getWorkspace();
         Channel channel = channelMember.getChannel();
         Member myMember = memberRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("사용자의 Member 정보를 찾을 수 없습니다."));
-        Workspace myWorkspace = workspaceMember.getWorkspace();
-        WorkspaceMember myWorkspaceMember = workspaceMemberRepository.findByMemberAndWorkspace(myMember, myWorkspace).orElseThrow(() -> new EntityNotFoundException("사용자의 Workspace 정보를 찾을 수 없습니다."));
+        WorkspaceMember myWorkspaceMember = workspaceMemberRepository.findByMemberAndWorkspace(myMember, workspace).orElseThrow(() -> new EntityNotFoundException("사용자의 Workspace 정보를 찾을 수 없습니다."));
         ChannelMember myChannelMember = channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, myWorkspaceMember, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("사용자의 ChannelMember 정보를 찾을 수 없습니다."));
         if (myChannelMember.getChannelRole().equals(ChannelRole.USER)) {
             throw new IllegalArgumentException("변경 권한이 없습니다.");

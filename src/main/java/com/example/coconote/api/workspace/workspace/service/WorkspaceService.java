@@ -110,9 +110,9 @@ public class WorkspaceService {
         workspace.getWorkspaceMembers().add(workspaceMember);
 
         ChannelMemberListResDto channelMemberDefault = channelMemberService.channelMemberCreate(channelDefault.getChannelId(), email);
-        channelMemberService.channelMemberChangeRole(new ChannelMemberRoleReqDto(channelMemberDefault.getId(), ChannelRole.MANAGER), email);
+//        channelMemberService.channelMemberChangeRole(new ChannelMemberRoleReqDto(channelMemberDefault.getId(), ChannelRole.MANAGER), email);
         ChannelMemberListResDto channelMemberNotice = channelMemberService.channelMemberCreate(channelNotice.getChannelId(), email);
-        channelMemberService.channelMemberChangeRole(new ChannelMemberRoleReqDto(channelMemberNotice.getId(), ChannelRole.MANAGER), email);
+//        channelMemberService.channelMemberChangeRole(new ChannelMemberRoleReqDto(channelMemberNotice.getId(), ChannelRole.MANAGER), email);
 
 
 
