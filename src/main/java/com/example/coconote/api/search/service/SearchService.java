@@ -561,13 +561,13 @@ public class SearchService {
                                         for (String tag : tags) {
                                             b.should(sq -> sq
                                                     .term(t -> t
-                                                            .field("tags")
+                                                            .field("tags.keyword") // 분석되지 않은 필드 사용 (예: tags.keyword)
                                                             .value(FieldValue.of(tag))
                                                     )
                                             );
                                         }
                                         // 최소한 하나 이상의 태그가 일치하는 결과만 반환
-                                        b.minimumShouldMatch(String.valueOf(tags.size()));
+                                        b.minimumShouldMatch(String.valueOf(tags.size())); // 최소 일치 개수를 1로 설정
                                         return b;
                                     })
                             ),
