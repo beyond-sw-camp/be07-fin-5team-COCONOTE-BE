@@ -68,6 +68,7 @@ public class WorkspaceMemberService {
                 .workspace(workspace)
                 .member(member)
                 .nickname(member.getNickname())
+                .memberName(member.getNickname())
                 .build();
         workspaceMemberRepository.save(workspaceMember);
 
