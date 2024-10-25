@@ -72,7 +72,7 @@ public class WorkspaceMemberService {
                 .build();
         workspaceMemberRepository.save(workspaceMember);
 
-// OpenSearch에 인덱싱
+        // OpenSearch에 인덱싱
         WorkspaceMemberDocument document = workspaceMemberMapper.toDocument(workspaceMember);
         IndexEntityMessage<WorkspaceMemberDocument> indexEntityMessage = new IndexEntityMessage<>(workspace.getWorkspaceId(), EntityType.WORKSPACE_MEMBER , document);
         kafkaTemplate.send("workspace_member_entity_search", indexEntityMessage.toJson());
