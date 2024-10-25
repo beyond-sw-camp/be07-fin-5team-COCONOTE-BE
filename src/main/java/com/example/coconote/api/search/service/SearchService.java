@@ -340,6 +340,7 @@ public class SearchService {
                         .channelId(document.source().getChannelId())
                         .createdTime(document.source().getCreatedTime())
                         .parentThreadId(document.source().getParentThreadId())
+                        .fileUrls(document.source().getFileUrls())
                         .tags(document.source().getTags())
                         .build())
                 .collect(Collectors.toList());
