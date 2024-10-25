@@ -121,9 +121,45 @@ public class TagService {
     }
 
     public void deleteTag(Long tagId) {
-        Tag tag = tagRepository.findById(tagId).orElseThrow(()->new EntityNotFoundException("Tag not found"));
+        // 1. 태그 조회
+        Tag tag = tagRepository.findById(tagId)
+                .orElseThrow(() -> new EntityNotFoundException("Tag not found"));
+
+        // 2. 태그를 참조하는 ThreadTag들을 조회
+        List<ThreadTag> affectedThreadTags = threadTagRepository.findByTag_Id(tag.getId());
+        List<Thread> affectedThreads = affectedThreadTags.stream()
+                .map(ThreadTag::getThread)
+                .distinct() // 중복 제거
+                .collect(Collectors.toList());
+
+        // 3. 관련된 ThreadTag 삭제
+        threadTagRepository.deleteAll(affectedThreadTags);
+
+        // 4. 태그를 소프트 삭제
         tag.deleteTag();
+        tagRepository.save(tag);
+
+        // 5. 검색 인덱스에서 관련된 쓰레드를 업데이트하여 삭제된 태그를 반영
+        for (Thread thread : affectedThreads) {
+            // 삭제된 태그를 반영하여 ThreadDocument 생성
+            ThreadDocument document = threadMapper.toDocument(thread, thread.getWorkspaceMember().getProfileImage());
+
+            // 필터링된 태그 목록 생성 (삭제된 태그를 제외)
+            List<String> updatedTags = document.getTags().stream()
+                    .filter(tagName -> !tagName.equals(tag.getName()))
+                    .collect(Collectors.toList());
+            document.setTags(updatedTags); // 태그 목록 업데이트
+
+            // 검색 인덱스 메시지 생성 및 Kafka로 전송
+            IndexEntityMessage<ThreadDocument> indexEntityMessage = new IndexEntityMessage<>(
+                    thread.getChannel().getSection().getWorkspace().getWorkspaceId(),
+                    EntityType.THREAD,
+                    document
+            );
+            kafkaTemplate.send("thread_entity_search", indexEntityMessage.toJson());
+        }
     }
+
 
 
     @Transactional
