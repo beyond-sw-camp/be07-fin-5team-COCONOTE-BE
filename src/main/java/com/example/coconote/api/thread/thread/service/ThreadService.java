@@ -91,7 +91,7 @@ public class ThreadService {
         threadNotificationService.sendNotification(workspaceMember, workspace, channel, thread, parentThread);
 
         // 파일 정보를 포함하여 ThreadDocument 생성
-        ThreadDocument document = threadMapper.toDocument(thread, workspaceMember.getProfileImage());
+        ThreadDocument document = threadMapper.toDocument(thread);
         IndexEntityMessage<ThreadDocument> indexEntityMessage = new IndexEntityMessage<>(workspace.getWorkspaceId(), EntityType.THREAD, document);
         log.info("indexEntityMessage : {}", indexEntityMessage);
         kafkaTemplate.send("thread_entity_search", indexEntityMessage.toJson());
@@ -146,7 +146,7 @@ public class ThreadService {
         Thread thread = threadRepository.findById(threadReqDto.getThreadId()).orElseThrow(() -> new EntityNotFoundException("thread not found"));
         thread.updateThread(threadReqDto);
 
-        ThreadDocument document = threadMapper.toDocument(thread, thread.getWorkspaceMember().getProfileImage());  // toDocument로 미리 변환
+        ThreadDocument document = threadMapper.toDocument(thread); // toDocument로 미리 변환
         IndexEntityMessage<ThreadDocument> indexEntityMessage = new IndexEntityMessage<>(thread.getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.THREAD, document);
         kafkaTemplate.send("thread_entity_search", indexEntityMessage.toJson());
 

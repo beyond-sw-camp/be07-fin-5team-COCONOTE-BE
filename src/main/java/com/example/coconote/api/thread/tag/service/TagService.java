@@ -67,7 +67,7 @@ public class TagService {
         Thread thread = threadRepository.findById(dto.getThreadId()).orElseThrow(()->new EntityNotFoundException("Thread not found"));
         ThreadTag threadTag = threadTagRepository.save(new ThreadTag(thread, tag));
 
-        ThreadDocument document = threadMapper.toDocument(thread, thread.getWorkspaceMember().getProfileImage());  // toDocument로 미리 변환
+        ThreadDocument document = threadMapper.toDocument(thread);  // toDocument로 미리 변환
         IndexEntityMessage<ThreadDocument> indexEntityMessage = new IndexEntityMessage<>(thread.getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.THREAD, document);
         kafkaTemplate.send("thread_entity_search", indexEntityMessage.toJson());
 
@@ -106,7 +106,7 @@ public class TagService {
         // 3. 각 쓰레드의 검색 인덱스를 업데이트하여 변경된 태그를 반영
         for (Thread thread : affectedThreads) {
             // ThreadDocument 생성
-            ThreadDocument document = threadMapper.toDocument(thread, thread.getWorkspaceMember().getProfileImage());
+            ThreadDocument document = threadMapper.toDocument(thread);
 
             // 검색 인덱스 메시지 생성 및 Kafka로 전송
             IndexEntityMessage<ThreadDocument> indexEntityMessage = new IndexEntityMessage<>(
@@ -142,7 +142,7 @@ public class TagService {
         // 5. 검색 인덱스에서 관련된 쓰레드를 업데이트하여 삭제된 태그를 반영
         for (Thread thread : affectedThreads) {
             // 삭제된 태그를 반영하여 ThreadDocument 생성
-            ThreadDocument document = threadMapper.toDocument(thread, thread.getWorkspaceMember().getProfileImage());
+            ThreadDocument document = threadMapper.toDocument(thread);
 
             // 필터링된 태그 목록 생성 (삭제된 태그를 제외)
             List<String> updatedTags = document.getTags().stream()

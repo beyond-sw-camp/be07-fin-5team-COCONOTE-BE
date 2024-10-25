@@ -3,22 +3,19 @@ package com.example.coconote.api.search.service;
 import com.example.coconote.api.search.dto.*;
 import com.example.coconote.api.search.entity.*;
 import com.example.coconote.api.search.mapper.*;
-import com.example.coconote.api.thread.thread.entity.Thread;
+import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
+import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.FieldValue;
-import org.opensearch.client.opensearch._types.query_dsl.MultiMatchQuery;
-import org.opensearch.client.opensearch._types.query_dsl.TermsQueryField;
 import org.opensearch.client.opensearch._types.query_dsl.TextQueryType;
-import org.opensearch.client.opensearch.core.ExistsRequest;
 import org.opensearch.client.opensearch.core.SearchResponse;
-import org.opensearch.client.opensearch.indices.CreateIndexRequest;
-import org.opensearch.client.opensearch.indices.CreateIndexResponse;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -40,6 +37,8 @@ public class SearchService {
     private final ChannelMapper channelMapper;
     private final ThreadMapper threadMapper;
     private final CanvasBlockMapper canvasBlockMapper;
+    private final WorkspaceMemberRepository workspaceMemberRepository;
+
 
     // 워크스페이스 ID를 기반으로 에일리어스를 동적으로 생성
     private String getAliasForWorkspace(Long workspaceId) {
@@ -332,17 +331,25 @@ public class SearchService {
 
         // DTO로 변환
         List<ThreadSearchResultDto> threads = response.hits().hits().stream()
-                .map(document -> ThreadSearchResultDto.builder()
-                        .threadId(document.source().getThreadId())
-                        .content(document.source().getContent())
-                        .memberName(document.source().getMemberName())
-                        .profileImageUrl(document.source().getProfileImageUrl())
-                        .channelId(document.source().getChannelId())
-                        .createdTime(document.source().getCreatedTime())
-                        .parentThreadId(document.source().getParentThreadId())
-                        .fileUrls(document.source().getFileUrls())
-                        .tags(document.source().getTags())
-                        .build())
+                .map(document -> {
+                    // WorkspaceMember 조회
+                    Long workspaceMemberId = document.source().getWorkspaceMemberId();
+                    WorkspaceMember workspaceMember = workspaceMemberRepository.findById(workspaceMemberId)
+                            .orElseThrow(() -> new EntityNotFoundException("Workspace member not found with ID: " + workspaceMemberId));
+
+                    // DTO 생성
+                    return ThreadSearchResultDto.builder()
+                            .threadId(document.source().getThreadId())
+                            .content(document.source().getContent())
+                            .memberName(workspaceMember.getNickname()) // WorkspaceMember에서 memberName 설정
+                            .profileImageUrl(workspaceMember.getProfileImage()) // WorkspaceMember에서 profileImageUrl 설정
+                            .channelId(document.source().getChannelId())
+                            .createdTime(document.source().getCreatedTime())
+                            .parentThreadId(document.source().getParentThreadId())
+                            .fileUrls(document.source().getFileUrls())
+                            .tags(document.source().getTags())
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         return new SearchResultWithTotal<>(threads, response.hits().total().value());
@@ -577,30 +584,49 @@ public class SearchService {
 
             // 검색 결과를 DTO로 변환
             List<ThreadSearchResultDto> threads = response.hits().hits().stream()
-                    .map(document -> ThreadSearchResultDto.builder()
-                            .threadId(document.source().getThreadId())
-                            .content(document.source().getContent())
-                            .memberName(document.source().getMemberName())
-                            .profileImageUrl(document.source().getProfileImageUrl())
-                            .channelId(document.source().getChannelId())
-                            .createdTime(document.source().getCreatedTime())
-                            .tags(document.source().getTags())
-                            .fileUrls(document.source().getFileUrls()) // 파일 URL 추가
-                            .childThreads(document.source().getChildThreads().stream() // 자식 쓰레드 추가
-                                    .map(child -> ThreadSearchResultDto.builder()
+                    .map(document -> {
+                        // WorkspaceMember 조회
+                        Long workspaceMemberId = document.source().getWorkspaceMemberId();
+                        WorkspaceMember workspaceMember = workspaceMemberRepository.findById(workspaceMemberId)
+                                .orElseThrow(() -> new EntityNotFoundException("Workspace member not found with ID: " + workspaceMemberId));
+
+                        // 자식 쓰레드 정보 변환
+                        List<ThreadSearchResultDto> childThreadDtos = document.source().getChildThreads().stream()
+                                .map(child -> {
+                                    // 자식 쓰레드의 WorkspaceMember 조회
+                                    Long childWorkspaceMemberId = child.getWorkspaceMemberId();
+                                    WorkspaceMember childWorkspaceMember = workspaceMemberRepository.findById(childWorkspaceMemberId)
+                                            .orElseThrow(() -> new EntityNotFoundException("Workspace member not found with ID: " + childWorkspaceMemberId));
+
+                                    // 자식 쓰레드 DTO 생성
+                                    return ThreadSearchResultDto.builder()
                                             .threadId(child.getThreadId())
                                             .content(child.getContent())
-                                            .memberName(child.getMemberName())
-                                            .profileImageUrl(child.getProfileImageUrl())
+                                            .memberName(childWorkspaceMember.getNickname()) // 자식 쓰레드의 memberName 설정
+                                            .profileImageUrl(childWorkspaceMember.getProfileImage()) // 자식 쓰레드의 profileImageUrl 설정
                                             .channelId(child.getChannelId())
                                             .createdTime(child.getCreatedTime())
                                             .tags(child.getTags())
                                             .fileUrls(child.getFileUrls())
                                             .parentThreadId(child.getParentThreadId())
-                                            .build())
-                                    .collect(Collectors.toList()))
-                            .parentThreadId(document.source().getParentThreadId()) // 부모 쓰레드 ID 추가
-                            .build())
+                                            .build();
+                                })
+                                .collect(Collectors.toList());
+
+                        // 상위 쓰레드 DTO 생성
+                        return ThreadSearchResultDto.builder()
+                                .threadId(document.source().getThreadId())
+                                .content(document.source().getContent())
+                                .memberName(workspaceMember.getNickname()) // WorkspaceMember에서 memberName 설정
+                                .profileImageUrl(workspaceMember.getProfileImage()) // WorkspaceMember에서 profileImageUrl 설정
+                                .channelId(document.source().getChannelId())
+                                .createdTime(document.source().getCreatedTime())
+                                .tags(document.source().getTags())
+                                .fileUrls(document.source().getFileUrls()) // 파일 URL 추가
+                                .childThreads(childThreadDtos) // 자식 쓰레드 추가
+                                .parentThreadId(document.source().getParentThreadId()) // 부모 쓰레드 ID 추가
+                                .build();
+                    })
                     .collect(Collectors.toList());
 
             return new SearchResultWithTotal<>(threads, response.hits().total().value());
