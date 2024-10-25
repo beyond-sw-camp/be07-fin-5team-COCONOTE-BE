@@ -170,7 +170,7 @@ public class SearchService {
                                                         b.should(sh -> sh.multiMatch(mm -> mm
                                                                 .query(keyword)
                                                                 .fields(fields)
-                                                                .type(TextQueryType.BestFields) // TextQueryType 사용
+                                                                .type(TextQueryType.PhrasePrefix) // TextQueryType 사용
                                                         ));
                                                     }
                                                 });
@@ -199,7 +199,7 @@ public class SearchService {
                                     .multiMatch(m -> m
                                             .fields(fields)
                                             .query(keyword)
-                                            .type(TextQueryType.BestFields)
+                                            .type(TextQueryType.PhrasePrefix)
                                     )
                             )
                             .size(10),
