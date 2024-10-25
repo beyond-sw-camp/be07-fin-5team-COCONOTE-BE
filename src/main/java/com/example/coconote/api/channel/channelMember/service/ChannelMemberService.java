@@ -131,24 +131,25 @@ public class ChannelMemberService {
     }
 
     public void channelMemberDelete(Long id, String email) {
-        Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("회원을 찾을 수 없습니다."));
-        ChannelMember channelMember = channelMemberRepository.findByIdAndIsDeleted(id, IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("채널 회원을 찾을 수 없습니다."));
-        Channel channel = channelMember.getChannel();
-        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, channel.getSection().getWorkspace(), IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("워크스페이스 회원을 찾을 수 없습니다."));
-        ChannelMember deleter = channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, workspaceMember, IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("채널 회원을 찾을 수 없습니다."));
-        if(deleter.getChannelRole().equals(ChannelRole.USER)) {
-            throw new IllegalArgumentException("회원을 강퇴시킬 권한이 없습니다.");
+        ChannelMember deletedChannelMember = channelMemberRepository.findByIdAndIsDeleted(id, IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("채널 회원을 찾을 수 없습니다."));
+        WorkspaceMember deletedWorkspaceMember = deletedChannelMember.getWorkspaceMember();
+        Channel channel = deletedChannelMember.getChannel();
+        Member deleterMember = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(deleterMember, channel.getSection().getWorkspace(), IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("워크스페이스 회원을 찾을 수 없습니다."));
+        ChannelMember deleterChannelMember = channelMemberRepository.findByChannelAndWorkspaceMemberAndIsDeleted(channel, workspaceMember, IsDeleted.N).orElseThrow(()-> new EntityNotFoundException("채널 회원을 찾을 수 없습니다."));
+        if(deleterChannelMember.getChannelRole().equals(ChannelRole.USER)) {
+            throw new IllegalArgumentException("강퇴 권한이 없습니다.");
         }
-        if (workspaceMember.getWsRole() == WsRole.SMANAGER || workspaceMember.getWsRole() == WsRole.PMANAGER) {
+        if (deletedWorkspaceMember.getWsRole().equals(WsRole.SMANAGER) || deletedWorkspaceMember.getWsRole().equals(WsRole.PMANAGER)) {
             throw new IllegalArgumentException("워크스페이스 관리자는 강퇴할 수 없습니다.");
         }
         if(channel.getChannelType().equals(ChannelType.DEFAULT)) {
-            throw new IllegalArgumentException("기본 채널에서는 다른 회원을 퇴장시킬 수 없습니다.");
+            throw new IllegalArgumentException("기본 채널에서는 다른 회원을 강퇴시킬 수 없습니다.");
         }
-        if (deleter.equals(channelMember)) {
+        if (deleterChannelMember.equals(deletedChannelMember)) {
             throw new IllegalArgumentException("강퇴 권한이 없습니다.");
         }
-        channelMember.deleteEntity();
+        deletedChannelMember.deleteEntity();
     }
 
 

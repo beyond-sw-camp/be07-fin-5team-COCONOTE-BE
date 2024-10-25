@@ -104,6 +104,7 @@ public class WorkspaceService {
                 .workspace(workspace)
                 .member(member)
                 .nickname(member.getNickname())
+                .memberName(member.getNickname())
                 .wsRole(WsRole.PMANAGER)
                 .build();
         workspaceMemberRepository.save(workspaceMember);
