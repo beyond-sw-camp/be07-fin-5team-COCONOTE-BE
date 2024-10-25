@@ -23,4 +23,6 @@ public interface ThreadTagRepository extends JpaRepository<ThreadTag, Long> {
             @Param("channelId") Long channelId,
             @Param("tagIds") List<Long> tagIds,
             @Param("tagCount") Long tagCount);
+
+    List<ThreadTag> findByTag_Id(Long id);
 }

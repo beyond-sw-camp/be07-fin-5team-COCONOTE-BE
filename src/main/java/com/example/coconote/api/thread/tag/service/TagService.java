@@ -90,8 +90,33 @@ public class TagService {
     }
 
     public Tag updateTag(TagUpdateReqDto dto) {
-        Tag tag = tagRepository.findById(dto.getTagId()).orElseThrow(()->new EntityNotFoundException("Tag not found"));
+// 1. 태그를 조회하고 이름을 업데이트
+        Tag tag = tagRepository.findById(dto.getTagId())
+                .orElseThrow(() -> new EntityNotFoundException("Tag not found"));
         tag.updateName(dto.getUpdateTagName());
+        tagRepository.save(tag);
+
+        // 2. 해당 태그를 참조하는 쓰레드들을 조회
+        List<ThreadTag> affectedThreadTags = threadTagRepository.findByTag_Id(tag.getId());
+        List<Thread> affectedThreads = affectedThreadTags.stream()
+                .map(ThreadTag::getThread)
+                .distinct() // 중복 제거
+                .toList();
+
+        // 3. 각 쓰레드의 검색 인덱스를 업데이트하여 변경된 태그를 반영
+        for (Thread thread : affectedThreads) {
+            // ThreadDocument 생성
+            ThreadDocument document = threadMapper.toDocument(thread, thread.getWorkspaceMember().getProfileImage());
+
+            // 검색 인덱스 메시지 생성 및 Kafka로 전송
+            IndexEntityMessage<ThreadDocument> indexEntityMessage = new IndexEntityMessage<>(
+                    thread.getChannel().getSection().getWorkspace().getWorkspaceId(),
+                    EntityType.THREAD,
+                    document
+            );
+            kafkaTemplate.send("thread_entity_search", indexEntityMessage.toJson());
+        }
+
         return tag;
     }
 
