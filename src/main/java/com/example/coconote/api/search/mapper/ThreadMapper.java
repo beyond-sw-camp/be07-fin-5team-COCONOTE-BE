@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 @Component
 public class ThreadMapper {
 
-    public ThreadDocument toDocument(Thread thread, String profileImageUrl) {
+    public ThreadDocument toDocument(Thread thread) {
         // 파일 목록 변환
         List<String> fileUrls = thread.getThreadFiles().stream()
                 .map(ThreadFile::getFileURL)
@@ -25,7 +25,7 @@ public class ThreadMapper {
 
         // 자식 쓰레드 변환
         List<ThreadDocument> childThreads = thread.getChildThreads().stream()
-                .map(childThread -> toDocument(childThread, profileImageUrl))
+                .map(childThread -> toDocument(childThread))
                 .collect(Collectors.toList());
         // 부모 쓰레드 ID 가져오기
         Long parentThreadId = thread.getParent() != null ? thread.getParent().getId() : null;
@@ -34,8 +34,7 @@ public class ThreadMapper {
         return ThreadDocument.builder()
                 .threadId(String.valueOf(thread.getId()))
                 .content(thread.getContent())
-                .memberName(thread.getWorkspaceMember().getNickname())
-                .profileImageUrl(profileImageUrl)
+                .workspaceMemberId(thread.getWorkspaceMember().getWorkspaceMemberId())
                 .channelId(thread.getChannel().getChannelId())
                 .createdTime(thread.getCreatedTime().toString())
                 .fileUrls(fileUrls)

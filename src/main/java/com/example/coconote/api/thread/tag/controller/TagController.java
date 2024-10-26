@@ -2,15 +2,19 @@ package com.example.coconote.api.thread.tag.controller;
 
 
 import com.example.coconote.api.thread.tag.dto.request.TagCreateReqDto;
+import com.example.coconote.api.thread.tag.dto.request.TagSearchReqListDto;
 import com.example.coconote.api.thread.tag.dto.request.TagUpdateReqDto;
 import com.example.coconote.api.thread.tag.dto.response.TagResDto;
+import com.example.coconote.api.thread.tag.dto.response.TagSearchListResDto;
 import com.example.coconote.api.thread.tag.entity.Tag;
 import com.example.coconote.api.thread.tag.service.TagService;
 import com.example.coconote.common.CommonResDto;
+import com.example.coconote.security.util.CustomPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -51,4 +55,12 @@ public class TagController {
         tagService.deleteTag(tagId);
         return new ResponseEntity<>("태그 삭제 성공", HttpStatus.OK);
     }
+    @Operation(summary = "태그 검색")
+    @GetMapping("/search")
+    public ResponseEntity<?> searchTag(@RequestParam Long channelId, @RequestParam List<Long> tagSearchIds) {
+        List<TagSearchListResDto> tagResDtos = tagService.searchTag(channelId, tagSearchIds);
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "태그 검색 성공", tagResDtos);
+        return new ResponseEntity<>(commonResDto, HttpStatus.OK);
+    }
+
 }
