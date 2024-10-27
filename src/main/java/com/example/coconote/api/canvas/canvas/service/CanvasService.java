@@ -13,8 +13,6 @@ import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
-import com.example.coconote.api.search.dto.EntityType;
-import com.example.coconote.api.search.dto.IndexEntityMessage;
 import com.example.coconote.api.search.entity.CanvasBlockDocument;
 import com.example.coconote.api.search.mapper.CanvasBlockMapper;
 import com.example.coconote.api.search.service.SearchService;
@@ -43,7 +41,6 @@ import java.util.Map;
 
 @Slf4j
 @Service
-@Transactional(readOnly = true)
 public class CanvasService {
     private final CanvasRepository canvasRepository;
     private final ChannelRepository channelRepository;
@@ -70,10 +67,9 @@ public class CanvasService {
     }
 
     @Transactional
-    public CreateCanvasResDto createCanvas(CanvasSocketReqDto createCanvasReqDto, Long workspaceMemberId) {
+    public CreateCanvasResDto createCanvas(CanvasSocketReqDto createCanvasReqDto, WorkspaceMember workspaceMember) {
         Channel channel = channelRepository.findById(createCanvasReqDto.getChannelId()).orElseThrow(() -> new IllegalArgumentException("채널이 존재하지 않습니다."));
 
-        WorkspaceMember workspaceMember = workspaceMemberRepository.findByWorkspaceMemberIdAndIsDeleted(workspaceMemberId, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스 멤버가 없습니다."));
         Canvas parentCanvas = null;
         // 부모 캔버스 조회 (parentCanvasId가 null이 아닐 경우에만)
         if (createCanvasReqDto.getParentCanvasId() != null) {
@@ -101,9 +97,9 @@ public class CanvasService {
 
         canvasRepository.save(canvas);
 //        검색 인덱스에 저장
-        CanvasBlockDocument document = canvasBlockMapper.toDocument(canvas);
-        IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(channel.getSection().getWorkspace().getWorkspaceId() , EntityType.CANVAS_BLOCK, document);
-        kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
+//        CanvasBlockDocument document = canvasBlockMapper.toDocument(canvas);
+//        IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(channel.getSection().getWorkspace().getWorkspaceId() , EntityType.CANVAS_BLOCK, document);
+//        kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
 
         topics.put(canvas.getId(), canvas.getId());
 
@@ -164,7 +160,7 @@ public class CanvasService {
     }
 
     @Transactional
-    public CanvasDetResDto updateCanvas(CanvasSocketReqDto canvasSocketReqDto, Long memberId) {
+    public CanvasDetResDto updateCanvas(CanvasSocketReqDto canvasSocketReqDto, WorkspaceMember workspaceMember) {
         Canvas canvas = canvasRepository.findByIdAndIsDeleted(canvasSocketReqDto.getCanvasId(), IsDeleted.N)
                 .orElseThrow(() -> new EntityNotFoundException("캔버스가 존재하지 않습니다."));
         Canvas parentCanvas = null;
@@ -191,7 +187,7 @@ public class CanvasService {
     }
 
     @Transactional
-    private boolean changeOrderCanvas(CanvasSocketReqDto canvasSocketReqDto, Long memberId) {
+    private boolean changeOrderCanvas(CanvasSocketReqDto canvasSocketReqDto, WorkspaceMember workspaceMember) {
         log.info("순서 변경!! canvasSocketReqDto {}", canvasSocketReqDto);
 
         // 1. id로 현재 캔버스 찾기
@@ -264,7 +260,7 @@ public class CanvasService {
     }
 
     @Transactional
-    public void deleteCanvas(Long canvasId, Long memberId) {
+    public void deleteCanvas(Long canvasId, WorkspaceMember workspaceMember) {
         Canvas canvas = canvasRepository.findById(canvasId)
                 .orElseThrow(() -> new IllegalArgumentException("캔버스가 존재하지 않습니다."));
         Canvas prevLinkedCanvas = canvasRepository.findByPrevCanvas_IdAndIsDeleted(canvas.getId(), IsDeleted.N)
@@ -281,7 +277,7 @@ public class CanvasService {
             prevLinkedCanvas.changePrevCanvas(canvasPrevOriginBlock);
         }
         canvas.markAsDeleted(); // 실제 삭제 대신 소프트 삭제 처리
-        searchService.deleteCanvas(canvas.getChannel().getSection().getWorkspace().getWorkspaceId(), canvas.getId());
+//        searchService.deleteCanvas(canvas.getChannel().getSection().getWorkspace().getWorkspaceId(), canvas.getId());
     }
 
 
@@ -350,13 +346,12 @@ public class CanvasService {
     private final SimpMessageSendingOperations messagingTemplate;
 
     @Transactional
-    @KafkaListener(topics = "canvas-topic", groupId = "websocket-group"
-            , containerFactory = "kafkaListenerContainerFactory")
+    @KafkaListener(topics = "canvas-topic", groupId = "websocket-group")
     public void consumerProductQuantity(String message) { // return 시, string 형식으로 message가 들어옴
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         try {
-            System.out.println("Kafka 이후 메세지"+ message + "/" + message.toString());
+//            System.out.println("Kafka 이후 메세지"+ message + "/" + message.toString());
             // ChatMessage 객채로 맵핑
             CanvasSocketReqDto roomMessage = objectMapper.readValue(message, CanvasSocketReqDto.class);
 
@@ -369,9 +364,9 @@ public class CanvasService {
             messagingTemplate.convertAndSend("/sub/canvas/room/" + roomMessage.getChannelId(), roomMessage);
 //            SendCanvasReqDto sendCanvasReqDto = objectMapper.readValue(roomMessage.getMessage(), SendCanvasReqDto.class);
             if(roomMessage.getPostMessageType().equals(PostMessageType.CANVAS)){
-                editCanvasInSocket(roomMessage);
+                editCanvasInSocket(roomMessage, workspaceMember);
             }else if(roomMessage.getPostMessageType().equals(PostMessageType.BLOCK)){
-                blockService.editBlockInSocket(roomMessage);
+                blockService.editBlockInSocket(roomMessage, workspaceMember);
             }
         } catch (JsonProcessingException e) {
             log.error("JSON 처리 오류: {}", e.getMessage());
@@ -383,16 +378,16 @@ public class CanvasService {
         System.out.println(message);
     }
 
-    public void editCanvasInSocket(CanvasSocketReqDto canvasSocketReqDto) {
+    public void editCanvasInSocket(CanvasSocketReqDto canvasSocketReqDto, WorkspaceMember workspaceMember) {
 //        생성, 수정, 삭제인지 type 구분해서 넣어주는 용도
         if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.CREATE_CANVAS)) { // 생성 캔버스
-            createCanvas(canvasSocketReqDto, canvasSocketReqDto.getWorkspaceMemberId());
+            createCanvas(canvasSocketReqDto, workspaceMember);
         } else if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.UPDATE_CANVAS)) { // 수정 캔버스
-            updateCanvas(canvasSocketReqDto, canvasSocketReqDto.getWorkspaceMemberId());
+            updateCanvas(canvasSocketReqDto, workspaceMember);
         } else if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.CHANGE_ORDER_CANVAS)) { //순서 변경  캔버스
-            changeOrderCanvas(canvasSocketReqDto, canvasSocketReqDto.getWorkspaceMemberId());
+            changeOrderCanvas(canvasSocketReqDto, workspaceMember);
         } else if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.DELETE_CANVAS)) { // 삭제 캔버스
-            deleteCanvas(canvasSocketReqDto.getCanvasId(), canvasSocketReqDto.getWorkspaceMemberId());
+            deleteCanvas(canvasSocketReqDto.getCanvasId(), workspaceMember);
         } else {
             log.error("잘못된 canvas method");
         }

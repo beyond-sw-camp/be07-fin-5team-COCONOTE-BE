@@ -18,6 +18,7 @@ public class ThreadDocument {
     @Id
     private String threadId;  // OpenSearch 문서 ID
     private String content;
+    private Long workspaceMemberId;
     private String memberName;
     private String profileImageUrl;
     private Long channelId;

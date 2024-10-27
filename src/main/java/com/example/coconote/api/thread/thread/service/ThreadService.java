@@ -36,6 +36,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -57,33 +58,45 @@ public class ThreadService {
 
     @Transactional
     public ThreadResDto createThread(ThreadReqDto dto, Long memberId) {
-        //TODO: jwt토큰이 완성되면 memberId 는 불러오면됨 완료
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("해당멤버가 없습니다."));
-        Workspace workspace = workspaceRepository.findById(dto.getWorkspaceId()).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스가 없습니다."));
-        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스 멤버가 없습니다."));
+        // 멤버, 워크스페이스, 채널 정보 검증 및 로드
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 멤버가 없습니다."));
+        Workspace workspace = workspaceRepository.findById(dto.getWorkspaceId())
+                .orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스가 없습니다."));
+        WorkspaceMember workspaceMember = workspaceMemberRepository
+                .findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N)
+                .orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스 멤버가 없습니다."));
 
         Thread parentThread = null;
-        if (dto.getParentId() != null) parentThread = threadRepository.findById(dto.getParentId()).orElse(null);
+        if (dto.getParentId() != null) {
+            parentThread = threadRepository.findById(dto.getParentId()).orElse(null);
+        }
 
-        Channel channel = channelRepository.findById(dto.getChannelId()).orElseThrow(() -> new EntityNotFoundException("해당 채널이 없습니다."));
+        Channel channel = channelRepository.findById(dto.getChannelId())
+                .orElseThrow(() -> new EntityNotFoundException("해당 채널이 없습니다."));
 
+        // Thread 엔티티를 먼저 저장
         Thread thread = threadRepository.save(dto.toEntity(workspaceMember, parentThread, channel));
-//        검색
-//        searchService.indexThread(channel.getSection().getWorkspace().getWorkspaceId(), thread);
-// ThreadDocument로 미리 변환하여 Kafka 메시지 전송
-        ThreadDocument document = threadMapper.toDocument(thread, workspaceMember.getProfileImage());  // toDocument로 미리 변환
+
+        // 파일 정보를 저장하고, Thread에 추가
+        if (dto.getFiles() != null) {
+            List<ThreadFile> threadFiles = dto.getFiles().stream()
+                    .map(fileDto -> threadFileRepository.save(fileDto.toEntity(thread)))
+                    .collect(Collectors.toList());
+            // 저장된 파일들을 Thread에 설정
+            thread.setThreadFiles(threadFiles);
+        }
+
+        // 알림 전송
+        threadNotificationService.sendNotification(workspaceMember, workspace, channel, thread, parentThread);
+
+        // 파일 정보를 포함하여 ThreadDocument 생성
+        ThreadDocument document = threadMapper.toDocument(thread);
         IndexEntityMessage<ThreadDocument> indexEntityMessage = new IndexEntityMessage<>(workspace.getWorkspaceId(), EntityType.THREAD, document);
         log.info("indexEntityMessage : {}", indexEntityMessage);
         kafkaTemplate.send("thread_entity_search", indexEntityMessage.toJson());
 
-        if (dto.getFiles() != null) {
-            for (ThreadFileDto threadFileDto : dto.getFiles()) {
-                threadFileRepository.save(threadFileDto.toEntity(thread));
-            }
-            return thread.fromEntity(dto.getFiles());
-        }
-        threadNotificationService.sendNotification(workspace, workspaceMember, channel, thread);
-
+        // ThreadResDto 반환 시 파일 정보를 포함
         return thread.fromEntity();
     }
 
@@ -133,7 +146,7 @@ public class ThreadService {
         Thread thread = threadRepository.findById(threadReqDto.getThreadId()).orElseThrow(() -> new EntityNotFoundException("thread not found"));
         thread.updateThread(threadReqDto);
 
-        ThreadDocument document = threadMapper.toDocument(thread, thread.getWorkspaceMember().getProfileImage());  // toDocument로 미리 변환
+        ThreadDocument document = threadMapper.toDocument(thread); // toDocument로 미리 변환
         IndexEntityMessage<ThreadDocument> indexEntityMessage = new IndexEntityMessage<>(thread.getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.THREAD, document);
         kafkaTemplate.send("thread_entity_search", indexEntityMessage.toJson());
 

@@ -62,8 +62,13 @@ public class Thread extends BaseEntity {
     private List<ThreadFile> threadFiles = new ArrayList<>();
 
     public ThreadResDto fromEntity() {
-        List<TagResDto> tags = this.threadTags.stream().filter(threadTag -> threadTag.getTag().getIsDeleted().equals(IsDeleted.N)).map(threadTag -> threadTag.fromEntity()).toList();
-        List<ThreadFileDto> files = this.threadFiles.stream().map(ThreadFile::fromEntity).toList();
+        List<TagResDto> tags = this.threadTags.stream()
+                .filter(threadTag -> threadTag.getTag().getIsDeleted().equals(IsDeleted.N))
+                .map(ThreadTag::fromEntity)
+                .toList();
+        List<ThreadFileDto> files = this.threadFiles.stream()
+                .map(ThreadFile::fromEntity)
+                .toList();
         return ThreadResDto.builder()
                 .id(this.id)
                 .image(this.workspaceMember.getProfileImage())
@@ -71,7 +76,7 @@ public class Thread extends BaseEntity {
                 .memberId(this.workspaceMember.getWorkspaceMemberId())
                 .createdTime(this.getCreatedTime().toString())
                 .content(this.content)
-                .files(files)
+                .files(files) // 파일 정보를 포함
                 .tags(tags)
                 .parentThreadId(this.parent != null ? this.parent.getId() : null)
                 .build();
@@ -132,5 +137,9 @@ public class Thread extends BaseEntity {
 
     public void updateThread(ThreadReqDto threadReqDto) {
         this.content = threadReqDto.getContent();
+    }
+
+    public void setThreadFiles(List<ThreadFile> threadFiles) {
+        this.threadFiles = threadFiles;
     }
 }

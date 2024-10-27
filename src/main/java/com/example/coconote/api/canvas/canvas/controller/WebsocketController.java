@@ -44,18 +44,6 @@ public class WebsocketController {
 
         log.info("카프카 이전 message : " + message.toString());
         kafkaTemplate.send("canvas-topic", message);
-//        if ((message.getMethod() == CanvasMessageMethod.ENTER)) {
-//            canvasService.enterChatRoom(message.getCanvasId());
-////            message.setMessage(message.getSender() + "님이 입장하셨습니다.");
-//        }else{
-//            kafkaTemplate.send("canvas-topic", message);
-//        }
-//        else if(CanvasSocketReqDto.MessageType.CANVAS.equals(message.getType())){
-////            canvas 수정하거나 생성하는거 넘어감~
-//            blockService.editBlockInSocket(message);
-//            kafkaTemplate.send("block-topic", message);
-//        }
-
     }
 
     /**

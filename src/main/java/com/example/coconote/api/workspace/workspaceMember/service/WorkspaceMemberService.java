@@ -68,10 +68,11 @@ public class WorkspaceMemberService {
                 .workspace(workspace)
                 .member(member)
                 .nickname(member.getNickname())
+                .memberName(member.getNickname())
                 .build();
         workspaceMemberRepository.save(workspaceMember);
 
-// OpenSearch에 인덱싱
+        // OpenSearch에 인덱싱
         WorkspaceMemberDocument document = workspaceMemberMapper.toDocument(workspaceMember);
         IndexEntityMessage<WorkspaceMemberDocument> indexEntityMessage = new IndexEntityMessage<>(workspace.getWorkspaceId(), EntityType.WORKSPACE_MEMBER , document);
         kafkaTemplate.send("workspace_member_entity_search", indexEntityMessage.toJson());
@@ -117,7 +118,7 @@ public class WorkspaceMemberService {
         if(workspaceMember.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 워크스페이스에서 탈퇴한 회원입니다.");
         }
-        if (workspaceMember.getWsRole() == WsRole.PMANAGER || workspaceMember.getWsRole() == WsRole.SMANAGER) {
+        if (workspaceMember.getWsRole() == WsRole.PMANAGER) {
             throw new IllegalArgumentException("워크스페이스 소유자는 강등할 수 없습니다.");
         }
         Workspace workspace = workspaceMember.getWorkspace();

@@ -4,7 +4,6 @@ import com.example.coconote.api.canvas.block.entity.Type;
 import com.example.coconote.api.canvas.canvas.entity.CanvasMessageMethod;
 import com.example.coconote.api.canvas.canvas.entity.PostMessageType;
 import com.example.coconote.common.IsDeleted;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
