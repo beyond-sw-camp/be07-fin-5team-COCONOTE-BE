@@ -100,10 +100,12 @@ public class BlockService {
 
         // Block 저장 및 리턴
         blockRepository.save(block);
-//        검색 인덱스에 저장
-//        CanvasBlockDocument document = canvasBlockMapper.toDocument(block);
-//        IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(canvas.getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.CANVAS_BLOCK, document);
-//        kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage);
+// Kafka에 인덱싱 메시지 전송
+        CanvasBlockDocument document = canvasBlockMapper.toDocument(block);
+        IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(
+                canvas.getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.BLOCK, document);
+        kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage);
+
 
         return CreateBlockResDto.fromEntity(block);
     }
@@ -136,9 +138,10 @@ public class BlockService {
             block.updateAllInfo(prevBlock, parentBlock, canvasSocketReqDto.getBlockContents());
             blockRepository.save(block);
 
-//            CanvasBlockDocument document = canvasBlockMapper.toDocument(block);
-//            IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(block.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.CANVAS_BLOCK, document);
-//            kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
+            CanvasBlockDocument document = canvasBlockMapper.toDocument(block);
+            IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(
+                    block.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.BLOCK, document);
+            kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage);
 
         } catch (Exception e) {
             log.info(e.getMessage());
@@ -152,6 +155,11 @@ public class BlockService {
         if(canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.UPDATE_INDENT_BLOCK)){
             block.patchBlockIndent(canvasSocketReqDto.getBlockIndent());
             blockRepository.save(block);
+            // Kafka에 인덱싱 메시지 전송
+            CanvasBlockDocument document = canvasBlockMapper.toDocument(block);
+            IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(
+                    block.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.BLOCK, document);
+            kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage);
         }
     }
 
@@ -186,9 +194,10 @@ public class BlockService {
             originalNextBlock.changePrevBlock(originalPrevBlock);
             blockRepository.save(originalNextBlock);
 
-//            CanvasBlockDocument document = canvasBlockMapper.toDocument(originalNextBlock);
-//            IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(originalNextBlock.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.CANVAS_BLOCK, document);
-//            kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
+            CanvasBlockDocument nextBlockDocument = canvasBlockMapper.toDocument(originalNextBlock);
+            IndexEntityMessage<CanvasBlockDocument> nextIndexMessage = new IndexEntityMessage<>(
+                    originalNextBlock.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.BLOCK, nextBlockDocument);
+            kafkaTemplate.send("canvas_block_entity_search", nextIndexMessage);
         }
 
         // 4. 새로운 prevBlock과의 연결 설정
@@ -201,9 +210,10 @@ public class BlockService {
                 nextOfNewPrevBlock.changePrevBlock(currentBlock);
                 blockRepository.save(nextOfNewPrevBlock);
 
-//                CanvasBlockDocument document = canvasBlockMapper.toDocument(nextOfNewPrevBlock);
-//                IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(nextOfNewPrevBlock.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.CANVAS_BLOCK, document);
-//                kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
+                CanvasBlockDocument nextOfNewPrevDocument = canvasBlockMapper.toDocument(nextOfNewPrevBlock);
+                IndexEntityMessage<CanvasBlockDocument> nextOfNewPrevIndexMessage = new IndexEntityMessage<>(
+                        nextOfNewPrevBlock.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.BLOCK, nextOfNewPrevDocument);
+                kafkaTemplate.send("canvas_block_entity_search", nextOfNewPrevIndexMessage);
             }
 
             // 현재 블록의 prevBlock을 새로운 prevBlock으로 설정
@@ -218,17 +228,20 @@ public class BlockService {
             newNextBlock.changePrevBlock(currentBlock);
             blockRepository.save(newNextBlock);
 
-//            CanvasBlockDocument document = canvasBlockMapper.toDocument(newNextBlock);
-//            IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(newNextBlock.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.CANVAS_BLOCK, document);
-//            kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
+            CanvasBlockDocument nextBlockDocument = canvasBlockMapper.toDocument(newNextBlock);
+            IndexEntityMessage<CanvasBlockDocument> nextIndexMessage = new IndexEntityMessage<>(
+                    newNextBlock.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.BLOCK, nextBlockDocument);
+            kafkaTemplate.send("canvas_block_entity_search", nextIndexMessage);
         }
 
         // 6. 현재 블록을 저장하여 순서 변경 적용
         blockRepository.save(currentBlock);
 
-//        CanvasBlockDocument document = canvasBlockMapper.toDocument(currentBlock);
-//        IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(currentBlock.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.CANVAS_BLOCK, document);
-//        kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
+        CanvasBlockDocument currentBlockDocument = canvasBlockMapper.toDocument(currentBlock);
+        IndexEntityMessage<CanvasBlockDocument> currentIndexMessage = new IndexEntityMessage<>(
+                currentBlock.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.BLOCK, currentBlockDocument);
+        kafkaTemplate.send("canvas_block_entity_search", currentIndexMessage);
+
         log.info("블록 순서가 성공적으로 변경되었습니다.");
 
         return true;

@@ -13,6 +13,8 @@ import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.channel.channel.repository.ChannelRepository;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
+import com.example.coconote.api.search.dto.EntityType;
+import com.example.coconote.api.search.dto.IndexEntityMessage;
 import com.example.coconote.api.search.entity.CanvasBlockDocument;
 import com.example.coconote.api.search.mapper.CanvasBlockMapper;
 import com.example.coconote.api.search.service.SearchService;
@@ -66,7 +68,6 @@ public class CanvasService {
         this.workspaceRepository = workspaceRepository;
     }
 
-    @Transactional
     public CreateCanvasResDto createCanvas(CanvasSocketReqDto createCanvasReqDto, WorkspaceMember workspaceMember) {
         Channel channel = channelRepository.findById(createCanvasReqDto.getChannelId()).orElseThrow(() -> new IllegalArgumentException("채널이 존재하지 않습니다."));
 
@@ -97,9 +98,9 @@ public class CanvasService {
 
         canvasRepository.save(canvas);
 //        검색 인덱스에 저장
-//        CanvasBlockDocument document = canvasBlockMapper.toDocument(canvas);
-//        IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(channel.getSection().getWorkspace().getWorkspaceId() , EntityType.CANVAS_BLOCK, document);
-//        kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
+        CanvasBlockDocument document = canvasBlockMapper.toDocument(canvas);
+        IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(channel.getSection().getWorkspace().getWorkspaceId() , EntityType.CANVAS, document);
+        kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage.toJson());
 
         topics.put(canvas.getId(), canvas.getId());
 
@@ -159,7 +160,6 @@ public class CanvasService {
         return canvasDetResDto;
     }
 
-    @Transactional
     public CanvasDetResDto updateCanvas(CanvasSocketReqDto canvasSocketReqDto, WorkspaceMember workspaceMember) {
         Canvas canvas = canvasRepository.findByIdAndIsDeleted(canvasSocketReqDto.getCanvasId(), IsDeleted.N)
                 .orElseThrow(() -> new EntityNotFoundException("캔버스가 존재하지 않습니다."));
@@ -186,7 +186,6 @@ public class CanvasService {
         return canvas.fromDetEntity();
     }
 
-    @Transactional
     private boolean changeOrderCanvas(CanvasSocketReqDto canvasSocketReqDto, WorkspaceMember workspaceMember) {
         log.info("순서 변경!! canvasSocketReqDto {}", canvasSocketReqDto);
 
@@ -259,7 +258,6 @@ public class CanvasService {
         return true;
     }
 
-    @Transactional
     public void deleteCanvas(Long canvasId, WorkspaceMember workspaceMember) {
         Canvas canvas = canvasRepository.findById(canvasId)
                 .orElseThrow(() -> new IllegalArgumentException("캔버스가 존재하지 않습니다."));

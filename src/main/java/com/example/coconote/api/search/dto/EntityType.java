@@ -8,7 +8,9 @@ public enum EntityType {
     WORKSPACE_MEMBER("workspace_member"),
     THREAD("thread"),
     FILE("file"),
-    CANVAS_BLOCK("canvas_block"),;
+    CANVAS("canvas"),
+    BLOCK("block"),
+    ;
 
     private final String value;
 
