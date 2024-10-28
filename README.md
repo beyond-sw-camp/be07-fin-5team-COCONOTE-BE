@@ -27,8 +27,8 @@
 3. [개발](#개발)
 - [백엔드 API 요청 및 응답 (Swagger)](#백엔드-api-요청-및-응답-swagger)
 - [프론트엔드 기능 시연](#프론트엔드-기능-시연)
-4. [구조 및 아키텍처](#구조및아키텍처)
-5. [기술 스택](#기술스택)
+4. [구조 및 아키텍처](#구조-및-아키텍처)
+5. [기술 스택](#기술-스택)
 6. [배포](#배포)
 7. [테스트](#테스트)
 
@@ -77,48 +77,31 @@
 
 
 ---
-
 <h2 id="기술-스택"> ️🛠️ 기술 스택 </h2>
 <h3>Backend</h3>
 <img src="https://img.shields.io/badge/Spring-6DB33F?style=flat-square&logo=Spring&logoColor=white">
 <img src="https://img.shields.io/badge/Spring Boot-6DB33F?style=flat-square&logo=Spring Boot&logoColor=white">
 <br />
-<br />
-
 <h3>Frontend</h3>
 <img src="https://img.shields.io/badge/vue.js-4FC08D?style=flat-square&logo=vue.js&logoColor=white">
 <br />
-<br />
-
 <h3>DB</h3>
 <img src="https://img.shields.io/badge/MariaDB-003545?style=flat-square&logo=MariaDB&logoColor=white">
 <br />
-<br />
-
 <h3>CI/CD</h3>
 <img src="https://img.shields.io/badge/Kafka-231F20?style=flat-square&logo=apachekafka&logoColor=white">
 <br />
-<br />
-
 <h3>Etc</h3>
 <img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=Docker&logoColor=white">
 <br />
-<br />
-
 <h3>Communication</h3>
 <img src="https://img.shields.io/badge/Discord-5865F2?style=flat-square&logo=Discord&logoColor=white">
 <img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=GitHub&logoColor=white"> 
 <img src="https://img.shields.io/badge/Notion-000000?style=flat-square&logo=Notion&logoColor=white"> 
 <br />
-<br />
-
 ---
-
 <h2 id="개발"> 💻 개발 </h2>
-
 <h3 id="백엔드-api-요청-및-응답-swagger"> 백엔드 API 요청 및 응답 (Swagger) </h3>
 <h3 id="프론트엔드-기능-시연"> 프론트엔드 기능 시연 </h3>
-
-<h2 id="구조및아키텍처"> 구조 및 아키텍처 </h2>
-<h2 id="기술스택"> 기술 스택 </h2>
+<h2 id="구조-및-아키텍처"> 구조 및 아키텍처 </h2>
 <h2 id="배포"> 배포 </h2>
