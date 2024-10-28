@@ -38,7 +38,7 @@ public class FolderService {
     @Transactional
     public FolderCreateResDto createFolder(CreateFolderReqDto createFolderReqDto, String email) {
         Channel channel = getChannelByChannelId(createFolderReqDto.getChannelId());
-        Member member =  getMemberByEmail(email);
+        Member member = getMemberByEmail(email);
         Workspace workspace = getWorkspaceByChannel(channel);
 //        워크스페이스 멤버인지 확인
         WorkspaceMember workspaceMember = getWorkspaceMember(member, workspace);
@@ -70,7 +70,7 @@ public class FolderService {
         Workspace workspace = getWorkspaceByChannel(channel);
         WorkspaceMember workspaceMember = getWorkspaceMember(member, workspace);
 
-        if(folder.getFolderName().equals("캔버스 자동업로드 폴더") || folder.getFolderName().equals("쓰레드 자동업로드 폴더")){
+        if (folder.getFolderName().equals("캔버스 자동업로드 폴더") || folder.getFolderName().equals("쓰레드 자동업로드 폴더")) {
             throw new IllegalArgumentException("이 폴더는 이름을 변경할 수 없습니다.");
         }
 //        채널 멤버인지 확인
@@ -88,7 +88,7 @@ public class FolderService {
         WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspace(member, channel.getSection().getWorkspace())
                 .orElseThrow(() -> new IllegalArgumentException("워크스페이스 멤버가 아닙니다."));
 
-        if(folder.getFolderName().equals("캔버스 자동업로드 폴더") || folder.getFolderName().equals("쓰레드 자동업로드 폴더")){
+        if (folder.getFolderName().equals("캔버스 자동업로드 폴더") || folder.getFolderName().equals("쓰레드 자동업로드 폴더")) {
             throw new IllegalArgumentException("이 폴더는 삭제할 수 없습니다.");
         }
 //        채널 멤버인지 확인
@@ -115,7 +115,7 @@ public class FolderService {
             throw new IllegalArgumentException("폴더가 서로 다른 채널에 있습니다.");
         }
 
-        if(folder.getFolderName().equals("캔버스 자동업로드 폴더") || folder.getFolderName().equals("쓰레드 자동업로드 폴더")){
+        if (folder.getFolderName().equals("캔버스 자동업로드 폴더") || folder.getFolderName().equals("쓰레드 자동업로드 폴더")) {
             throw new IllegalArgumentException("이 폴더는 이동할 수 없습니다.");
         }
 //        채널 멤버인지 확인
@@ -151,12 +151,14 @@ public class FolderService {
         return getFolderAllListResDto(folder, folderRepository, fileRepository);
     }
 
-//    공통 메서드
+    //    공통 메서드
 //    폴더에 속한 폴더 및 파일 조회
     public static FolderAllListResDto getFolderAllListResDto(Folder folder, FolderRepository folderRepository, FileRepository fileRepository) {
-        List<Folder> folderList = folderRepository.findAllByParentFolderAndIsDeleted(folder, IsDeleted.N);
-        List<FileEntity> fileEntityList = fileRepository.findAllByFolderAndIsDeleted(folder, IsDeleted.N);
+        // 최적화된 메서드 사용하여 하위 폴더 및 파일 목록을 가져옴
+        List<Folder> folderList = folderRepository.findAllSubFoldersWithChildrenByParentFolderAndIsDeleted(folder, IsDeleted.N);
+        List<FileEntity> fileEntityList = fileRepository.findAllFilesByFolderAndIsDeleted(folder, IsDeleted.N);
 
+        // 폴더와 파일을 DTO로 변환
         List<FolderListDto> folderListDto = FolderListDto.fromEntity(folderList);
         List<FileListDto> fileListDto = FileListDto.fromEntity(fileEntityList);
 
@@ -180,11 +182,12 @@ public class FolderService {
         return workspaceRepository.findById(channel.getSection().getWorkspace().getWorkspaceId())
                 .orElseThrow(() -> new IllegalArgumentException("워크스페이스가 존재하지 않습니다."));
     }
+
     private Folder getFolderByFolderId(Long folderId) {
         return folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더가 존재하지 않습니다."));
     }
 
-//    채널 멤버인지 확인
+    //    채널 멤버인지 확인
     private void checkChannelMember(WorkspaceMember workspaceMember, Channel channel) {
         if (channel.getChannelMembers().stream().noneMatch(cm -> cm.getWorkspaceMember().equals(workspaceMember))) {
             throw new IllegalArgumentException("채널 멤버가 아닙니다.");

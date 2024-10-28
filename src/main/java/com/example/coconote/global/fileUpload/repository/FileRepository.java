@@ -15,7 +15,8 @@ import java.util.List;
 
 public interface FileRepository extends JpaRepository<FileEntity, Long> {
 
-    List<FileEntity> findAllByFolderAndIsDeleted(Folder folder, IsDeleted isDeleted);
+    @Query("SELECT fe FROM FileEntity fe WHERE fe.folder = :folder AND fe.isDeleted = :isDeleted")
+    List<FileEntity> findAllFilesByFolderAndIsDeleted(Folder folder, IsDeleted isDeleted);
 
     void deleteAllByIsDeletedAndDeletedTimeBefore(IsDeleted isDeleted, LocalDateTime sevenDaysAgo);
 

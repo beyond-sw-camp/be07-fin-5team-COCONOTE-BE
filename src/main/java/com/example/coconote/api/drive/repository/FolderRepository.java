@@ -27,4 +27,8 @@ public interface FolderRepository extends JpaRepository<Folder, Long> {
     Optional<Folder> findByChannelAndParentFolderIsNull(Channel channel);
 
     Optional<Folder> findByChannelAndFolderName(Channel channel, String folderName);
+
+    @Query("SELECT f FROM Folder f LEFT JOIN FETCH f.childFolders " +
+            "WHERE f.parentFolder = :folder AND f.isDeleted = :isDeleted")
+    List<Folder> findAllSubFoldersWithChildrenByParentFolderAndIsDeleted(Folder folder, IsDeleted isDeleted);
 }
