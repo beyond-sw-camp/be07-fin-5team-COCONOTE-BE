@@ -1,8 +1,12 @@
 <h1 align="center">
-  <!-- <a href="https://www.meetup.com/Angular-Medellin/">
-    <img width=100% src="assets/images/logo.png">
-  </a> -->
-  ⭐️ COCONOTE ⭐️
+  지식 관리 시스템
+  <br />
+   <a href="https://www.meetup.com/Angular-Medellin/">
+    <img width=100% src="@/src/logo_coconote.png">
+  </a> 
+  COCONOTE
+  <br />
+  극대화된 협업 향상을 경험해보세요
 </h1>
 
 ---
@@ -40,12 +44,29 @@
 
 - channel 별로 구분되어있는 **쓰레드**```(채팅)```, **캔버스**```(노션)```, **드라이브**```(네이버 or 구글 드라이브) ```
 - 쓰레드
-    - 단체 채팅, 이미지를 통한 정보공유
+  - 단체 채팅, 이미지를 통한 정보공유
 - 캔버스
-    - 단체 문서수정, 유저별로 실시간 동기화 되어있는 문서
+  - 단체 문서수정, 유저별로 실시간 동기화 되어있는 문서
 - 드라이브
-    - 채널 내부의 쓰레드, 캔버스 자동업로드
-    - 드라이브 내 파일 업로드를 통한 쓰레드, 캔버스 파일 동기화 기능
+  - 채널 내부의 쓰레드, 캔버스 자동업로드
+  - 드라이브 내 파일 업로드를 통한 쓰레드, 캔버스 파일 동기화 기능
+
+<h2 id="기획"> 😎 기획 </h2>
+<h3> WBS </h3>
+
+[<b> WBS 보러가기 ➡️</b>](https://docs.google.com/spreadsheets/d/1-55RJo0awEfJTcGI6TlrkOE9e4nGFYGOgi4ZCOvZu58/edit?usp=sharing)
+
+<h3> 요구사항 정의서 </h3>
+
+[<b>요구사항 정의서 보러가기 ➡️</b>](https://docs.google.com/spreadsheets/d/e/2PACX-1vRFFDDVRpsGfdgAvZc17fByKMgOEAG-cOA_VBWJCR53_YVacTATFazxp7AeO5hKaCS26RYA9g2NXL-b/pubhtml)
+
+<h3> ERD </h3>
+
+[<b>ERD 보러가기 ➡️</b>](https://www.erdcloud.com/d/9kcavurSDGPf2B6mr)
+
+<h3> 화면설계서 (FIGMA) </h3>
+
+[<b>화면설계서 보러가기 ➡️</b>](https://www.figma.com/design/SBzlObD1tMe49ZCXRpzyTx/COCONOTE---%ED%99%94%EB%A9%B4%EC%84%A4%EA%B3%84?node-id=0-1&t=O8uikTbKJRUR5e9g-1)
 
 <h2 id="기획"> 😎 기획 </h2>
 <h3> WBS </h3>
@@ -67,6 +88,41 @@
 <h3> API 명세서 </h3>
 
 [<b>API 명세서 보러가기 ➡️</b>](https://ara-boka.notion.site/COCONOTE-API-11585d64912780a3ac04f2305aed6349?pvs=4)
+
+
+<h2 id="기술-스택"> ️🛠️ 기술 스택 </h2>
+[Backend]
+<br />
+<img src="https://img.shields.io/badge/Spring-6DB33F?style=flat-square&logo=Spring&logoColor=white">
+<img src="https://img.shields.io/badge/Spring Boot-6DB33F?style=flat-square&logo=Spring Boot&logoColor=white">
+<br />
+<br />
+[Frontend]
+<br />
+<img src="https://img.shields.io/badge/vue.js-4FC08D?style=flat-square&logo=vue.js&logoColor=white">
+<br />
+<br />
+[DB]
+<br />
+<img src="https://img.shields.io/badge/MariaDB-003545?style=flat-square&logo=MariaDB&logoColor=white">
+<br />
+<br />
+[CI/CD]
+<br />
+<img src="https://img.shields.io/badge/Kafka-231F20?style=flat-square&logo=apachekafka&logoColor=white">
+<br />
+[Etc]
+<br />
+<img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=Docker&logoColor=white">
+<br />
+<br />
+[Communication]
+<br />
+<img src="https://img.shields.io/badge/Discord-5865F2?style=flat-square&logo=Discord&logoColor=white">
+<img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=GitHub&logoColor=white"> 
+<img src="https://img.shields.io/badge/Notion-000000?style=flat-square&logo=Notion&logoColor=white"> 
+<br />
+<br />
 
 ---
 
