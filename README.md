@@ -92,7 +92,7 @@
 
 <h3 id="프론트엔드-기능-시연"> 프론트엔드 기능 시연 </h3>
 <details>
-  <summary>### 회원</summary>
+  <summary><h3>회원</h3></summary>
 
   - 로그인  
     <img src="readme/gif/회원/GoogleLogin.gif">
