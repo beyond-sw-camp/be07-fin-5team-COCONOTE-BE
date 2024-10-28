@@ -16,7 +16,17 @@
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 <br /><br />
 
-<h2> ️😎 기획 </h2>
+## 목차
+
+1. [프로젝트 소개](#프로젝트-소개)
+2. [기획](#기획)
+3. [개발](#개발)
+4. [구조 및 아키텍처](#구조-및-아키텍처)
+5. [기술 스택](#기술-스택)
+6. [배포](#배포)
+7. [테스트](#테스트)
+
+<h2 id="기획"> 😎 기획 </h2>
 <h3> 요구사항 정의서 </h3>
 
 [<b>요구사항 정의서 보러가기 ➡️</b>](https://docs.google.com/spreadsheets/d/e/2PACX-1vRFFDDVRpsGfdgAvZc17fByKMgOEAG-cOA_VBWJCR53_YVacTATFazxp7AeO5hKaCS26RYA9g2NXL-b/pubhtml)
@@ -31,7 +41,7 @@
 
 ---
 
-<h2> ️💻 개발 </h2>
+<h2 id="개발"> 💻 개발 </h2>
 <h3> 프로그램 사양서 </h3>
 
 - SNS를 통한 간편 로그인
