@@ -68,23 +68,6 @@
 
 [<b>화면설계서 보러가기 ➡️</b>](https://www.figma.com/design/SBzlObD1tMe49ZCXRpzyTx/COCONOTE---%ED%99%94%EB%A9%B4%EC%84%A4%EA%B3%84?node-id=0-1&t=O8uikTbKJRUR5e9g-1)
 
-<h2 id="기획"> 😎 기획 </h2>
-<h3> WBS </h3>
-
-[<b> WBS 보러가기 ➡️</b>](https://docs.google.com/spreadsheets/d/1-55RJo0awEfJTcGI6TlrkOE9e4nGFYGOgi4ZCOvZu58/edit?usp=sharing)
-
-<h3> 요구사항 정의서 </h3>
-
-[<b>요구사항 정의서 보러가기 ➡️</b>](https://docs.google.com/spreadsheets/d/e/2PACX-1vRFFDDVRpsGfdgAvZc17fByKMgOEAG-cOA_VBWJCR53_YVacTATFazxp7AeO5hKaCS26RYA9g2NXL-b/pubhtml)
-
-<h3> ERD </h3>
-
-[<b>ERD 보러가기 ➡️</b>](https://www.erdcloud.com/d/9kcavurSDGPf2B6mr)
-
-<h3> 화면설계서 (FIGMA) </h3>
-
-[<b>화면설계서 보러가기 ➡️</b>](https://www.figma.com/design/SBzlObD1tMe49ZCXRpzyTx/COCONOTE---%ED%99%94%EB%A9%B4%EC%84%A4%EA%B3%84?node-id=0-1&t=O8uikTbKJRUR5e9g-1)
-
 <h3> API 명세서 </h3>
 
 [<b>API 명세서 보러가기 ➡️</b>](https://ara-boka.notion.site/COCONOTE-API-11585d64912780a3ac04f2305aed6349?pvs=4)
