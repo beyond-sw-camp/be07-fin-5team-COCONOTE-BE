@@ -29,6 +29,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -36,6 +37,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -80,9 +82,9 @@ public class ThreadService {
 
         // 파일 정보를 저장하고, Thread에 추가
         if (dto.getFiles() != null) {
-            List<ThreadFile> threadFiles = dto.getFiles().stream()
+            Set<ThreadFile> threadFiles = dto.getFiles().stream()
                     .map(fileDto -> threadFileRepository.save(fileDto.toEntity(thread)))
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toSet());
             // 저장된 파일들을 Thread에 설정
             thread.setThreadFiles(threadFiles);
         }
@@ -101,32 +103,48 @@ public class ThreadService {
     }
 
     public Page<ThreadResDto> threadList(Long channelId, Pageable pageable) {
-        Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new EntityNotFoundException("channel not found"));
-        Page<Thread> threads = threadRepository.findAllByChannelAndIsDeletedAndParentIsNullOrderByCreatedTimeDesc(channel, IsDeleted.N, pageable);
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new EntityNotFoundException("channel not found"));
+        Page<Thread> threads = threadRepository.findThreadsWithChildrenAndFilesByChannelAndIsDeleted(channel, IsDeleted.N, pageable);
+
         Page<ThreadResDto> threadResDtos = threads.map(thread -> {
-            List<Thread> childThreads = threadRepository.findAllByParentAndIsDeleted(thread, IsDeleted.N);
-            List<ThreadResDto> childThreadResDtos = childThreads.stream().map(Thread::fromEntity).toList();
-            List<ThreadFileDto> threadFileDtos = thread.getThreadFiles().stream().filter(f -> f.getIsDeleted() == IsDeleted.N).map(ThreadFile::fromEntity).toList();
+            List<ThreadResDto> childThreadResDtos = thread.getChildThreads().stream()
+                    .filter(child -> child.getIsDeleted() == IsDeleted.N)
+                    .map(Thread::fromEntity)
+                    .toList();
+            List<ThreadFileDto> threadFileDtos = thread.getThreadFiles().stream()
+                    .filter(f -> f.getIsDeleted() == IsDeleted.N)
+                    .map(ThreadFile::fromEntity)
+                    .toList();
             return thread.fromEntity(childThreadResDtos, threadFileDtos);
         });
+
         return threadResDtos;
     }
 
     public Page<ThreadResDto> threadPage(ThreadPageReqDto dto) {
-        Channel channel = channelRepository.findById(dto.getChannelId()).orElseThrow(() -> new EntityNotFoundException("channel not found"));
+        Channel channel = channelRepository.findById(dto.getChannelId())
+                .orElseThrow(() -> new EntityNotFoundException("channel not found"));
 
         Long count = threadRepository.countByChannelAndParentIsNullAndIdGreaterThanEqual(channel, dto.getThreadId(), IsDeleted.N);
         Long page = (count - 1) / dto.getPageSize();
         Pageable pageable = PageRequest.of(Math.toIntExact(page), Math.toIntExact(dto.getPageSize()));
 
-        Page<Thread> threads = threadRepository.findAllByChannelAndIsDeletedAndParentIsNullOrderByCreatedTimeDesc(channel, IsDeleted.N, pageable);
-        Page<ThreadResDto> threadResDtos = threads.map(thread -> {
-            List<Thread> childThreads = threadRepository.findAllByParentAndIsDeleted(thread, IsDeleted.N);
-            List<ThreadResDto> childThreadResDtos = childThreads.stream().map(Thread::fromEntity).toList();
-            List<ThreadFileDto> threadFileDtos = thread.getThreadFiles().stream().filter(f -> f.getIsDeleted() == IsDeleted.N).map(ThreadFile::fromEntity).toList();
+        Page<Thread> threads = threadRepository.findThreadsWithChildrenAndFilesByChannelAndIsDeleted(channel, IsDeleted.N, pageable);
+
+        List<ThreadResDto> threadResDtos = threads.stream().map(thread -> {
+            List<ThreadResDto> childThreadResDtos = thread.getChildThreads().stream()
+                    .filter(child -> child.getIsDeleted() == IsDeleted.N)
+                    .map(Thread::fromEntity)
+                    .toList();
+            List<ThreadFileDto> threadFileDtos = thread.getThreadFiles().stream()
+                    .filter(f -> f.getIsDeleted() == IsDeleted.N)
+                    .map(ThreadFile::fromEntity)
+                    .toList();
             return thread.fromEntity(childThreadResDtos, threadFileDtos);
-        });
-        return threadResDtos;
+        }).toList();
+
+        return new PageImpl<>(threadResDtos, pageable, count);
     }
 
     @Transactional

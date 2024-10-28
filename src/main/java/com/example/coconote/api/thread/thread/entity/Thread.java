@@ -18,7 +18,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Getter
@@ -41,7 +43,7 @@ public class Thread extends BaseEntity {
 
     @Builder.Default
     @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)
-    private List<Thread> childThreads = new ArrayList<>(); // 자식 쓰레드 목록
+    private Set<Thread> childThreads = new HashSet<>(); // 자식 쓰레드 목록
     //TODO:추후 워크스페이스-유저로 변경
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    private Member member;
@@ -59,7 +61,7 @@ public class Thread extends BaseEntity {
     private List<ThreadTag> threadTags = new ArrayList<>();
     @Builder.Default
     @OneToMany(mappedBy = "thread", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<ThreadFile> threadFiles = new ArrayList<>();
+    private Set<ThreadFile> threadFiles = new HashSet<>();
 
     public ThreadResDto fromEntity() {
         List<TagResDto> tags = this.threadTags.stream()
@@ -139,7 +141,7 @@ public class Thread extends BaseEntity {
         this.content = threadReqDto.getContent();
     }
 
-    public void setThreadFiles(List<ThreadFile> threadFiles) {
+    public void setThreadFiles(Set<ThreadFile> threadFiles) {
         this.threadFiles = threadFiles;
     }
 }

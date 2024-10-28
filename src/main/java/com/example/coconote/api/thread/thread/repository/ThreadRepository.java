@@ -23,4 +23,9 @@ public interface ThreadRepository extends JpaRepository<Thread, Long> {
     Long countByChannelAndParentIsNullAndIdGreaterThanEqual(Channel channel, Long id, IsDeleted isDeleted);
 
 //    Long countByChannelAndParentIsNull(Channel channel, Long id);
+
+    @Query("SELECT t FROM Thread t LEFT JOIN FETCH t.childThreads LEFT JOIN FETCH t.threadFiles " +
+            "WHERE t.channel = :channel AND t.isDeleted = :isDeleted AND t.parent IS NULL " +
+            "ORDER BY t.createdTime DESC")
+    Page<Thread> findThreadsWithChildrenAndFilesByChannelAndIsDeleted(Channel channel, IsDeleted isDeleted, Pageable pageable);
 }
