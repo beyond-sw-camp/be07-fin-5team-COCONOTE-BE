@@ -21,6 +21,7 @@
 1. [프로젝트 소개](#소개)
 2. [기획](#기획)
 3. [개발](#개발)
+- [백엔드 API 요청 및 응답 (Swagger)](#백엔드-api-요청-및-응답-swagger)
 4. [구조 및 아키텍처](#구조및아키텍처)
 5. [기술 스택](#기술스택)
 6. [배포](#배포)
@@ -62,17 +63,17 @@
 
 [<b>화면설계서 보러가기 ➡️</b>](https://www.figma.com/design/SBzlObD1tMe49ZCXRpzyTx/COCONOTE---%ED%99%94%EB%A9%B4%EC%84%A4%EA%B3%84?node-id=0-1&t=O8uikTbKJRUR5e9g-1)
 
+<h3> API 명세서 </h3>
+
+[<b>API 명세서 보러가기 ➡️</b>](https://ara-boka.notion.site/COCONOTE-API-11585d64912780a3ac04f2305aed6349?pvs=4)
+
 ---
 
 <h2 id="개발"> 💻 개발 </h2>
 
+<h3 id="백엔드-api-요청-및-응답-swagger"> 백엔드 API 요청 및 응답 (Swagger) </h3>
 
 
-
-
-<h3> API 명세서 </h3>
-
-[<b>API 명세서 보러가기 ➡️</b>](https://ara-boka.notion.site/COCONOTE-API-11585d64912780a3ac04f2305aed6349?pvs=4)
 
 <h2 id="구조및아키텍처"> 구조 및 아키텍처 </h2>
 <h2 id="기술스택"> 기술 스택 </h2>
