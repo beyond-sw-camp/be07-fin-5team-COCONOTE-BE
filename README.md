@@ -93,12 +93,14 @@
 <h3 id="프론트엔드-기능-시연"> 프론트엔드 기능 시연 </h3>
 <details>
   <summary>회원</summary>
-  - 로그인  <img src="readme/gif/회원/GoogleLogin.gif">
-  - 로그아웃  <img src="readme/gif/회원/Logout.gif">
+
+- 로그인  <img src="readme/gif/회원/GoogleLogin.gif">
+- 로그아웃  <img src="readme/gif/회원/Logout.gif">
 </details>
 
 <details>
   <summary>워크스페이스</summary>
+
 - 워크스페이스 생성 <img src="readme\gif\워크스페이스\CreateWorkspace.gif">
 - 워크스페이스 정보 수정 <img src="readme\gif\워크스페이스\UpdateWS.gif">
 - 워크스페이스 선택 및 이동 <img src="readme\gif\워크스페이스\SelectWorkspace.gif">
@@ -111,6 +113,7 @@
 
 <details>
   <summary>섹션</summary>
+
 - 섹션 생성 <img src="readme\gif\섹션\CreateSection.gif">
 - 섹션 삭제 <img src="readme\gif\섹션\DeleteSection.gif">
 - 섹션 정보 수정 <img src="readme\gif\섹션\UpdateSection.gif">
@@ -119,6 +122,7 @@
 
 <details>
   <summary>채널</summary>
+
 - 채널 공개 및 비공개 수정 <img src="readme\gif\채널\ChangeAccessLevel.gif">
 - 채널 멤버의 권한 변경 <img src="readme\gif\채널\ChangeChannelRole.gif">
 - 채널 생성 <img src="readme\gif\채널\CreateChannel.gif">
@@ -132,6 +136,7 @@
 
 <details>
   <summary>스레드</summary>
+
 - 스레드 생성 <img src="readme\gif\쓰레드\CreateThread.gif">
 - 스레드 수정 <img src="readme\gif\쓰레드\UpdateThread.gif">
 - 스레드 삭제 <img src="readme\gif\쓰레드\DeleteThread.gif">
@@ -142,6 +147,7 @@
 
 <details>
   <summary>태그</summary>
+
 - 생성 및 추가 <img src="readme\gif\태그\CreateThread.gif">
 - 태그 검색 <img src="readme\gif\태그\SearchThread.gif">
 - 태그 수정 <img src="">
@@ -150,6 +156,7 @@
 
 <details>
   <summary>캔버스</summary>
+
 - 페이지 생성 <img src="">
 - 캔버스 작성 <img src="">
 - 드래그 앤 드랍으로 순서 변경 <img src="">
@@ -159,6 +166,7 @@
 
 <details>
   <summary>드라이브</summary>
+
 - 새 폴더 생성 <img src="">
 - 폴더 이름 변경 <img src="">
 - 폴더 삭제 <img src="">
