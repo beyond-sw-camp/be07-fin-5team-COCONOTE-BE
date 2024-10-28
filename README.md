@@ -93,20 +93,12 @@
 <h3 id="프론트엔드-기능-시연"> 프론트엔드 기능 시연 </h3>
 <details>
   <summary><h3>회원</h3></summary>
-
-  - 로그인  
-    <img src="readme/gif/회원/GoogleLogin.gif">
-
-  - 로그아웃  
-    <img src="readme/gif/회원/Logout.gif">
-
+  - 로그인  <img src="readme/gif/회원/GoogleLogin.gif">
+  - 로그아웃  <img src="readme/gif/회원/Logout.gif">
 </details>
 
-### 회원
-- 로그인 <img src="readme\gif\회원\GoogleLogin.gif">
-- 로그아웃 <img src="readme\gif\회원\Logout.gif">
-
-### 워크스페이스
+<details>
+  <summary><h3>워크스페이스</h3></summary>
 - 워크스페이스 생성 <img src="readme\gif\워크스페이스\CreateWorkspace.gif">
 - 워크스페이스 정보 수정 <img src="readme\gif\워크스페이스\UpdateWS.gif">
 - 워크스페이스 선택 및 이동 <img src="readme\gif\워크스페이스\SelectWorkspace.gif">
@@ -115,14 +107,18 @@
 - 워크스페이에 새로운 멤버 초대 <img src="readme\gif\워크스페이스\InviteWorkspace.gif">
 - 워크스페이스 멤버 조회 및 권한 변경 <img src="readme\gif\워크스페이스\ChangeWsRole.gif">
 - 워크스페이스 멤버 강퇴 <img src="readme\gif\워크스페이스\DeleteWsMember.gif">
+</details>
 
-### 섹션
-- 즐겨찾기 <img src="readme\gif\섹션\Bookmark.gif">
+<details>
+  <summary><h3>섹션</h3></summary>
 - 섹션 생성 <img src="readme\gif\섹션\CreateSection.gif">
 - 섹션 삭제 <img src="readme\gif\섹션\DeleteSection.gif">
 - 섹션 정보 수정 <img src="readme\gif\섹션\UpdateSection.gif">
+- 즐겨찾기 <img src="readme\gif\섹션\Bookmark.gif">
+</details>
 
-### 채널
+<details>
+  <summary><h3>채널</h3></summary>
 - 채널 공개 및 비공개 수정 <img src="readme\gif\채널\ChangeAccessLevel.gif">
 - 채널 멤버의 권한 변경 <img src="readme\gif\채널\ChangeChannelRole.gif">
 - 채널 생성 <img src="readme\gif\채널\CreateChannel.gif">
@@ -132,29 +128,37 @@
 - 채널 탈퇴 <img src="readme\gif\채널\ExitChannel.gif">
 - 워크스페이스 멤버 내에서 채널 멤보 초대 <img src="readme\gif\채널\InviteChannelMember.gif">
 - 채널 정보 수정 <img src="readme\gif\채널\UpdateChannel.gif">
+</details>
 
-### 스레드
+<details>
+  <summary><h3>스레드</h3></summary>
 - 스레드 생성 <img src="readme\gif\쓰레드\CreateThread.gif">
 - 스레드 수정 <img src="readme\gif\쓰레드\UpdateThread.gif">
 - 스레드 삭제 <img src="readme\gif\쓰레드\DeleteThread.gif">
 - 파일 업로드 <img src="readme\gif\쓰레드\FileUpload.gif">
 - 댓글 <img src="readme\gif\쓰레드\reply.gif">
 - 스크롤 페이지네이션 <img src="readme\gif\쓰레드\ScrollPagenation.gif">
+</details>
 
-### 태그
+<details>
+  <summary><h3>태그</h3></summary>
 - 생성 및 추가 <img src="readme\gif\태그\CreateThread.gif">
 - 태그 검색 <img src="readme\gif\태그\SearchThread.gif">
 - 태그 수정 <img src="">
 - 태그 삭제 <img src="">
+</details>
 
-### 캔버스
+<details>
+  <summary><h3>캔버스</h3></summary>
 - 페이지 생성 <img src="">
 - 캔버스 작성 <img src="">
 - 드래그 앤 드랍으로 순서 변경 <img src="">
 - 이미지 업로드 <img src="">
 - 캔버스 삭제 <img src="">
+</details>
 
-### 드라이브
+<details>
+  <summary><h3>드라이브</h3></summary>
 - 새 폴더 생성 <img src="">
 - 폴더 이름 변경 <img src="">
 - 폴더 삭제 <img src="">
@@ -163,8 +167,11 @@
 - 파일 이름 변경 <img src="">
 - 삭제 <img src="">
 - 드래그 앤 드랍 파일 이동 <img src="">
+</details>
 
-### 2분할
+<details>
+  <summary><h3>2분할</h3></summary>
+</details>
 
 <h2 id="구조-및-아키텍처"> 구조 및 아키텍처 </h2>
 
