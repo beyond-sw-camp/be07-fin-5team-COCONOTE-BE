@@ -17,6 +17,7 @@ public class ThreadSearchResultDto {
     private String memberName;
     private String profileImageUrl;
     private Long channelId;
+    private String channelName;
     private String createdTime;
     private List<String> tags; // 태그 정보 추가
     private List<String> fileUrls; // 파일 URL 정보 추가
