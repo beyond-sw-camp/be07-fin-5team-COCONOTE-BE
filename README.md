@@ -183,18 +183,21 @@ COCONOTE는 노션의 문서 관리와 슬랙의 실시간 커뮤니케이션을
 <details>
   <summary>드라이브</summary>
 
-- 새 폴더 생성 <img src="">
-- 폴더 이름 변경 <img src="">
-- 폴더 삭제 <img src="">
-- 파일 올리기 <img src="">
-- 다운로드 <img src="">
-- 파일 이름 변경 <img src="">
-- 삭제 <img src="">
-- 드래그 앤 드랍 파일 이동 <img src="">
+- 새 폴더 생성 <img src="readme\gif\드라이브\CreateNewFolder.gif">
+- 폴더 이름 변경 <img src="readme\gif\드라이브\UpdateFolder.gif">
+- 파일 올리기 <img src="readme\gif\드라이브\UploadFiles.gif">
+- 파일 이름 변경 <img src="readme\gif\드라이브\UpdateFile.gif">
+- 파일 및 폴더 삭제 <img src="readme\gif\드라이브\DeleteFile&Folder.gif">
+- 드래그 앤 드랍 파일 이동 <img src="readme\gif\드라이브\MoveFile.gif">
 </details>
 
 <details>
   <summary>2분할</summary>
+
+  - 이분할 열고 닫기 <img src="readme\gif\이분할\open&close.gif">
+  - 이분할 화면에서 쓰레드와 캔버스 작성 <img src="readme\gif\이분할\ThreadCanvas.gif">
+  - 드라이브에서 쓰레드로 파일 업로드 <img src="readme\gif\이분할\driveToThread.gif">
+  
 </details>
 
 <h2 id="구조-및-아키텍처"> 구조 및 아키텍처 </h2>
