@@ -196,5 +196,8 @@ COCONOTE는 노션의 문서 관리와 슬랙의 실시간 커뮤니케이션을
 </details>
 
 <h2 id="구조-및-아키텍처"> 구조 및 아키텍처 </h2>
+   <a href="https://www.meetup.com/Angular-Medellin/">
+    <img width=100% src="./readme/architecture.png">
+  </a> 
 
 <h2 id="배포"> 배포 </h2>
