@@ -171,11 +171,13 @@ COCONOTE는 노션의 문서 관리와 슬랙의 실시간 커뮤니케이션을
 <details>
   <summary>캔버스</summary>
 
-- 페이지 생성 <img src="">
-- 캔버스 작성 <img src="">
-- 드래그 앤 드랍으로 순서 변경 <img src="">
-- 이미지 업로드 <img src="">
-- 캔버스 삭제 <img src="">
+- 페이지 생성 <img src="readme\gif\캔버스\CreateCanvas.gif">
+- 캔버스 작성 <img src="readme\gif\캔버스\WritingCanvas.gif">
+- 이미지 업로드 <img src="readme\gif\캔버스\UploadFile.gif">
+- H 템플릿 <img src="readme\gif\캔버스\Htemplate.gif">
+- 그 외 템플릿 <img src="readme\gif\캔버스\OtherTemplates.gif">
+- 드래그 앤 드랍으로 순서 변경 <img src="readme\gif\캔버스\Drag&Drop.gif">
+- 캔버스 삭제 <img src="readme\gif\캔버스\DeleteCanvas.gif">
 </details>
 
 <details>
