@@ -91,6 +91,16 @@
 <h3 id="백엔드-api-요청-및-응답-swagger"> 백엔드 API 요청 및 응답 (Swagger) </h3>
 
 <h3 id="프론트엔드-기능-시연"> 프론트엔드 기능 시연 </h3>
+<details>
+  <summary>### 회원</summary>
+
+  - 로그인  
+    <img src="readme/gif/회원/GoogleLogin.gif">
+
+  - 로그아웃  
+    <img src="readme/gif/회원/Logout.gif">
+
+</details>
 
 ### 회원
 - 로그인 <img src="readme\gif\회원\GoogleLogin.gif">
@@ -123,6 +133,38 @@
 - 워크스페이스 멤버 내에서 채널 멤보 초대 <img src="readme\gif\채널\InviteChannelMember.gif">
 - 채널 정보 수정 <img src="readme\gif\채널\UpdateChannel.gif">
 
+### 스레드
+- 스레드 생성 <img src="readme\gif\쓰레드\CreateThread.gif">
+- 스레드 수정 <img src="readme\gif\쓰레드\UpdateThread.gif">
+- 스레드 삭제 <img src="readme\gif\쓰레드\DeleteThread.gif">
+- 파일 업로드 <img src="readme\gif\쓰레드\FileUpload.gif">
+- 댓글 <img src="readme\gif\쓰레드\reply.gif">
+- 스크롤 페이지네이션 <img src="readme\gif\쓰레드\ScrollPagenation.gif">
+
+### 태그
+- 생성 및 추가 <img src="readme\gif\태그\CreateThread.gif">
+- 태그 검색 <img src="readme\gif\태그\SearchThread.gif">
+- 태그 수정 <img src="">
+- 태그 삭제 <img src="">
+
+### 캔버스
+- 페이지 생성 <img src="">
+- 캔버스 작성 <img src="">
+- 드래그 앤 드랍으로 순서 변경 <img src="">
+- 이미지 업로드 <img src="">
+- 캔버스 삭제 <img src="">
+
+### 드라이브
+- 새 폴더 생성 <img src="">
+- 폴더 이름 변경 <img src="">
+- 폴더 삭제 <img src="">
+- 파일 올리기 <img src="">
+- 다운로드 <img src="">
+- 파일 이름 변경 <img src="">
+- 삭제 <img src="">
+- 드래그 앤 드랍 파일 이동 <img src="">
+
+### 2분할
 
 <h2 id="구조-및-아키텍처"> 구조 및 아키텍처 </h2>
 
