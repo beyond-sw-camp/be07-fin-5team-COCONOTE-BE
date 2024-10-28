@@ -89,6 +89,41 @@
 
 <h2 id="개발"> 💻 개발 </h2>
 <h3 id="백엔드-api-요청-및-응답-swagger"> 백엔드 API 요청 및 응답 (Swagger) </h3>
+
 <h3 id="프론트엔드-기능-시연"> 프론트엔드 기능 시연 </h3>
+
+### 회원
+- 로그인 <img src="readme\gif\회원\GoogleLogin.gif">
+- 로그아웃 <img src="readme\gif\회원\Logout.gif">
+
+### 워크스페이스
+- 워크스페이스 생성 <img src="readme\gif\워크스페이스\CreateWorkspace.gif">
+- 워크스페이스 정보 수정 <img src="readme\gif\워크스페이스\UpdateWS.gif">
+- 워크스페이스 선택 및 이동 <img src="readme\gif\워크스페이스\SelectWorkspace.gif">
+- 워크스페이스삭제 <img src="readme\gif\워크스페이스\DeleteWs.gif">
+- 워크스페이스 내에서 나의 프로필 조회 및 변경 <img src="readme\gif\워크스페이스\MyPage.gif">
+- 워크스페이에 새로운 멤버 초대 <img src="readme\gif\워크스페이스\InviteWorkspace.gif">
+- 워크스페이스 멤버 조회 및 권한 변경 <img src="readme\gif\워크스페이스\ChangeWsRole.gif">
+- 워크스페이스 멤버 강퇴 <img src="readme\gif\워크스페이스\DeleteWsMember.gif">
+
+### 섹션
+- 즐겨찾기 <img src="readme\gif\섹션\Bookmark.gif">
+- 섹션 생성 <img src="readme\gif\섹션\CreateSection.gif">
+- 섹션 삭제 <img src="readme\gif\섹션\DeleteSection.gif">
+- 섹션 정보 수정 <img src="readme\gif\섹션\UpdateSection.gif">
+
+### 채널
+- 채널 공개 및 비공개 수정 <img src="readme\gif\채널\ChangeAccessLevel.gif">
+- 채널 멤버의 권한 변경 <img src="readme\gif\채널\ChangeChannelRole.gif">
+- 채널 생성 <img src="readme\gif\채널\CreateChannel.gif">
+- 채널 가입 <img src="readme\gif\채널\CreateChannelMember.gif">
+- 채널 삭제 <img src="readme\gif\채널\DeleteChannel.gif">
+- 채널 멤버 강퇴 <img src="readme\gif\채널\DeletedChannelMember.gif">
+- 채널 탈퇴 <img src="readme\gif\채널\ExitChannel.gif">
+- 워크스페이스 멤버 내에서 채널 멤보 초대 <img src="readme\gif\채널\InviteChannelMember.gif">
+- 채널 정보 수정 <img src="readme\gif\채널\UpdateChannel.gif">
+
+
 <h2 id="구조-및-아키텍처"> 구조 및 아키텍처 </h2>
+
 <h2 id="배포"> 배포 </h2>
