@@ -11,7 +11,7 @@ public class CanvasBlockMapper {
     // Canvas를 UnifiedDocument로 변환
     public CanvasBlockDocument toDocument(Canvas canvas) {
         return CanvasBlockDocument.builder()
-                .id("canvas-" + canvas.getId())
+                .canvasId(canvas.getId())
                 .type("canvas")
                 .canvasTitle(canvas.getTitle())
                 .createMemberName(canvas.getWorkspaceMember().getNickname())
@@ -23,15 +23,17 @@ public class CanvasBlockMapper {
     // Block을 UnifiedDocument로 변환
     public CanvasBlockDocument toDocument(Block block) {
         return CanvasBlockDocument.builder()
-                .id("block-" + block.getId())
+                .canvasId(block.getCanvas().getId())
+                .canvasTitle(block.getCanvas().getTitle())
                 .type("block")
+                .channelId(block.getCanvas().getChannel().getChannelId())
+                .blockId(block.getId())
                 .blockContents(block.getContents())
-                .blockMember(block.getWorkspaceMember())
-                .canvasId(String.valueOf(block.getCanvas().getId()))
+                .blockContents(block.extractPlainText()) // HTML 태그 제거된 텍스트만 저장
+                .workspaceMemberId(block.getWorkspaceMember().getWorkspaceMemberId())
                 .prevBlockId(block.getPrevBlock() != null ? String.valueOf(block.getPrevBlock().getId()) : null)
                 .parentBlockId(block.getParentBlock() != null ? String.valueOf(block.getParentBlock().getId()) : null)
                 .feId(block.getFeId())
-                .blockType(block.getType().toString())
                 .build();
     }
 }
