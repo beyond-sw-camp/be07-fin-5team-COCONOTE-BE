@@ -1,8 +1,12 @@
 <h1 align="center">
-  <!-- <a href="https://www.meetup.com/Angular-Medellin/">
-    <img width=100% src="assets/images/logo.png">
-  </a> -->
-  ⭐️ COCONOTE ⭐️
+  지식 관리 시스템
+  <br />
+   <a href="https://www.meetup.com/Angular-Medellin/">
+    <img width=100% src="@/src/logo_coconote.png">
+  </a> 
+  COCONOTE
+  <br />
+  극대화된 협업 향상을 경험해보세요
 </h1>
 
 ---
@@ -16,7 +20,50 @@
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 <br /><br />
 
-<h2> ️😎 기획 </h2>
+
+
+<h2> ️😎 COCONOTE 서비스 소개 </h2>
+<h3> 프로젝트 배경 </h3>
+
+<h3> 프로젝트 목표 </h3>
+
+<h3> 세부 기능 </h3>
+
+<h2> ️🛠️ 기술 스택 </h2>
+[Backend]
+<br />
+<img src="https://img.shields.io/badge/Spring-6DB33F?style=flat-square&logo=Spring&logoColor=white">
+<img src="https://img.shields.io/badge/Spring Boot-6DB33F?style=flat-square&logo=Spring Boot&logoColor=white">
+<br />
+<br />
+[Frontend]
+<br />
+<img src="https://img.shields.io/badge/vue.js-4FC08D?style=flat-square&logo=vue.js&logoColor=white">
+<br />
+<br />
+[DB]
+<br />
+<img src="https://img.shields.io/badge/MariaDB-003545?style=flat-square&logo=MariaDB&logoColor=white">
+<br />
+<br />
+[CI/CD]
+<br />
+<img src="https://img.shields.io/badge/Kafka-231F20?style=flat-square&logo=apachekafka&logoColor=white">
+<br />
+[Etc]
+<br />
+<img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=Docker&logoColor=white">
+<br />
+<br />
+[Communication]
+<br />
+<img src="https://img.shields.io/badge/Discord-5865F2?style=flat-square&logo=Discord&logoColor=white">
+<img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=GitHub&logoColor=white"> 
+<img src="https://img.shields.io/badge/Notion-000000?style=flat-square&logo=Notion&logoColor=white"> 
+<br />
+<br />
+
+
 <h3> 요구사항 정의서 </h3>
 
 [<b>요구사항 정의서 보러가기 ➡️</b>](https://docs.google.com/spreadsheets/d/e/2PACX-1vRFFDDVRpsGfdgAvZc17fByKMgOEAG-cOA_VBWJCR53_YVacTATFazxp7AeO5hKaCS26RYA9g2NXL-b/pubhtml)
@@ -40,12 +87,12 @@
   - 초대를 통한 참가자 추가
 - channel 별로 구분되어있는 **쓰레드**```(채팅)```, **캔버스**```(노션)```, **드라이브**```(네이버 or 구글 드라이브) ```
 - 쓰레드
-    - 단체 채팅, 이미지를 통한 정보공유
+  - 단체 채팅, 이미지를 통한 정보공유
 - 캔버스
-    - 단체 문서수정, 유저별로 실시간 동기화 되어있는 문서
+  - 단체 문서수정, 유저별로 실시간 동기화 되어있는 문서
 - 드라이브
-    - 채널 내부의 쓰레드, 캔버스 자동업로드
-    - 드라이브 내 파일 업로드를 통한 쓰레드, 캔버스 파일 동기화 기능
+  - 채널 내부의 쓰레드, 캔버스 자동업로드
+  - 드라이브 내 파일 업로드를 통한 쓰레드, 캔버스 파일 동기화 기능
 
 
 
