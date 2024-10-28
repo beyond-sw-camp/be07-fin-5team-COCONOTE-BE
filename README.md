@@ -62,4 +62,3 @@
 <h3> API 명세서 </h3>
 
 [<b>API 명세서 보러가기 ➡️</b>](https://ara-boka.notion.site/COCONOTE-API-11585d64912780a3ac04f2305aed6349?pvs=4)
-
