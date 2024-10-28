@@ -9,10 +9,10 @@
 </h1>
 <h3 align="center">협업의 새로운 차원</h3>
 
----
+
 <h2> COCONOTE 바로가기 </h2>
-   <a href="https://www.coconote.site"></a>
----
+   <a href="https://www.coconote.site">https://www.coconote.site</a>
+
 
 <h2> ️💚️ TEAM 💚 </h2>
 
@@ -34,6 +34,7 @@
 5. [구조 및 아키텍처](#구조-및-아키텍처)
 6. [배포](#배포)
 7. [테스트](#테스트)
+<br /><br />
 
 <h2 id="프로젝트-소개"> 🧡 프로젝트 소개 </h2>
 <h3> 개요 </h3>
@@ -61,6 +62,7 @@ COCONOTE는 노션의 문서 관리와 슬랙의 실시간 커뮤니케이션을
 - 드라이브
   - 채널 내부의 쓰레드, 캔버스 자동업로드
   - 드라이브 내 파일 업로드를 통한 쓰레드, 캔버스 파일 동기화 기능
+<br /><br />
 
 ---
 
@@ -85,7 +87,7 @@ COCONOTE는 노션의 문서 관리와 슬랙의 실시간 커뮤니케이션을
 <h3> API 명세서 </h3>
 
 [<b>API 명세서 보러가기 ➡️</b>](https://ara-boka.notion.site/COCONOTE-API-11585d64912780a3ac04f2305aed6349?pvs=4)
-
+<br /><br />
 
 <h2 id="기술-스택"> ️🛠️ 기술 스택 </h2>
 
@@ -98,6 +100,7 @@ COCONOTE는 노션의 문서 관리와 슬랙의 실시간 커뮤니케이션을
 ### Etc <img src="https://img.shields.io/badge/DOCKER-2496ED?style=flat-square&logo=Docker&logoColor=white">
 
 ### Communication ![Discord](https://img.shields.io/badge/DISCORD-5865F2?style=flat-square&logo=Discord&logoColor=white) <img src="https://img.shields.io/badge/SLACK-4A154B?style=flat-square&logo=SLACK&logoColor=white"> ![GitHub](https://img.shields.io/badge/GITHUB-181717?style=flat-square&logo=GitHub&logoColor=white) ![Notion](https://img.shields.io/badge/NOTION-000000?style=flat-square&logo=Notion&logoColor=white) 
+<br /><br />
 
 <h2 id="개발"> 💻 개발 </h2>
 <h3 id="백엔드-api-요청-및-응답-swagger"> 백엔드 API 요청 및 응답 (Swagger) </h3>
@@ -196,10 +199,12 @@ COCONOTE는 노션의 문서 관리와 슬랙의 실시간 커뮤니케이션을
 <details>
   <summary>2분할</summary>
 </details>
+<br /><br />
 
 <h2 id="구조-및-아키텍처"> 구조 및 아키텍처 </h2>
    <a href="https://www.meetup.com/Angular-Medellin/">
     <img width=100% src="./readme/architecture.png">
   </a> 
+<br /><br />
 
 <h2 id="배포"> 배포 </h2>
