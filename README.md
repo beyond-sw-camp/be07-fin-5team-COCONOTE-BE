@@ -32,7 +32,7 @@
 6. [배포](#배포)
 7. [테스트](#테스트)
 
-<h2 id="소개"> 프로젝트 소개 </h2>
+<h2 id="프로젝트-소개"> ❤️ 프로젝트 소개 </h2>
 <h3> 개요 </h3>
 <h3> 배경 및 목적 </h3>
 <h3> 프로그램 사양서 </h3>
@@ -51,7 +51,10 @@
   - 채널 내부의 쓰레드, 캔버스 자동업로드
   - 드라이브 내 파일 업로드를 통한 쓰레드, 캔버스 파일 동기화 기능
 
-<h2 id="기획"> 😎 기획 </h2>
+---
+
+<h2 id="기획"> 🧡 기획 </h2>
+
 <h3> WBS </h3>
 
 [<b> WBS 보러가기 ➡️</b>](https://docs.google.com/spreadsheets/d/1-55RJo0awEfJTcGI6TlrkOE9e4nGFYGOgi4ZCOvZu58/edit?usp=sharing)
@@ -73,34 +76,36 @@
 [<b>API 명세서 보러가기 ➡️</b>](https://ara-boka.notion.site/COCONOTE-API-11585d64912780a3ac04f2305aed6349?pvs=4)
 
 
+---
+
 <h2 id="기술-스택"> ️🛠️ 기술 스택 </h2>
-[Backend]
-<br />
+<h3>Backend</h3>
 <img src="https://img.shields.io/badge/Spring-6DB33F?style=flat-square&logo=Spring&logoColor=white">
 <img src="https://img.shields.io/badge/Spring Boot-6DB33F?style=flat-square&logo=Spring Boot&logoColor=white">
 <br />
 <br />
-[Frontend]
-<br />
+
+<h3>Frontend</h3>
 <img src="https://img.shields.io/badge/vue.js-4FC08D?style=flat-square&logo=vue.js&logoColor=white">
 <br />
 <br />
-[DB]
-<br />
+
+<h3>DB</h3>
 <img src="https://img.shields.io/badge/MariaDB-003545?style=flat-square&logo=MariaDB&logoColor=white">
 <br />
 <br />
-[CI/CD]
-<br />
+
+<h3>CI/CD</h3>
 <img src="https://img.shields.io/badge/Kafka-231F20?style=flat-square&logo=apachekafka&logoColor=white">
 <br />
-[Etc]
 <br />
+
+<h3>Etc</h3>
 <img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=Docker&logoColor=white">
 <br />
 <br />
-[Communication]
-<br />
+
+<h3>Communication</h3>
 <img src="https://img.shields.io/badge/Discord-5865F2?style=flat-square&logo=Discord&logoColor=white">
 <img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=GitHub&logoColor=white"> 
 <img src="https://img.shields.io/badge/Notion-000000?style=flat-square&logo=Notion&logoColor=white"> 
