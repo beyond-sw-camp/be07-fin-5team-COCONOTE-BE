@@ -11,22 +11,7 @@
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore -->
-| [<img src="https://avatars.githubusercontent.com/u/55572356?s=96" width="100px;"/><br /><sub><b>김정은</b></sub>](https://github.com/ara-ro)<br />        | [<img src="https://avatars.githubusercontent.com/u/167521161?s=96" width="100px;"/><br /><sub><b>김민지 </b></sub>](https://github.com/p1p3)<br /> | [<img src="https://avatars.githubusercontent.com/u/117874745?s=96" width="100px;"/><br /><sub><b>김지호</b></sub>](https://github.com/danielcb29)<br /> | [<img src="https://avatars.githubusercontent.com/u/95060314" width="100px;"/><br /><sub><b>전상민</b></sub>](http://co.linkedin.com/in/alejandronanez/)<br /> |          [<img src="https://avatars.githubusercontent.com/u/96410921?s=96" width="100px;"/><br /><sub><b>최세호</b></sub>](https://github.com/MelinaMejia95)<br /> |                             
-| :-----------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------: | 
-<!-- ALL-CONTRIBUTORS-LIST:END -->
-<br /><br />
-
-## 목차
-
-1. [프로젝트 소개](#프로젝트-소개)
-2. [기획](#기획)
-3. [개발](#개발발)
-4. [구조 및 아키텍처](#구조-및-아키텍처)
-5. [기술 스택](#기술-스택)
-6. [배포](#배포)
-7. [테스트](#테스트)
-
-## <h2> ️😎 기획 </h2>
+| [<img src="https://avatars.githubusercontent.com/u/55572356?s=96" width="100px;"/><br /><sub><b>김정은</b></sub>](https://github.com/ara-ro)<br />        | [<img src="https://avatars.githubusercontent.com/u/167521161?s=96" width="100px;"/><br /><sub><b>김민지 </b></sub>](https://github.com/p1p3)<br /> | [<img src="https://avatars.githubusercontent.com/u/117874745?s=96" width="100px;"/><br /><sub><b>김지호</b></sub>](https://github.com/danielcb29)<br /> | [<img src="https://avatars.githubusercontent.com/u/95060314" width="100px;"/><br /><sub><b>전상민</b></sub>](http://co.linkedin.com/in/alejandronanez/)<br /> |          [<img src="https://avatars.githubusercontent.com/u/96410921?s=96" width="100px;"/><br /><sub><b>최세호</b>획 <h2> ️😎 기획 </h2>
 <h3> 요구사항 정의서 </h3>
 
 [<b>요구사항 정의서 보러가기 ➡️</b>](https://docs.google.com/spreadsheets/d/e/2PACX-1vRFFDDVRpsGfdgAvZc17fByKMgOEAG-cOA_VBWJCR53_YVacTATFazxp7AeO5hKaCS26RYA9g2NXL-b/pubhtml)
