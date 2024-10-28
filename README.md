@@ -4,7 +4,6 @@
    <a href="https://www.meetup.com/Angular-Medellin/">
     <img width=100% src="./readme/logo_coconote.png">
   </a> 
-  COCONOTE
   <br />
   극대화된 협업 향상을 경험해보세요
 </h1>
