@@ -20,7 +20,7 @@
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 <br /><br />
 
-## 목차
+## ❤️ 목차
 
 1. [프로젝트 소개](#소개)
 2. [기획](#기획)
@@ -32,7 +32,7 @@
 6. [배포](#배포)
 7. [테스트](#테스트)
 
-<h2 id="프로젝트-소개"> ❤️ 프로젝트 소개 </h2>
+<h2 id="프로젝트-소개"> 🧡 프로젝트 소개 </h2>
 <h3> 개요 </h3>
 <h3> 배경 및 목적 </h3>
 <h3> 프로그램 사양서 </h3>
@@ -53,7 +53,7 @@
 
 ---
 
-<h2 id="기획"> 🧡 기획 </h2>
+<h2 id="기획"> 💛 기획 </h2>
 
 <h3> WBS </h3>
 
@@ -83,33 +83,27 @@
 <img src="https://img.shields.io/badge/Spring-6DB33F?style=flat-square&logo=Spring&logoColor=white">
 <img src="https://img.shields.io/badge/Spring Boot-6DB33F?style=flat-square&logo=Spring Boot&logoColor=white">
 <br />
-<br />
 
 <h3>Frontend</h3>
 <img src="https://img.shields.io/badge/vue.js-4FC08D?style=flat-square&logo=vue.js&logoColor=white">
-<br />
 <br />
 
 <h3>DB</h3>
 <img src="https://img.shields.io/badge/MariaDB-003545?style=flat-square&logo=MariaDB&logoColor=white">
 <br />
-<br />
 
 <h3>CI/CD</h3>
 <img src="https://img.shields.io/badge/Kafka-231F20?style=flat-square&logo=apachekafka&logoColor=white">
 <br />
-<br />
 
 <h3>Etc</h3>
 <img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=Docker&logoColor=white">
-<br />
 <br />
 
 <h3>Communication</h3>
 <img src="https://img.shields.io/badge/Discord-5865F2?style=flat-square&logo=Discord&logoColor=white">
 <img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=GitHub&logoColor=white"> 
 <img src="https://img.shields.io/badge/Notion-000000?style=flat-square&logo=Notion&logoColor=white"> 
-<br />
 <br />
 
 ---
