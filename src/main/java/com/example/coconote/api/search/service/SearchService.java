@@ -245,7 +245,8 @@ public class SearchService {
     public SearchResultWithTotal<FileSearchResultDto> searchFiles(Long workspaceId, String keyword, int page, int size) {
         String alias = getAliasForWorkspace(workspaceId);
         SearchResponse<FileEntityDocument> response = searchDocumentsForMultipleFields(alias, keyword, List.of("fileName"), FileEntityDocument.class, page, size);
-
+        Channel channel = channelRepository.findById(response.hits().hits().get(0).source().getChannelId())
+                .orElseThrow(() -> new EntityNotFoundException("Channel not found with ID: " + response.hits().hits().get(0).source().getChannelId()));
         // DTO로 변환
         List<FileSearchResultDto> files = response.hits().hits().stream()
                 .map(document -> FileSearchResultDto.builder()
@@ -254,6 +255,7 @@ public class SearchService {
                         .fileUrl(document.source().getFileUrl())
                         .folderId(document.source().getFolderId())
                         .channelId(document.source().getChannelId())
+                        .channelName(channel.getChannelName())
                         .build())
                 .collect(Collectors.toList());
 
@@ -315,6 +317,8 @@ public class SearchService {
         // DTO로 변환
         List<ThreadSearchResultDto> threads = response.hits().hits().stream()
                 .map(document -> {
+                    Channel channel = channelRepository.findById(document.source().getChannelId())
+                            .orElseThrow(() -> new EntityNotFoundException("Channel not found with ID: " + document.source().getChannelId()));
                     // WorkspaceMember 조회
                     Long workspaceMemberId = document.source().getWorkspaceMemberId();
                     WorkspaceMember workspaceMember = workspaceMemberRepository.findById(workspaceMemberId)
@@ -327,6 +331,7 @@ public class SearchService {
                             .memberName(workspaceMember.getNickname()) // WorkspaceMember에서 memberName 설정
                             .profileImageUrl(workspaceMember.getProfileImage()) // WorkspaceMember에서 profileImageUrl 설정
                             .channelId(document.source().getChannelId())
+                            .channelName(channel.getChannelName())
                             .createdTime(document.source().getCreatedTime())
                             .parentThreadId(document.source().getParentThreadId())
                             .fileUrls(document.source().getFileUrls())
