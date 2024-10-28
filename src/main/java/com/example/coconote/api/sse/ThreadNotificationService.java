@@ -1,6 +1,7 @@
 package com.example.coconote.api.sse;
 
 import com.example.coconote.api.channel.channel.entity.Channel;
+import com.example.coconote.api.channel.channel.repository.ChannelRepository;
 import com.example.coconote.api.channel.channelMember.repository.ChannelMemberRepository;
 import com.example.coconote.api.search.mapper.WorkspaceMemberMapper;
 import com.example.coconote.api.thread.thread.entity.Thread;
@@ -9,11 +10,14 @@ import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember
 import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
@@ -22,17 +26,33 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class ThreadNotificationService {
 
     // Emitters getter 메서드
     @Getter
     private final Map<Long, Map<Long, SseEmitter>> emitters = new ConcurrentHashMap<>();
-    private final RedisTemplate<String, String> redisTemplate;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private final RedisTemplate<String, String> notificationRedisTemplate; // 알림용 RedisTemplate
+    private final ObjectMapper objectMapper;
     private final ChannelMemberRepository channelMemberRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
+    private final ChannelRepository channelRepository;
+
+    // @Qualifier를 사용하여 직접 생성자를 정의
+    public ThreadNotificationService(
+            @Qualifier("notificationRedisTemplate") RedisTemplate<String, String> notificationRedisTemplate,
+            ObjectMapper objectMapper,
+            ChannelMemberRepository channelMemberRepository,
+            WorkspaceMemberRepository workspaceMemberRepository,
+            ChannelRepository channelRepository
+    ) {
+        this.notificationRedisTemplate = notificationRedisTemplate;
+        this.objectMapper = objectMapper;
+        this.channelMemberRepository = channelMemberRepository;
+        this.workspaceMemberRepository = workspaceMemberRepository;
+        this.channelRepository = channelRepository;
+    }
 
     // 사용자별 워크스페이스 알림 구독
     public SseEmitter subscribe(Long memberId, Long workspaceId) {
@@ -122,22 +142,14 @@ public class ThreadNotificationService {
                 .memberName(member.getNickname())
                 .build();
 
-        Map<String, Object> messageMap = new HashMap<>();
-        messageMap.put("workspaceId", workspace.getWorkspaceId());
-        messageMap.put("channelId", channel.getChannelId());
-        messageMap.put("notification", notification);
+        NotificationMessage notificationMessage = new NotificationMessage(
+                workspace.getWorkspaceId(), channel.getChannelId(), notification);
 
-        try {
-            String messageJson = objectMapper.writeValueAsString(messageMap);
-            log.info("Sending redisMessage: {}", messageJson);
-            redisTemplate.convertAndSend("notification-channel", messageJson);
-            log.info("Notification sent successfully: {}", notification);
+        notificationRedisTemplate.convertAndSend("notification-channel", notificationMessage);
+        log.info("Notification sent successfully: {}", notificationMessage);
 
 //            redis에 읽지 않은 알림 수 증가
-            incrementUnreadCount(member.getWorkspaceMemberId(), channel.getChannelId());
-        } catch (JsonProcessingException e) {
-            log.error("Failed to convert notification to JSON", e);
-        }
+        incrementUnreadCount(member.getWorkspaceMemberId(), channel.getChannelId());
     }
 
     // 주기적으로 비활성화된 Emitter를 정리하는 메서드
@@ -204,20 +216,45 @@ public class ThreadNotificationService {
 
     // Redis에 읽지 않은 알림 수 증가
     private void incrementUnreadCount(Long userId, Long channelId) {
-        redisTemplate.opsForValue().increment("unread_notifications:" + userId + ":" + channelId);
+        String key = "unread_notifications:" + userId + ":" + channelId;
+        notificationRedisTemplate.opsForValue().increment(key);
+        log.info("Unread notification count incremented for userId={}, channelId={}", userId, channelId);
     }
 
     // 사용자와 채널에 대한 읽지 않은 알림 수를 Redis에서 가져오는 메서드
+    @Transactional
     public Long getUnreadCount(Long userId, Long channelId) {
-        String key = "unread_notifications:" + userId + ":" + channelId;
-        String count = redisTemplate.opsForValue().get(key);
-        return count != null ? Long.valueOf(count) : 0L;
+        Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new EntityNotFoundException("채널을 찾을 수 없습니다."));
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByWorkspace_WorkspaceIdAndMember_Id(channel.getSection().getWorkspace().getWorkspaceId(), userId);
+        String key = "unread_notifications:" + workspaceMember.getWorkspaceMemberId() + ":" + channelId;
+
+        // Redis에서 가져온 값을 Object로 수신
+        Object countObject = notificationRedisTemplate.opsForValue().get(key);
+
+        if (countObject instanceof String) {
+            try {
+                return Long.valueOf((String) countObject);
+            } catch (NumberFormatException e) {
+                log.error("Failed to parse unread notification count (String) for key {}: {}", key, e.getMessage());
+            }
+        } else if (countObject instanceof Integer) {
+            return ((Integer) countObject).longValue();
+        } else if (countObject instanceof Long) {
+            return (Long) countObject;
+        } else {
+            log.warn("Unread notification count not found or invalid type for key {}", key);
+        }
+
+        return 0L;  // 기본값 반환
     }
 
     // 사용자와 채널에 대한 읽지 않은 알림 수를 Redis에서 삭제하는 메서드
+    @Transactional
     public void markAsRead(Long userId, Long channelId) {
-        String key = "unread_notifications:" + userId + ":" + channelId;
-        redisTemplate.delete(key); // 읽음 처리
+        Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new EntityNotFoundException("채널을 찾을 수 없습니다."));
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByWorkspace_WorkspaceIdAndMember_Id(channel.getSection().getWorkspace().getWorkspaceId(), userId);
+        String key = "unread_notifications:" + workspaceMember.getWorkspaceMemberId() + ":" + channelId;
+        notificationRedisTemplate.delete(key); // 읽음 처리
     }
 
     // Emitter 개수 로그 출력 메서드
