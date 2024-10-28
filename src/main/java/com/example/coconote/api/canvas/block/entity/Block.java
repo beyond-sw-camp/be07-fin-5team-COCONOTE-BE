@@ -119,4 +119,9 @@ public class Block extends BaseEntity {
     public void patchBlockIndent(Integer indent) {
         this.indent = indent;
     }
+
+    public void patchBlockContents(String blockContents) {
+        this.contents = blockContents;
+    }
+
 }
