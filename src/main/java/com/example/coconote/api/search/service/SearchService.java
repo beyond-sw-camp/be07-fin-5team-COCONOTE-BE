@@ -1,5 +1,9 @@
 package com.example.coconote.api.search.service;
 
+import com.example.coconote.api.canvas.canvas.entity.Canvas;
+import com.example.coconote.api.canvas.canvas.repository.CanvasRepository;
+import com.example.coconote.api.channel.channel.entity.Channel;
+import com.example.coconote.api.channel.channel.repository.ChannelRepository;
 import com.example.coconote.api.search.dto.*;
 import com.example.coconote.api.search.entity.*;
 import com.example.coconote.api.search.mapper.*;
@@ -38,6 +42,8 @@ public class SearchService {
     private final ThreadMapper threadMapper;
     private final CanvasBlockMapper canvasBlockMapper;
     private final WorkspaceMemberRepository workspaceMemberRepository;
+    private final ChannelRepository channelRepository;
+    private final CanvasRepository canvasRepository;
 
 
     // 워크스페이스 ID를 기반으로 에일리어스를 동적으로 생성
@@ -355,20 +361,34 @@ public class SearchService {
         List<CanvasBlockSearchResultDto> canvasBlocks = response.hits().hits().stream()
                 .map(document -> {
                     CanvasBlockDocument source = document.source();
-                    String id = source.getType().equals("canvas")
-                            ? "canvas_" + source.getCanvasId()   // 캔버스일 경우 canvasId 사용
-                            : "block_" + source.getBlockId();     // 블록일 경우 blockId 사용
 
-                    return CanvasBlockSearchResultDto.builder()
-                            .id(id)
-                            .canvasTitle(source.getCanvasTitle())
-                            .blockContents(source.getBlockContents())
-                            .build();
+                    // 채널과 캔버스 조회
+                    Channel channel = channelRepository.findById(source.getChannelId())
+                            .orElseThrow(() -> new EntityNotFoundException("Channel not found with ID: " + source.getChannelId()));
+                    Canvas canvas = canvasRepository.findById(source.getCanvasId())
+                            .orElseThrow(() -> new EntityNotFoundException("Canvas not found with ID: " + source.getCanvasId()));
+
+                    // 공통 필드 설정
+                    CanvasBlockSearchResultDto.CanvasBlockSearchResultDtoBuilder dtoBuilder = CanvasBlockSearchResultDto.builder()
+                            .canvasId(source.getCanvasId())
+                            .canvasTitle(canvas.getTitle())
+                            .channelId(source.getChannelId())
+                            .channelName(channel.getChannelName())
+                            .type(source.getType());
+
+                    // type에 따른 개별 필드 설정
+                    if ("block".equals(source.getType())) {
+                        dtoBuilder.blockId(source.getBlockId())
+                                .blockContents(source.getBlockContents());
+                    }
+
+                    return dtoBuilder.build();
                 })
                 .collect(Collectors.toList());
 
         return new SearchResultWithTotal<>(canvasBlocks, response.hits().total().value());
     }
+
 
 
     // 전체 검색 (모든 인덱스에서 검색)
@@ -530,6 +550,7 @@ public class SearchService {
             indexDocument(alias, documentId, document);  // documentId 없이 호출하여 자동 생성
         });
     }
+
 
     // 블록 삭제
     public void deleteBlock(Long workspaceId, Long blockId) {

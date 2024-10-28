@@ -30,5 +30,4 @@ public class CanvasBlockDocument {
     private String prevBlockId;
     private String parentBlockId;
     private String feId;
-    private String blockType;
 }

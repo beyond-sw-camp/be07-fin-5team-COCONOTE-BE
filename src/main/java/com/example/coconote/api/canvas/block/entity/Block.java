@@ -11,6 +11,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Jsoup;
 
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
@@ -51,7 +52,7 @@ public class Block extends BaseEntity {
 
     //    (프론트 tiptap 종속) 블록의 타입
     @Enumerated(EnumType.STRING)
-    private Type type;
+    private Type type = Type.paragraph; // 기본값을 paragraph로 설정
 
     private Integer level; // front 태그에 level이 필요한 경우 사용
     private Integer indent; // front tap 기능을 위해 추가
@@ -124,4 +125,12 @@ public class Block extends BaseEntity {
         this.contents = blockContents;
     }
 
+    // HTML 태그를 모두 제거하고 텍스트만 추출하는 메서드
+    public String extractPlainText() {
+        if (contents == null) {
+            return ""; // contents가 null일 경우 빈 문자열 반환
+        }
+        // Jsoup을 사용하여 HTML 태그를 제거하고 텍스트만 반환
+        return Jsoup.parse(contents).text();
+    }
 }

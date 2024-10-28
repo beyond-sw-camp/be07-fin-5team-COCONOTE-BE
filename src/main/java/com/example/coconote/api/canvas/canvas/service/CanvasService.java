@@ -275,7 +275,7 @@ public class CanvasService {
             prevLinkedCanvas.changePrevCanvas(canvasPrevOriginBlock);
         }
         canvas.markAsDeleted(); // 실제 삭제 대신 소프트 삭제 처리
-//        searchService.deleteCanvas(canvas.getChannel().getSection().getWorkspace().getWorkspaceId(), canvas.getId());
+        searchService.deleteCanvas(canvas.getChannel().getSection().getWorkspace().getWorkspaceId(), canvas.getId());
     }
 
 

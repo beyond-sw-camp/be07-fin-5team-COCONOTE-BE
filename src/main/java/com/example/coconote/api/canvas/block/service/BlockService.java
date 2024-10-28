@@ -274,7 +274,7 @@ public class BlockService {
 
         List<Block> parentLinkedChildrenBlocks = blockRepository.findByParentBlockFeIdAndIsDeleted(feId, IsDeleted.N);
         block.markAsDeleted(parentLinkedChildrenBlocks); // 실제 삭제 대신 소프트 삭제 처리
-//        searchService.deleteBlock(block.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), block.getId());
+        searchService.deleteBlock(block.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), block.getId());
 
     }
 
@@ -294,6 +294,8 @@ public class BlockService {
 
         // 자식 블록들도 재귀적으로 삭제
         deleteBlockAndChildren(block, parentLinkedChildrenBlocks);
+//        검색 인덱스에서 삭제
+        searchService.deleteBlock(block.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), block.getId());
     }
 
     private void deleteBlockAndChildren(Block block, List<Block> children) {
@@ -307,6 +309,7 @@ public class BlockService {
 
         // 블록을 물리적으로 삭제
         blockRepository.delete(block);
+        searchService.deleteBlock(block.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), block.getId());
     }
 
 
