@@ -89,15 +89,15 @@ COCONOTE는 노션의 문서 관리와 슬랙의 실시간 커뮤니케이션을
 
 <h2 id="기술-스택"> ️🛠️ 기술 스택 </h2>
 
-### Backend ![Spring](https://img.shields.io/badge/Spring-6DB33F?style=flat-square&logo=Spring&logoColor=white) ![Boot](https://img.shields.io/badge/SpringBoot-6DB33F?style=flat-square&logo=SpringBoot&logoColor=white)
-### Frontend <img src="https://img.shields.io/badge/vue.js-4FC08D?style=flat-square&logo=vue.js&logoColor=white">
-### DB <img src="https://img.shields.io/badge/MariaDB-003545?style=flat-square&logo=MariaDB&logoColor=white">
+### Backend ![Spring](https://img.shields.io/badge/SPRING-6DB33F?style=flat-square&logo=Spring&logoColor=white) ![Boot](https://img.shields.io/badge/SPRINGBOOT-6DB33F?style=flat-square&logo=SpringBoot&logoColor=white)
+### Frontend <img src="https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white"> <img src="https://img.shields.io/badge/CSS-1572B6?style=flat-square&logo=CSS3&logoColor=white"> <img src="https://img.shields.io/badge/JAVASCRIPT-F7DF1E?style=flat-square&logo=javascript&logoColor=black"> <img src="https://img.shields.io/badge/VUE.JS-4FC08D?style=flat-square&logo=vue.js&logoColor=white">
+### DB <img src="https://img.shields.io/badge/MARIADB-003545?style=flat-square&logo=MariaDB&logoColor=white"> <img src="https://img.shields.io/badge/REDIS-FF4438?style=flat-square&logo=REDIS&logoColor=white">
 
-### CI/CD <img src="https://img.shields.io/badge/Kafka-231F20?style=flat-square&logo=apachekafka&logoColor=white">
+### CI/CD <img src="https://img.shields.io/badge/KAFKA-231F20?style=flat-square&logo=apachekafka&logoColor=white">
 
-### Etc <img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=Docker&logoColor=white">
+### Etc <img src="https://img.shields.io/badge/DOCKER-2496ED?style=flat-square&logo=Docker&logoColor=white">
 
-### Communication ![Discord](https://img.shields.io/badge/Discord-5865F2?style=flat-square&logo=Discord&logoColor=white) ![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=GitHub&logoColor=white) ![Notion](https://img.shields.io/badge/Notion-000000?style=flat-square&logo=Notion&logoColor=white)
+### Communication ![Discord](https://img.shields.io/badge/DISCORD-5865F2?style=flat-square&logo=Discord&logoColor=white) <img src="https://img.shields.io/badge/SLACK-4A154B?style=flat-square&logo=SLACK&logoColor=white"> ![GitHub](https://img.shields.io/badge/GITHUB-181717?style=flat-square&logo=GitHub&logoColor=white) ![Notion](https://img.shields.io/badge/NOTION-000000?style=flat-square&logo=Notion&logoColor=white) 
 
 <h2 id="개발"> 💻 개발 </h2>
 <h3 id="백엔드-api-요청-및-응답-swagger"> 백엔드 API 요청 및 응답 (Swagger) </h3>
