@@ -18,7 +18,6 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RedisConfig {
     // 기본 RedisConnectionFactory (기본 데이터베이스를 사용)
     @Bean
-    @Primary // 기본으로 사용될 ConnectionFactory 지정
     public RedisConnectionFactory defaultRedisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
         config.setDatabase(0); // 기본 데이터베이스 설정

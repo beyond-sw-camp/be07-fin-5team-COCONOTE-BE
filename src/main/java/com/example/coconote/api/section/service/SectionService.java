@@ -1,11 +1,9 @@
 package com.example.coconote.api.section.service;
 
 import com.example.coconote.api.channel.channel.dto.response.ChannelDetailResDto;
-import com.example.coconote.api.channel.channel.entity.Channel;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.member.repository.MemberRepository;
 import com.example.coconote.api.section.dto.request.SectionCreateReqDto;
-import com.example.coconote.api.section.dto.request.SectionSwitchReqDto;
 import com.example.coconote.api.section.dto.request.SectionUpdateReqDto;
 import com.example.coconote.api.section.dto.response.SectionListResDto;
 import com.example.coconote.api.section.entity.Section;
@@ -18,28 +16,45 @@ import com.example.coconote.api.workspace.workspaceMember.entity.WsRole;
 import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMemberRepository;
 import com.example.coconote.common.IsDeleted;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@Slf4j
 public class SectionService {
 
     private final SectionRepository sectionRepository;
     private final WorkspaceRepository workspaceRepository;
     private final MemberRepository memberRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
+    private final RedisTemplate<String, Object> sectionRedisTemplate;  // RedisTemplate을 통해 캐시 작업을 처리
+
+
     @Autowired
-    public SectionService(SectionRepository sectionRepository, WorkspaceRepository workspaceRepository, MemberRepository memberRepository, WorkspaceMemberRepository workspaceMemberRepository) {
+    public SectionService(SectionRepository sectionRepository, WorkspaceRepository workspaceRepository,
+                          MemberRepository memberRepository, WorkspaceMemberRepository workspaceMemberRepository
+                          , @Qualifier("sectionRedisTemplate") RedisTemplate<String, Object> sectionRedisTemplate) {
         this.sectionRepository = sectionRepository;
         this.workspaceRepository = workspaceRepository;
         this.memberRepository = memberRepository;
         this.workspaceMemberRepository = workspaceMemberRepository;
+        this.sectionRedisTemplate = sectionRedisTemplate;
+    }
+
+    private void clearSectionCache(Long workspaceId) {
+        String cacheKey = "sectionList:workspaceId:" + workspaceId;
+        sectionRedisTemplate.delete(cacheKey);
+        log.info("Cache cleared for key: {}", cacheKey);
     }
 
     public SectionListResDto sectionCreate(SectionCreateReqDto dto, String email) {
@@ -54,24 +69,32 @@ public class SectionService {
         }
         Section section = dto.toEntity(workspace);
         sectionRepository.save(section);
+        clearSectionCache(section.getWorkspace().getWorkspaceId());
 
         return section.fromEntity(member);
     }
 
-
     public List<SectionListResDto> sectionList(Long workspaceId, String email) {
-        Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("회원을 찾을 수 없습니다."));
-        Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(()-> new EntityNotFoundException("워크스페이스를 찾을 수 없습니다."));
-        if(workspace.getIsDeleted().equals(IsDeleted.Y)) {
+        String cacheKey = "sectionList:workspaceId:" + workspaceId;
+
+        // Redis 캐시에서 데이터 조회
+        List<SectionListResDto> cachedData = (List<SectionListResDto>) sectionRedisTemplate.opsForValue().get(cacheKey);
+        if (cachedData != null) {
+            return cachedData;  // 캐시에 데이터가 있을 경우 바로 반환
+        }
+
+        // 캐시에 데이터가 없는 경우 DB에서 조회
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+        Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(() -> new EntityNotFoundException("워크스페이스를 찾을 수 없습니다."));
+        if (workspace.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 삭제된 워크스페이스입니다.");
         }
         List<Section> sections = sectionRepository.findByWorkspaceAndIsDeleted(workspace, IsDeleted.N);
         List<SectionListResDto> dtos = new ArrayList<>();
         for (Section s : sections) {
-            // 삭제되지 않은 채널만 리스트에 추가
             List<ChannelDetailResDto> filteredChannels = s.getChannels().stream()
                     .filter(channel -> channel.getIsDeleted().equals(IsDeleted.N))
-                    .map(channel -> channel.fromEntity(s))  // DTO 변환
+                    .map(channel -> channel.fromEntity(s))
                     .collect(Collectors.toList());
 
             dtos.add(SectionListResDto.builder()
@@ -80,6 +103,10 @@ public class SectionService {
                     .channelList(filteredChannels)
                     .build());
         }
+
+        // Redis에 캐싱하고 유효 기간 설정 (예: 10분)
+        sectionRedisTemplate.opsForValue().set(cacheKey, dtos, 60, TimeUnit.MINUTES);
+
         return dtos;
     }
 
@@ -94,6 +121,7 @@ public class SectionService {
         }
         section.updateEntity(dto);
         SectionListResDto resDto = section.fromEntity(member);
+        clearSectionCache(section.getWorkspace().getWorkspaceId());
         return resDto;
     }
 
@@ -109,6 +137,7 @@ public class SectionService {
         if(section.getSectionType().equals(SectionType.DEFAULT)) {
             throw new IllegalArgumentException("기본 섹션은 삭제할 수 없습니다.");
         }
+        clearSectionCache(section.getWorkspace().getWorkspaceId());
         section.deleteEntity();
     }
 

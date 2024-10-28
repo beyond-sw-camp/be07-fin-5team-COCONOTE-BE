@@ -18,7 +18,6 @@ import com.example.coconote.api.member.repository.MemberRepository;
 import com.example.coconote.api.search.dto.EntityType;
 import com.example.coconote.api.search.dto.IndexEntityMessage;
 import com.example.coconote.api.search.entity.ChannelDocument;
-import com.example.coconote.api.search.entity.WorkspaceMemberDocument;
 import com.example.coconote.api.search.mapper.ChannelMapper;
 import com.example.coconote.api.search.service.SearchService;
 import com.example.coconote.api.section.entity.Section;
@@ -31,7 +30,10 @@ import com.example.coconote.api.workspace.workspaceMember.repository.WorkspaceMe
 import com.example.coconote.common.IsDeleted;
 import com.example.coconote.global.fileUpload.repository.FileRepository;
 import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,14 +41,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.example.coconote.api.drive.service.FolderService.getFolderAllListResDto;
 
 @Service
 @Transactional
-@RequiredArgsConstructor
+@Slf4j
 public class ChannelService {
 
     private final ChannelRepository channelRepository;
@@ -60,6 +61,35 @@ public class ChannelService {
     private final SearchService searchService;
     private final ChannelMapper channelMapper;
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final RedisTemplate<String, Object> sectionRedisTemplate;  // RedisTemplate을 통해 캐시 작업을 처리
+
+    @Autowired
+    public ChannelService(ChannelRepository channelRepository, SectionRepository sectionRepository,
+                          WorkspaceRepository workspaceRepository, FolderRepository folderRepository,
+                          MemberRepository memberRepository, FileRepository fileRepository,
+                          WorkspaceMemberRepository workspaceMemberRepository, ChannelMemberRepository channelMemberRepository,
+                          SearchService searchService, ChannelMapper channelMapper,
+                          KafkaTemplate<String, Object> kafkaTemplate,
+                          @Qualifier("sectionRedisTemplate") RedisTemplate<String, Object> sectionRedisTemplate) {
+        this.channelRepository = channelRepository;
+        this.sectionRepository = sectionRepository;
+        this.workspaceRepository = workspaceRepository;
+        this.folderRepository = folderRepository;
+        this.memberRepository = memberRepository;
+        this.fileRepository = fileRepository;
+        this.workspaceMemberRepository = workspaceMemberRepository;
+        this.channelMemberRepository = channelMemberRepository;
+        this.searchService = searchService;
+        this.channelMapper = channelMapper;
+        this.kafkaTemplate = kafkaTemplate;
+        this.sectionRedisTemplate = sectionRedisTemplate;
+    }
+
+    private void clearSectionCache(Long workspaceId) {
+        String cacheKey = "sectionList:workspaceId:" + workspaceId;
+        sectionRedisTemplate.delete(cacheKey);
+        log.info("Cache cleared for key: {}", cacheKey);
+    }
 
     @Transactional
     public ChannelDetailResDto channelCreate(ChannelCreateReqDto dto, String email) {
@@ -88,6 +118,8 @@ public class ChannelService {
 
         createDefaultFolder(channel);
         ChannelDetailResDto resDto = channel.fromEntity(section);
+
+        clearSectionCache(section.getWorkspace().getWorkspaceId());
         return resDto;
     }
 
@@ -175,6 +207,7 @@ public class ChannelService {
         IndexEntityMessage<ChannelDocument> indexEntityMessage = new IndexEntityMessage<>(channel.getSection().getWorkspace().getWorkspaceId(),EntityType.CHANNEL , document);
         kafkaTemplate.send("channel_entity_search", indexEntityMessage.toJson());
 
+        clearSectionCache(channel.getSection().getWorkspace().getWorkspaceId());
         return channel.fromEntity(channel.getSection());
     }
 
@@ -193,6 +226,7 @@ public class ChannelService {
         }
         channel.deleteEntity();
         searchService.deleteChannel(channel.getSection().getWorkspace().getWorkspaceId(), channel.getChannelId());
+        clearSectionCache(channel.getSection().getWorkspace().getWorkspaceId());
     }
 
     public FolderAllListResDto channelDrive(Long channelId, String email) {
@@ -306,6 +340,7 @@ public class ChannelService {
         IndexEntityMessage<ChannelDocument> indexEntityMessage = new IndexEntityMessage<>(channel.getSection().getWorkspace().getWorkspaceId(),EntityType.CHANNEL , document);
         kafkaTemplate.send("channel_entity_search", indexEntityMessage.toJson());
 
+        clearSectionCache(channel.getSection().getWorkspace().getWorkspaceId());
         return channel.fromEntity(channel.getSection());
     }
 }
