@@ -56,7 +56,7 @@ public class BlockService {
         Canvas canvas = canvasRepository.findById(canvasSocketReqDto.getCanvasId()).orElseThrow(() -> new IllegalArgumentException("캔버스가 존재하지 않습니다."));
 
         Block checkBlock = blockRepository.findByFeIdAndIsDeleted(canvasSocketReqDto.getBlockFeId(), IsDeleted.N).orElse(null);
-        if(checkBlock != null){
+        if (checkBlock != null) {
             throw new IllegalArgumentException("이미 있는 block 입니다.");
         }
 
@@ -67,11 +67,16 @@ public class BlockService {
                     .orElseThrow(() -> new IllegalArgumentException("해당 부모 Block이 존재하지 않습니다."));
         }
 
+        Block existingBlock = null; // 현재 생성하는 block의 prev block이 null일 때 첫번째 block 찾는 용
+
         Block prevBlock = null;
         if (canvasSocketReqDto.getPrevBlockId() != null) {
             prevBlock = blockRepository.findByFeIdAndIsDeleted(canvasSocketReqDto.getPrevBlockId(), IsDeleted.N)
                     .orElseThrow(() -> new IllegalArgumentException("해당 이전 Block이 존재하지 않습니다."));
-
+        }else{
+            // 생성하려는 block의 previd가 null 이면, 기존에 previd가 null인 block을 호출하여 현재 save 하려는 block의 id로 넣어줘야함
+            existingBlock = blockRepository.findByCanvasIdAndPrevBlockIsNullAndIsDeleted(canvasSocketReqDto.getCanvasId(), IsDeleted.N) // prevBlockId가 null인 Block을 조회
+                    .orElse(null); // prevBlock이 null인 블록을 찾음
 
         }
 
@@ -96,6 +101,10 @@ public class BlockService {
             if (originalPrevBlockHolder != null) {
                 originalPrevBlockHolder.changePrevBlock(block);
             }
+        }
+
+        if (existingBlock != null) {
+            existingBlock.changePrevBlock(block);
         }
 
         // Block 저장 및 리턴
@@ -152,15 +161,18 @@ public class BlockService {
     public void patchBlockDetails(CanvasSocketReqDto canvasSocketReqDto, WorkspaceMember workspaceMember) {
         Block block = blockRepository.findByFeIdAndIsDeleted(canvasSocketReqDto.getBlockFeId(), IsDeleted.N)
                 .orElseThrow(() -> new IllegalArgumentException("해당 Block이 존재하지 않습니다."));
-        if(canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.UPDATE_INDENT_BLOCK)){
+        if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.UPDATE_INDENT_BLOCK)) {
             block.patchBlockIndent(canvasSocketReqDto.getBlockIndent());
             blockRepository.save(block);
-            // Kafka에 인덱싱 메시지 전송
-            CanvasBlockDocument document = canvasBlockMapper.toDocument(block);
-            IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(
-                    block.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.BLOCK, document);
-            kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage);
+        }else if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.HOT_UPDATE_CONTENTS_BLOCK)) {
+            block.patchBlockContents(canvasSocketReqDto.getBlockContents());
+            blockRepository.save(block);
         }
+        // Kafka에 인덱싱 메시지 전송
+        CanvasBlockDocument document = canvasBlockMapper.toDocument(block);
+        IndexEntityMessage<CanvasBlockDocument> indexEntityMessage = new IndexEntityMessage<>(
+                block.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), EntityType.BLOCK, document);
+        kafkaTemplate.send("canvas_block_entity_search", indexEntityMessage);
     }
 
     @Transactional
@@ -249,7 +261,7 @@ public class BlockService {
 
 
     @Transactional
-    public Boolean deleteBlock(String feId) {
+    public void deleteBlock(String feId) {
         Block block = blockRepository.findByFeIdAndIsDeleted(feId, IsDeleted.N)
                 .orElseThrow(() -> new IllegalArgumentException("블록이 존재하지 않습니다."));
         Block prevLinkedBlock = blockRepository.findByPrevBlockFeIdAndIsDeleted(feId, IsDeleted.N)
@@ -264,7 +276,37 @@ public class BlockService {
         block.markAsDeleted(parentLinkedChildrenBlocks); // 실제 삭제 대신 소프트 삭제 처리
 //        searchService.deleteBlock(block.getCanvas().getChannel().getSection().getWorkspace().getWorkspaceId(), block.getId());
 
-        return true;
+    }
+
+    @Transactional
+    public void deepDeleteBlock(String feId) {
+        Block block = blockRepository.findByFeIdAndIsDeleted(feId, IsDeleted.N)
+                .orElseThrow(() -> new IllegalArgumentException("블록이 존재하지 않습니다."));
+        Block prevLinkedBlock = blockRepository.findByPrevBlockFeIdAndIsDeleted(feId, IsDeleted.N)
+                .orElse(null);
+
+        // 삭제하는 block을 참조하고 있던 block의 prev 값을 현 삭제 block의 prev 값으로 수정
+        if (prevLinkedBlock != null) {
+            prevLinkedBlock.changePrevBlock(block.getPrevBlock());
+        }
+
+        List<Block> parentLinkedChildrenBlocks = blockRepository.findByParentBlockFeIdAndIsDeleted(feId, IsDeleted.N);
+
+        // 자식 블록들도 재귀적으로 삭제
+        deleteBlockAndChildren(block, parentLinkedChildrenBlocks);
+    }
+
+    private void deleteBlockAndChildren(Block block, List<Block> children) {
+        // 자식 블록이 있으면 재귀적으로 삭제
+        if (children != null) {
+            for (Block child : children) {
+                List<Block> childBlocks = blockRepository.findByParentBlockFeIdAndIsDeleted(child.getFeId(), IsDeleted.N);
+                deleteBlockAndChildren(child, childBlocks);
+            }
+        }
+
+        // 블록을 물리적으로 삭제
+        blockRepository.delete(block);
     }
 
 
@@ -379,12 +421,15 @@ public class BlockService {
             createBlock(canvasSocketReqDto, workspaceMember);
         } else if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.UPDATE_BLOCK)) { // 수정블록
             updateBlock(canvasSocketReqDto, workspaceMember);
-        } else if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.UPDATE_INDENT_BLOCK)) { // 수정블록
+        } else if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.UPDATE_INDENT_BLOCK)
+                || canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.HOT_UPDATE_CONTENTS_BLOCK)) { // 수정블록
             patchBlockDetails(canvasSocketReqDto, workspaceMember);
         } else if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.CHANGE_ORDER_BLOCK)) { //순서 변경 블록
             changeOrderBlock(canvasSocketReqDto, workspaceMember);
         } else if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.DELETE_BLOCK)) { // 삭제블록
             deleteBlock(canvasSocketReqDto.getBlockFeId());
+        } else if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.DEEP_DELETE_BLOCK)) { // 삭제블록
+            deepDeleteBlock(canvasSocketReqDto.getBlockFeId());
         } else {
             log.error("잘못된 block method");
         }
