@@ -9,6 +9,7 @@ import com.example.coconote.api.workspace.workspaceMember.dto.request.WorkspaceM
 import com.example.coconote.common.CommonResDto;
 import com.example.coconote.security.util.CustomPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -40,7 +41,7 @@ public class WorkspaceMemberController {
     public ResponseEntity<CommonResDto> inviteMemberToWorkspace(
             @PathVariable Long workspaceId,
             @RequestParam("email") @Valid String receiverEmail,
-            @AuthenticationPrincipal CustomPrincipal customPrincipal) {
+            @AuthenticationPrincipal CustomPrincipal customPrincipal) throws MessagingException {
 
         // 초대 이메일 전송
         mailVerifyService.sendCodeToEmail(workspaceId, receiverEmail, customPrincipal.getEmail());
