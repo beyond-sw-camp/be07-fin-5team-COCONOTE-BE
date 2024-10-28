@@ -150,8 +150,10 @@
 
 - 생성 및 추가 <img src="readme\gif\태그\CreateThread.gif">
 - 태그 검색 <img src="readme\gif\태그\SearchThread.gif">
-- 태그 수정 <img src="">
-- 태그 삭제 <img src="">
+- 태그 수정 <img src="readme\gif\태그\UpdateThread.gif">
+- 태그 삭제 <img src="readme\gif\태그\DeleteTag.gif">
+- 태그 붙이기 <img src="readme\gif\태그\tagging.gif">
+- 태그 떼어내기 <img src="readme\gif\태그\untagging.gif">
 </details>
 
 <details>
