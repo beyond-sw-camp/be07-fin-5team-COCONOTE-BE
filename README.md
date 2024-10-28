@@ -2,7 +2,7 @@
   지식 관리 시스템
   <br />
    <a href="https://www.meetup.com/Angular-Medellin/">
-    <img width=100% src="@/src/logo_coconote.png">
+    <img width=100% src="./readme/logo_coconote.png">
   </a> 
   COCONOTE
   <br />
