@@ -47,6 +47,7 @@
 
 <h2 id="기획"> 😎 기획 </h2>
 <h3> WBS </h3>
+
 [<b> WBS 보러가기 ➡️</b>](https://docs.google.com/spreadsheets/d/1-55RJo0awEfJTcGI6TlrkOE9e4nGFYGOgi4ZCOvZu58/edit?usp=sharing)
 
 <h3> 요구사항 정의서 </h3>
