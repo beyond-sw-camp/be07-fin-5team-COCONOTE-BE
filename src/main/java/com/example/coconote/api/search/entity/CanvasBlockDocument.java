@@ -13,21 +13,21 @@ import org.springframework.data.annotation.Id;
 @AllArgsConstructor
 public class CanvasBlockDocument {
     @Id
-    private String id;  // OpenSearch 문서 ID
+    private Long id;
     private String type;  // "canvas" 또는 "block"
 
     // Canvas 관련 필드
+    private Long canvasId;
     private String canvasTitle;
     private String createMemberName;
     private Long channelId;
     private String  canvasCreatedTime;
 
     // Block 관련 필드
+    private Long blockId;
     private String blockContents;
-    private WorkspaceMember blockMember;
-    private String canvasId;  // Block이 속한 Canvas ID
+    private Long workspaceMemberId;
     private String prevBlockId;
     private String parentBlockId;
     private String feId;
-    private String blockType;
 }
