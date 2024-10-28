@@ -215,7 +215,7 @@ public class S3Service {
 
         // 파일 삭제 권한 검증
 //        채널 매니저 이거나 파일을 업로드한 사람만 삭제 가능
-        if (channelMember.getChannelRole() != ChannelRole.MANAGER || channel.getChannelMembers().stream().noneMatch(channelMember1 -> channelMember1.getWorkspaceMember().getMember().equals(member))) {
+        if (channelMember.getChannelRole() != ChannelRole.MANAGER ||  !fileEntity.getCreator().equals(member)) {
             throw new IllegalArgumentException("파일을 삭제할 권한이 없습니다.");
         }
 
