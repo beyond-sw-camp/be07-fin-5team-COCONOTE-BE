@@ -41,7 +41,7 @@ jobs:
       - name: Build, tag, and push image to Amazon ECR with Jib
         run: |
           IMAGE_TAG="latest"
-          ./gradlew jib --image=730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be:$IMAGE_TAG -Dspring.profiles.active=dev
+          ./gradlew jib --image=730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be:$IMAGE_TAG
 
   update-kustomize-prod:
     runs-on: ubuntu-latest
