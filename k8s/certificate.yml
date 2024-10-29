@@ -1,0 +1,33 @@
+#apiVersion: cert-manager.io/v1
+#kind: ClusterIssuer
+#metadata:
+#  name: letsencrypt-prod
+#spec:
+#  acme:
+#   # 인증서 서버 주소. 해당 서버의 리소스를 통해 인증서 발행
+#    server: https://acme-v02.api.letsencrypt.org/directory
+#    #인증서의 사용자
+#    email: jsangmin99@gmail.com
+#    privateKeySecretRef:
+#      name: letsencrypt-prod
+#    solvers:
+#    - http01:
+#        ingress:
+#          class: nginx
+#
+## 3. Certificate 생성
+#---
+#apiVersion: cert-manager.io/v1
+#kind: Certificate
+#metadata:
+#  name: server.coconote.site-tls
+#spec:
+#  secretName: server.coconote.site-tls
+#  duration: 2160h  # 90일동안 유효함
+#  renewBefore: 360h # 15일 전에 갱신된다.
+#  issuerRef:
+#    name: letsencrypt-prod
+#    kind: ClusterIssuer
+#  commonName: server.coconote.site
+#  dnsNames:
+#  - server.coconote.site

@@ -1,0 +1,13 @@
+# k8s/overlays/prod/deployment-patch.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coconote-backend
+spec:
+  template:
+    spec:
+      containers:
+        - name: coconote-backend
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: prod
