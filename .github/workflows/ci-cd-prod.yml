@@ -54,11 +54,11 @@ jobs:
       - name: Update Kustomize deployment image for Prod
         run: |
           IMAGE_TAG="latest"
-          # Prod 환경의 deployment-patch.yaml 파일에서 이미지 태그 업데이트
-          sed -i 's|image: 730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be:.*|image: 730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be:'$IMAGE_TAG'|' k8s/overlays/prod/deployment-patch.yaml
+          # Prod 환경의 deployment-patch.yml 파일에서 이미지 태그 업데이트
+          sed -i 's|image: 730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be:.*|image: 730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be:'$IMAGE_TAG'|' k8s/overlays/prod/deployment-patch.yml
           
           git config user.name "github-actions[bot]"
           git config user.email "actions@github.com"
-          git add k8s/overlays/prod/deployment-patch.yaml
+          git add k8s/overlays/prod/deployment-patch.yml
           git commit -m "Update prod image tag to $IMAGE_TAG"
           git push
