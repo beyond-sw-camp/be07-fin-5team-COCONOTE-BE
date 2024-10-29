@@ -62,3 +62,7 @@ jobs:
           git add k8s/overlays/prod/deployment-patch.yml
           git commit -m "Update prod image tag to $IMAGE_TAG"
           git push
+
+      - name: Restart Kubernetes Deployment to Pull Latest Image
+        run: |
+          kubectl rollout restart deployment coconote-backend -n default  # 쿠버네티스에서 강제로 새 이미지 가져오기
