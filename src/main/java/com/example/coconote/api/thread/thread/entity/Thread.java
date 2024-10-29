@@ -82,6 +82,8 @@ public class Thread extends BaseEntity {
                 .files(files) // 파일 정보를 포함
                 .tags(tags)
                 .parentThreadId(this.parent != null ? this.parent.getId() : null)
+                .canvasId(this.canvasId)
+                .canvasTitle(this.canvasTitle)
                 .build();
     }
 
@@ -96,6 +98,8 @@ public class Thread extends BaseEntity {
                 .files(files)
                 .tags(new ArrayList<>())
                 .parentThreadId(this.parent != null ? this.parent.getId() : null)
+                .canvasId(this.canvasId)
+                .canvasTitle(this.canvasTitle)
                 .build();
     }
 
@@ -113,6 +117,8 @@ public class Thread extends BaseEntity {
                 .files(files)
                 .tags(tags)
                 .parentThreadId(this.parent != null ? this.parent.getId() : null)
+                .canvasId(this.canvasId)
+                .canvasTitle(this.canvasTitle)
                 .build();
     }
 
@@ -129,6 +135,8 @@ public class Thread extends BaseEntity {
                 .childThreads(childThreadList)
                 .tags(tags)
                 .parentThreadId(this.parent != null ? this.parent.getId() : null)
+                .canvasId(this.canvasId)
+                .canvasTitle(this.canvasTitle)
                 .build();
     }
 

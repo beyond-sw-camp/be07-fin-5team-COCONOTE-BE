@@ -31,4 +31,6 @@ public class ThreadResDto {
     private Long threadTagId;
     private Long parentThreadId;
     private Long memberId;
+    private Long canvasId;
+    private String canvasTitle;
 }
