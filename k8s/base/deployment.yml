@@ -1,4 +1,3 @@
-# k8s/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,6 +18,109 @@ spec:
           image: 730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be:latest
           ports:
             - containerPort: 8080
-          envFrom:
-            - secretRef:
-                name: coconote-backend-secrets  # Kubernetes Secret 참조
+          env:
+            - name: dev.redis.host
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: redis-host
+            - name: dev.redis.port
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: redis-port
+            - name: dev.datasource.url
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: db-url
+            - name: dev.datasource.username
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: db-username
+            - name: dev.datasource.password
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: db-password
+            - name: MAIL_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: mail-host
+            - name: MAIL_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: mail-port
+            - name: MAIL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: mail-username
+            - name: MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: mail-password
+            - name: dev.google.client-id
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: google-client-id
+            - name: dev.google.client-secret
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: google-client-secret
+            - name: dev.kakao.client-id
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: kakao-client-id
+            - name: dev.kakao.client-secret
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: kakao-client-secret
+            - name: dev.opensearch.host
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: opensearch-host
+            - name: dev.opensearch.username
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: opensearch-username
+            - name: dev.opensearch.password
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: opensearch-password
+            - name: dev.s3.key
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: s3-key
+            - name: dev.s3.secret
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: s3-secret
+            - name: dev.s3.region
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: s3-region
+            - name: dev.s3.bucket
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: s3-bucket
+            - name: dev.jwt.secret
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: jwt-secret
