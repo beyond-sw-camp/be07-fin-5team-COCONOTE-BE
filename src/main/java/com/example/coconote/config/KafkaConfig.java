@@ -24,15 +24,6 @@ public class KafkaConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
-    @Value("${spring.kafka.security.protocol}")
-    private String securityProtocol;
-
-    @Value("${spring.kafka.sasl.mechanism}")
-    private String saslMechanism;
-
-    @Value("${spring.kafka.sasl.jaas.config}")
-    private String saslJaasConfig;
-
     @Value("${spring.kafka.consumer.group-id}")
     private String groupId;
 
@@ -45,14 +36,8 @@ public class KafkaConfig {
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, autoOffset);
-
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-
-        // IAM 인증을 위한 설정
-        props.put("security.protocol", securityProtocol);
-        props.put("sasl.mechanism", saslMechanism);
-        props.put("sasl.jaas.config", saslJaasConfig);
 
         return new DefaultKafkaConsumerFactory<>(props);
     }
@@ -62,11 +47,9 @@ public class KafkaConfig {
         ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
 
-        DefaultErrorHandler errorHandler = new DefaultErrorHandler(
-                new FixedBackOff(3000L, 3)
-        );
-
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler(new FixedBackOff(3000L, 3));
         factory.setCommonErrorHandler(errorHandler);
+
         return factory;
     }
 
@@ -76,11 +59,6 @@ public class KafkaConfig {
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-
-        // IAM 인증을 위한 설정
-        configProps.put("security.protocol", securityProtocol);
-        configProps.put("sasl.mechanism", saslMechanism);
-        configProps.put("sasl.jaas.config", saslJaasConfig);
 
         return new DefaultKafkaProducerFactory<>(configProps);
     }

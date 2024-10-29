@@ -86,16 +86,23 @@ spring:
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
   kafka:
-    bootstrap-servers: "b-1.clustername.xxxxx.c2.kafka.ap-northeast-2.amazonaws.com:9092"  # 여기에 실제 엔드포인트 입력
-    consumer:
-      group-id: "websocket-group"
-      auto-offset-reset: "earliest"
+    bootstrap-servers:
+      - b-1.coconotedevkafka.o03ieb.c4.kafka.ap-northeast-2.amazonaws.com:9092
+      - b-2.coconotedevkafka.o03ieb.c4.kafka.ap-northeast-2.amazonaws.com:9092
     security:
-      protocol: "SASL_SSL"
+      protocol: SASL_SSL  # 보안 프로토콜
     sasl:
-      mechanism: "AWS_MSK_IAM"
+      mechanism: AWS_MSK_IAM  # IAM 인증 메커니즘
       jaas:
-        config: "software.amazon.msk.auth.iam.IAMLoginModule required;"
+        config: software.amazon.msk.auth.iam.IAMLoginModule required;  # IAM 로그인 모듈
+    consumer:
+      group-id: websocket-group  # 소비자 그룹 ID
+      auto-offset-reset: earliest  # 시작 시 오프셋 리셋 정책
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer  # 키 역직렬화기
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer  # 값 역직렬화기
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer  # 키 직렬화기
+      value-serializer: org.apache.kafka.common.serialization.JsonSerializer  # 값 직렬화기
   opensearch:
     host: ${dev.opensearch.host}
     username: ${dev.opensearch.username}
