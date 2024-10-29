@@ -86,10 +86,16 @@ spring:
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
   kafka:
-    bootstrap-servers: kafka:9092
+    bootstrap-servers: "b-1.clustername.xxxxx.c2.kafka.ap-northeast-2.amazonaws.com:9092"  # 여기에 실제 엔드포인트 입력
     consumer:
-      group-id: websocket-group
-      auto-offset-reset: earliest
+      group-id: "websocket-group"
+      auto-offset-reset: "earliest"
+    security:
+      protocol: "SASL_SSL"
+    sasl:
+      mechanism: "AWS_MSK_IAM"
+      jaas:
+        config: "software.amazon.msk.auth.iam.IAMLoginModule required;"
   opensearch:
     host: ${dev.opensearch.host}
     username: ${dev.opensearch.username}
