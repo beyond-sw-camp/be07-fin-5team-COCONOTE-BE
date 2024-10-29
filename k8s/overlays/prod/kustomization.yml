@@ -1,4 +1,4 @@
-# k8s/overlays/dev/kustomization.yaml
+# k8s/overlays/prod/kustomization.yaml
 resources:
   - ../../base
 

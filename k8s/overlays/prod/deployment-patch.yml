@@ -4,10 +4,11 @@ kind: Deployment
 metadata:
   name: coconote-backend
 spec:
+  replicas: 3  # Prod 환경에서는 더 높은 가용성을 위해 3개로 설정
   template:
     spec:
       containers:
         - name: coconote-backend
           env:
             - name: SPRING_PROFILES_ACTIVE
-              value: prod
+              value: dev
