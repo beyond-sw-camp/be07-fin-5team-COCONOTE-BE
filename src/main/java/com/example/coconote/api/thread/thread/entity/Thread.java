@@ -46,6 +46,9 @@ public class Thread extends BaseEntity {
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    private Member member;
 
+    private Long canvasId;
+    private String canvasTitle;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "workspace_member_id")
     private WorkspaceMember workspaceMember;
