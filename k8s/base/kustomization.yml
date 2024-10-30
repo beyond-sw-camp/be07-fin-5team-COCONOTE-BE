@@ -2,7 +2,3 @@
 resources:
   - deployment.yml
   - service.yml
-
-images:
-  - name: 730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be
-    newTag: "SET_ME_LATER"
