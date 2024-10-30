@@ -28,7 +28,7 @@ public class SwaggerConfig {
                 .info(new Info()
                         .title("Coconote 프로젝트 API")
                         .description("Coconote 백엔드 API 명세서")
-                        .version("v1"))
+                        .version("v2"))
                 .addServersItem(localServer)
                 .addServersItem(server)
                 .addSecurityItem(new SecurityRequirement().addList("JWT"))
