@@ -1,6 +1,9 @@
-# k8s/overlays/prod/kustomization.yaml
 resources:
   - ../../base
 
 patchesStrategicMerge:
   - deployment-patch.yml
+
+images:
+  - name: 730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be
+    newTag: "SET_ME_LATER"  # Argo CD가 최신 SHA로 업데이트하도록 설정
