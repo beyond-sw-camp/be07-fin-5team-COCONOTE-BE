@@ -22,7 +22,9 @@ jobs:
       - name: Cache Gradle packages
         uses: actions/cache@v3
         with:
-          path: ~/.gradle/caches
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
@@ -40,4 +42,7 @@ jobs:
 
       - name: Build, tag, and push image to Amazon ECR with Jib
         run: |
-          ./gradlew jib --image=730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be:latest
+          export IMAGE_URI=730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be
+          ./gradlew jib --image=$IMAGE_URI:latest
+          ./gradlew jib --image=$IMAGE_URI:${{ github.sha }}
+
