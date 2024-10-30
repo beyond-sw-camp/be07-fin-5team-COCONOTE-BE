@@ -43,6 +43,6 @@ jobs:
       - name: Build, tag, and push image to Amazon ECR with Jib
         run: |
           export IMAGE_URI=730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be
-          ./gradlew jib --image=$IMAGE_URI:latest
-          ./gradlew jib --image=$IMAGE_URI:${{ github.sha }}
-
+          export IMAGE_TAG=${{ github.sha }}  # Git 커밋 SHA를 이미지 태그로 사용
+          ./gradlew jib --image=$IMAGE_URI:$IMAGE_TAG
+          ./gradlew jib --image=$IMAGE_URI:latest  # 'latest'는 선택적(테스트 용도)
