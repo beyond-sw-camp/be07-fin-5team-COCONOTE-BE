@@ -87,8 +87,8 @@ spring:
             user-name-attribute: id
   kafka:
     bootstrap-servers:
-      - b-1.coconotedevkafka.o03ieb.c4.kafka.ap-northeast-2.amazonaws.com:9092
-      - b-2.coconotedevkafka.o03ieb.c4.kafka.ap-northeast-2.amazonaws.com:9092
+      - b-2.coconotedevkafka.o03ieb.c4.kafka.ap-northeast-2.amazonaws.com:9098
+      - b-1.coconotedevkafka.o03ieb.c4.kafka.ap-northeast-2.amazonaws.com:9098
     security:
       protocol: SASL_SSL  # 보안 프로토콜
     sasl:
