@@ -45,4 +45,3 @@ jobs:
           export IMAGE_URI=730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be
           export IMAGE_TAG=${{ github.run_id }}  # GitHub Actions 고유 ID를 태그로 사용
           ./gradlew jib --image=$IMAGE_URI:$IMAGE_TAG
-          ./gradlew jib --image=$IMAGE_URI:latest  # latest 태그도 병행하여 사용
