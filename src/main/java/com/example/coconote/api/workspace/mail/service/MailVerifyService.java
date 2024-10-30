@@ -101,7 +101,7 @@ public class MailVerifyService {
 
 		// 초대 링크 생성
 		String token = generateJwtToken(receiverEmail, workspaceId);
-		String invitationLink = "http://localhost:8082/invite?token=" + token;
+		String invitationLink = "https://coconote.site/invite?token=" + token;
 		String memberNickname = member.getNickname();
 		String workspaceName = workspace.getName();
 
