@@ -41,7 +41,7 @@ public class ThreadNotificationService {
 
     // @Qualifier를 사용하여 직접 생성자를 정의
     public ThreadNotificationService(
-            @Qualifier("notificationRedisTemplate") RedisTemplate<String, String> notificationRedisTemplate,
+            RedisTemplate<String, String> notificationRedisTemplate,
             ObjectMapper objectMapper,
             ChannelMemberRepository channelMemberRepository,
             WorkspaceMemberRepository workspaceMemberRepository,

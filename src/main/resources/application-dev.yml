@@ -17,13 +17,13 @@ spring:
       on-profile: dev
   data:
     redis:
-      host: ${dev.redis.host}
-      port: ${dev.redis.port}
+      host: ${REDIS_HOST}  # 시크릿으로부터 Redis 호스트명 설정
+      port: ${REDIS_PORT}  # 시크릿으로부터 Redis 포트 설정
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: ${dev.datasource.url}  # dev 환경의 데이터베이스 URL
-    username: ${dev.datasource.username}
-    password: ${dev.datasource.password}
+    url: ${DB_URL}  # 시크릿에서 데이터베이스 URL 설정
+    username: ${DB_USERNAME}  # 시크릿에서 데이터베이스 사용자명 설정
+    password: ${DB_PASSWORD}  # 시크릿에서 데이터베이스 비밀번호 설정
   jpa:
     database-platform: org.hibernate.dialect.MariaDBDialect
     database: mysql
@@ -37,10 +37,10 @@ spring:
         jdbc:
           batch_size: 100
   mail:
-    host: ${MAIL_HOST}
-    port: ${MAIL_PORT}
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    host: ${MAIL_HOST}  # 시크릿에서 메일 호스트 설정
+    port: ${MAIL_PORT}  # 시크릿에서 메일 포트 설정
+    username: ${MAIL_USERNAME}  # 시크릿에서 메일 사용자명 설정
+    password: ${MAIL_PASSWORD}  # 시크릿에서 메일 비밀번호 설정
     properties:
       mail:
         smtp:
@@ -64,13 +64,13 @@ spring:
       client:
         registration:
           google:
-            client-id: ${dev.google.client-id}
-            client-secret: ${dev.google.client-secret}
+            client-id: ${GOOGLE_CLIENT_ID}  # 시크릿에서 Google 클라이언트 ID 설정
+            client-secret: ${GOOGLE_CLIENT_SECRET}  # 시크릿에서 Google 클라이언트 비밀번호 설정
             scope: profile, email
             redirect-uri: "https://server.coconote.site/login/oauth2/code/google"
           kakao:
-            client-id: ${dev.kakao.client-id}
-            client-secret: ${dev.kakao.client-secret}
+            client-id: ${KAKAO_CLIENT_ID}  # 시크릿에서 Kakao 클라이언트 ID 설정
+            client-secret: ${KAKAO_CLIENT_SECRET}  # 시크릿에서 Kakao 클라이언트 비밀번호 설정
             scope: profile_nickname, account_email
             authorization-grant-type: authorization_code
             redirect-uri: "https://server.coconote.site/login/oauth2/code/kakao"
@@ -86,23 +86,16 @@ spring:
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
   kafka:
-    bootstrap-servers:
-      - b-1.coconotedevkafka.o03ieb.c4.kafka.ap-northeast-2.amazonaws.com:9092
-      - b-2.coconotedevkafka.o03ieb.c4.kafka.ap-northeast-2.amazonaws.com:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVER}  # 시크릿에서 Kafka 서버 설정
 
     consumer:
-      group-id: websocket-group  # 소비자 그룹 ID
-      auto-offset-reset: earliest  # 시작 시 오프셋 리셋 정책
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer  # 키 역직렬화기
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer  # 값 역직렬화기
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer  # 키 직렬화기
-      value-serializer: org.apache.kafka.common.serialization.JsonSerializer  # 값 직렬화기
+      group-id: websocket-group
+      auto-offset-reset: earliest
 
   opensearch:
-    host: ${dev.opensearch.host}
-    username: ${dev.opensearch.username}
-    password: ${dev.opensearch.password}
+    host: ${OPENSEARCH_HOST}  # 시크릿에서 OpenSearch 호스트 설정
+    username: ${OPENSEARCH_USERNAME}  # 시크릿에서 OpenSearch 사용자명 설정
+    password: ${OPENSEARCH_PASSWORD}  # 시크릿에서 OpenSearch 비밀번호 설정
 
 springdoc:
   api-docs:
@@ -116,11 +109,11 @@ springdoc:
     groups-order: DESC
 
 aws:
-  access_key_id: ${dev.s3.key}
-  secret_key: ${dev.s3.secret}
+  access_key_id: ${S3_KEY}  # 시크릿에서 S3 액세스 키 설정
+  secret_key: ${S3_SECRET}  # 시크릿에서 S3 시크릿 키 설정
   s3:
-    region: ${dev.s3.region}
-    bucket: ${dev.s3.bucket}
+    region: ${S3_REGION}  # 시크릿에서 S3 리전 설정
+    bucket: ${S3_BUCKET}  # 시크릿에서 S3 버킷 이름 설정
 
 jwt:
-  secret: ${dev.jwt.secret}
+  secret: ${JWT_SECRET}  # 시크릿에서 JWT 시크릿 키 설정

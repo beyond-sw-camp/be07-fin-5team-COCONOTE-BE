@@ -26,44 +26,32 @@ spec:
           resources:
             requests:
               memory: "512Mi"
-              cpu: "250m"
+              cpu: "500m"
             limits:
               memory: "1Gi"
-              cpu: "500m"
-          readinessProbe:
-            httpGet:
-              path: /actuator/health
-              port: 8080
-            initialDelaySeconds: 30
-            periodSeconds: 10
-          livenessProbe:
-            httpGet:
-              path: /actuator/health
-              port: 8080
-            initialDelaySeconds: 60
-            periodSeconds: 15
+              cpu: "750m"
           env:
-            - name: dev.redis.host
+            - name: REDIS_HOST
               valueFrom:
                 secretKeyRef:
                   name: coconote-backend-secrets
                   key: redis-host
-            - name: dev.redis.port
+            - name: REDIS_PORT
               valueFrom:
                 secretKeyRef:
                   name: coconote-backend-secrets
                   key: redis-port
-            - name: dev.datasource.url
+            - name: DB_URL
               valueFrom:
                 secretKeyRef:
                   name: coconote-backend-secrets
                   key: db-url
-            - name: dev.datasource.username
+            - name: DB_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: coconote-backend-secrets
                   key: db-username
-            - name: dev.datasource.password
+            - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: coconote-backend-secrets
@@ -88,63 +76,68 @@ spec:
                 secretKeyRef:
                   name: coconote-backend-secrets
                   key: mail-password
-            - name: dev.google.client-id
+            - name: GOOGLE_CLIENT_ID
               valueFrom:
                 secretKeyRef:
                   name: coconote-backend-secrets
                   key: google-client-id
-            - name: dev.google.client-secret
+            - name: GOOGLE_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: coconote-backend-secrets
                   key: google-client-secret
-            - name: dev.kakao.client-id
+            - name: KAKAO_CLIENT_ID
               valueFrom:
                 secretKeyRef:
                   name: coconote-backend-secrets
                   key: kakao-client-id
-            - name: dev.kakao.client-secret
+            - name: KAKAO_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: coconote-backend-secrets
                   key: kakao-client-secret
-            - name: dev.opensearch.host
+            - name: OPENSEARCH_HOST
               valueFrom:
                 secretKeyRef:
                   name: coconote-backend-secrets
                   key: opensearch-host
-            - name: dev.opensearch.username
+            - name: OPENSEARCH_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: coconote-backend-secrets
                   key: opensearch-username
-            - name: dev.opensearch.password
+            - name: OPENSEARCH_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: coconote-backend-secrets
                   key: opensearch-password
-            - name: dev.s3.key
+            - name: S3_KEY
               valueFrom:
                 secretKeyRef:
                   name: coconote-backend-secrets
                   key: s3-key
-            - name: dev.s3.secret
+            - name: S3_SECRET
               valueFrom:
                 secretKeyRef:
                   name: coconote-backend-secrets
                   key: s3-secret
-            - name: dev.s3.region
+            - name: S3_REGION
               valueFrom:
                 secretKeyRef:
                   name: coconote-backend-secrets
                   key: s3-region
-            - name: dev.s3.bucket
+            - name: S3_BUCKET
               valueFrom:
                 secretKeyRef:
                   name: coconote-backend-secrets
                   key: s3-bucket
-            - name: dev.jwt.secret
+            - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: coconote-backend-secrets
                   key: jwt-secret
+            - name: KAFKA_BOOTSTRAP_SERVER
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: kafka-bootstrap-server
