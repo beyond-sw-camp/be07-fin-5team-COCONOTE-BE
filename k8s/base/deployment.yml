@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: coconote-backend
-          image: 730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be:SET_ME_LATER  # 동적으로 최신 SHA 태그로 설정됨
+          image: 730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be:latest
           ports:
             - containerPort: 8080
           resources:
