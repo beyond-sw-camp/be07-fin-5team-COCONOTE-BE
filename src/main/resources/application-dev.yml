@@ -128,3 +128,7 @@ aws:
 
 jwt:
   secret: ${dev.jwt.secret}
+
+logging:
+  level:
+    org.springframework: DEBUG
