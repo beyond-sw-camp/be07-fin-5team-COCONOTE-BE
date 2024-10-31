@@ -84,6 +84,7 @@ public class Thread extends BaseEntity {
                 .parentThreadId(this.parent != null ? this.parent.getId() : null)
                 .canvasId(this.canvasId)
                 .canvasTitle(this.canvasTitle)
+                .channelId(this.channel.getChannelId())
                 .build();
     }
 
@@ -100,6 +101,7 @@ public class Thread extends BaseEntity {
                 .parentThreadId(this.parent != null ? this.parent.getId() : null)
                 .canvasId(this.canvasId)
                 .canvasTitle(this.canvasTitle)
+                .channelId(this.channel.getChannelId())
                 .build();
     }
 
@@ -119,6 +121,7 @@ public class Thread extends BaseEntity {
                 .parentThreadId(this.parent != null ? this.parent.getId() : null)
                 .canvasId(this.canvasId)
                 .canvasTitle(this.canvasTitle)
+                .channelId(this.channel.getChannelId())
                 .build();
     }
 
@@ -137,6 +140,7 @@ public class Thread extends BaseEntity {
                 .parentThreadId(this.parent != null ? this.parent.getId() : null)
                 .canvasId(this.canvasId)
                 .canvasTitle(this.canvasTitle)
+                .channelId(this.channel.getChannelId())
                 .build();
     }
 

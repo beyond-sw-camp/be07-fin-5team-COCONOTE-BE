@@ -42,29 +42,11 @@ public class WebSocketController {
     private final MemberRepository memberRepository;
 
     @MessageMapping("/chat/message")
-    public void message(ThreadReqDto message, @Header("Authorization") String token) {
+    public void message(ThreadReqDto threadReqDto, @Header("Authorization") String token) {
         Long id = jwtTokenProvider.getMemberIdFromToken(token);
-        message.setSenderId(id);
-        if (MessageType.ENTER.equals(message.getType()))
-            message.setContent(id + "님이 입장하셨습니다.");
-
-        kafkaTemplate.send("chat_topic", message);
-
-//        kafka 안거치고 바로 보낼때 사용
-//        ThreadResDto threadResDto = threadService.createThread(message);
-//        messagingTemplate.convertAndSend("/sub/chat/room/" + message.getChannelId(), threadResDto);
-    }
-
-    @KafkaListener(topics = "chat_topic")
-    public void listen(String message) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        ThreadReqDto threadReqDto;
-
-        try {
-            threadReqDto = objectMapper.readValue(message, ThreadReqDto.class);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+        threadReqDto.setSenderId(id);
+        if (MessageType.ENTER.equals(threadReqDto.getType()))
+            threadReqDto.setContent(id + "님이 입장하셨습니다.");
 
         ThreadResDto threadResDto;
 
@@ -82,9 +64,25 @@ public class WebSocketController {
             threadResDto = threadService.createThread(threadReqDto,threadReqDto.getSenderId());
         }
 
+        kafkaTemplate.send("chat_topic", threadResDto);
+    }
+
+    @KafkaListener(topics = "chat_topic")
+    public void listen(String message) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ThreadResDto threadResDto;
+
+        try {
+            threadResDto = objectMapper.readValue(message, ThreadResDto.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+
+
         // 수신한 메시지를 채널로 브로드캐스트하기 전에 로그 찍기
-        log.info("Received message from Kafka: {}", threadResDto);
+//        log.info("Received message from Kafka: {}", threadResDto);
         // 수신한 메시지를 채널로 브로드캐스트
-        messagingTemplate.convertAndSend("/sub/chat/room/" + threadReqDto.getChannelId(), threadResDto);
+        messagingTemplate.convertAndSend("/sub/chat/room/" + threadResDto.getChannelId(), threadResDto);
     }
 }

@@ -33,4 +33,5 @@ public class ThreadResDto {
     private Long memberId;
     private Long canvasId;
     private String canvasTitle;
+    private Long channelId;
 }
