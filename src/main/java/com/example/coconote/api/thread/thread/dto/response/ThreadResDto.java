@@ -3,6 +3,7 @@ package com.example.coconote.api.thread.thread.dto.response;
 import com.example.coconote.api.thread.tag.dto.response.TagResDto;
 import com.example.coconote.api.thread.thread.entity.MessageType;
 import com.example.coconote.api.thread.threadFile.dto.request.ThreadFileDto;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,6 +15,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ThreadResDto {
     private Long id;
     private MessageType type;
