@@ -45,22 +45,14 @@ jobs:
           IMAGE_URI: 730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be
         run: |
           ./gradlew jib --image=$IMAGE_URI:latest
-          ./gradlew jib --image=$IMAGE_URI:${{ github.sha }}
 
-      - name: Update Deployment-patch.yml with new image tag
+#      - name: Update Deployment-patch.yml with latest image tag
+#        run: |
+#          sed -i "s|image: $IMAGE_URI:.*|image: $IMAGE_URI:latest|" k8s/overlays/prod/deployment-patch.yml
+#
+#      - name: Confirm Deployment-patch.yml updates
+#        run: cat k8s/overlays/prod/deployment-patch.yml
+
+      - name: kubectl apply
         run: |
-          sed -i "s|image: $IMAGE_URI:latest|image: $IMAGE_URI:${{ github.sha }}|" k8s/overlays/prod/deployment-patch.yml
-
-      - name: Confirm Deployment-patch.yml updates
-        run: cat k8s/overlays/prod/deployment-patch.yml
-
-      - name: Commit and push updated Deployment-patch.yml
-        if: ${{ steps.UpdateDeploymentPatch.outputs.changed }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git add k8s/overlays/prod/deployment-patch.yml
-          git commit -m "Update image tag to $IMAGE_URI:${{ github.sha }}"
-          git push origin main
+          kubectl rollout restart deployment coconote-backend -n default
