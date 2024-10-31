@@ -49,7 +49,7 @@ jobs:
 
       - name: Update Deployment.yaml with new image tag
         run: |
-          sed -i "s|image: $IMAGE_URI:.*|image: $IMAGE_URI:${{ github.sha }}|" k8s/overlays/prod/deployment.yaml
+          sed -i "s|image: $IMAGE_URI:.*|image: $IMAGE_URI:${{ github.sha }}|" k8s/overlays/prod/deployment.yml
 
       - name: Commit and push updated Deployment.yaml
         env:
