@@ -41,7 +41,22 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Build, tag, and push image to Amazon ECR with Jib
+        env:
+          IMAGE_URI: 730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be
         run: |
-          export IMAGE_URI=730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be
-          export IMAGE_TAG=${{ github.run_id }}  # GitHub Actions 고유 ID를 태그로 사용
-          ./gradlew jib --image=$IMAGE_URI:$IMAGE_TAG
+          ./gradlew jib --image=$IMAGE_URI:latest
+          ./gradlew jib --image=$IMAGE_URI:${{ github.sha }}
+
+          - name: Update Deployment.yaml with new image tag
+            run: |
+              sed -i "s|image: $IMAGE_URI:.*|image: $IMAGE_URI:${{ github.sha }}|" k8s/overlays/prod/deployment.yaml
+
+          - name: Commit and push updated Deployment.yaml
+            env:
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            run: |
+              git config --local user.name "github-actions[bot]"
+              git config --local user.email "github-actions[bot]@users.noreply.github.com"
+              git add k8s/overlays/prod/deployment.yaml
+              git commit -m "Update image tag to $IMAGE_URI:${{ github.sha }}"
+             git push origin main
