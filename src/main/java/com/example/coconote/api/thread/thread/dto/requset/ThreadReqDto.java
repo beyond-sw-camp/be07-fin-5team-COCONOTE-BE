@@ -32,6 +32,8 @@ public class ThreadReqDto {
     private String tagName;
     private String tagColor;
     private Long threadTagId;
+    private Long canvasId;
+    private String canvasTitle;
 
     public Thread toEntity(WorkspaceMember member, Thread thread, Channel channel) {
         return Thread.builder()
@@ -39,6 +41,8 @@ public class ThreadReqDto {
                 .content(this.content)
                 .parent(thread)
                 .channel(channel)
+                .canvasId(this.canvasId)
+                .canvasTitle(this.canvasTitle)
                 .build();
     }
 }
