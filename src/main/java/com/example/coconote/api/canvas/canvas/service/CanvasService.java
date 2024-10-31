@@ -353,19 +353,19 @@ public class CanvasService {
             // ChatMessage 객채로 맵핑
             CanvasSocketReqDto roomMessage = objectMapper.readValue(message, CanvasSocketReqDto.class);
 
-            Member member = memberRepository.findById(roomMessage.getSenderId()).orElseThrow(() -> new EntityNotFoundException("해당멤버가 없습니다."));
-            Workspace workspace = workspaceRepository.findById(roomMessage.getWorkspaceId()).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스가 없습니다."));
-            WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스 멤버가 없습니다."));
-
-            roomMessage.setWorkspaceMemberId(workspaceMember.getWorkspaceMemberId());
+//            Member member = memberRepository.findById(roomMessage.getSenderId()).orElseThrow(() -> new EntityNotFoundException("해당멤버가 없습니다."));
+//            Workspace workspace = workspaceRepository.findById(roomMessage.getWorkspaceId()).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스가 없습니다."));
+//            WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스 멤버가 없습니다."));
+//
+//            roomMessage.setWorkspaceMemberId(workspaceMember.getWorkspaceMemberId());
 
             messagingTemplate.convertAndSend("/sub/canvas/room/" + roomMessage.getChannelId(), roomMessage);
 //            SendCanvasReqDto sendCanvasReqDto = objectMapper.readValue(roomMessage.getMessage(), SendCanvasReqDto.class);
-            if(roomMessage.getPostMessageType().equals(PostMessageType.CANVAS)){
-                editCanvasInSocket(roomMessage, workspaceMember);
-            }else if(roomMessage.getPostMessageType().equals(PostMessageType.BLOCK)){
-                blockService.editBlockInSocket(roomMessage, workspaceMember);
-            }
+//            if(roomMessage.getPostMessageType().equals(PostMessageType.CANVAS)){
+//                editCanvasInSocket(roomMessage, workspaceMember);
+//            }else if(roomMessage.getPostMessageType().equals(PostMessageType.BLOCK)){
+//                blockService.editBlockInSocket(roomMessage, workspaceMember);
+//            }
         } catch (JsonProcessingException e) {
             log.error("JSON 처리 오류: {}", e.getMessage());
             throw new RuntimeException(e);
