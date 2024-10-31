@@ -7,18 +7,15 @@
 #  10분이 지나고 나서 부하가 없을시에 자동으로 기본 POD 대수로 돌아옴
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
-# 어떤 상황에 어떤것을 늘릴지 정해야함
 metadata:
   name: coconote-backend-hpa
-
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: want-deployment
+    name: coconote-backend  # Deployment의 이름과 일치하도록 설정
   minReplicas: 2
   maxReplicas: 4
-  # CPU 사용률이 50% 넘어가면 실행
   metrics:
     - type: Resource
       resource:

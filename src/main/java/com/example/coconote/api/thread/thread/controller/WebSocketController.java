@@ -55,7 +55,7 @@ public class WebSocketController {
 //        messagingTemplate.convertAndSend("/sub/chat/room/" + message.getChannelId(), threadResDto);
     }
 
-    @KafkaListener(topics = "chat_topic", groupId = "websocket-group")
+    @KafkaListener(topics = "chat_topic")
     public void listen(String message) {
         ObjectMapper objectMapper = new ObjectMapper();
         ThreadReqDto threadReqDto;
