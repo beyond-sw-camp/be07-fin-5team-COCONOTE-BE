@@ -47,11 +47,15 @@ jobs:
           ./gradlew jib --image=$IMAGE_URI:latest
           ./gradlew jib --image=$IMAGE_URI:${{ github.sha }}
 
-      - name: Update Deployment.yaml with new image tag
+      - name: Update Deployment-patch.yml with new image tag
         run: |
-          sed -i "s|image: $IMAGE_URI:.*|image: $IMAGE_URI:${{ github.sha }}|" k8s/overlays/prod/deployment-patch.yml
+          sed -i "s|image: $IMAGE_URI:latest|image: $IMAGE_URI:${{ github.sha }}|" k8s/overlays/prod/deployment-patch.yml
 
-      - name: Commit and push updated Deployment.yaml
+      - name: Confirm Deployment-patch.yml updates
+        run: cat k8s/overlays/prod/deployment-patch.yml
+
+      - name: Commit and push updated Deployment-patch.yml
+        if: ${{ steps.UpdateDeploymentPatch.outputs.changed }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
