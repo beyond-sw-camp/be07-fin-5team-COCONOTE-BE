@@ -78,10 +78,8 @@ public class WebSocketController {
             throw new RuntimeException(e);
         }
 
-
-
         // 수신한 메시지를 채널로 브로드캐스트하기 전에 로그 찍기
-//        log.info("Received message from Kafka: {}", threadResDto);
+        log.info("Received message from Kafka: {}", threadResDto);
         // 수신한 메시지를 채널로 브로드캐스트
         messagingTemplate.convertAndSend("/sub/chat/room/" + threadResDto.getChannelId(), threadResDto);
     }
