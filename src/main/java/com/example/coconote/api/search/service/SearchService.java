@@ -64,7 +64,7 @@ public class SearchService {
             "file_entity_search",
             "channel_entity_search",
             "canvas_block_entity_search",
-    }, groupId = "search-group")
+    })
     public void consumeIndexEntityMessage(String message) {
         log.info("Received Kafka message: {}", message);
         ObjectMapper objectMapper = new ObjectMapper()
