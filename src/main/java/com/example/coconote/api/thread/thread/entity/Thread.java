@@ -163,6 +163,7 @@ public class Thread extends BaseEntity {
                 .id(this.getId())
                 .type(MessageType.DELETE)
                 .parentThreadId(this.getParent() != null ? this.getParent().getId() : null)
+                .channelId(this.channel.getChannelId())
                 .build();
     }
 }

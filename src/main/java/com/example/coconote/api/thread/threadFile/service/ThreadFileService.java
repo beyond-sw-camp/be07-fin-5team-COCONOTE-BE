@@ -49,6 +49,7 @@ public class ThreadFileService {
                 .id(threadReqDto.getThreadId())
                 .type(MessageType.DELETE_FILE)
                 .fileId(threadFile.getFileID())
+                .channelId(thread.getChannel().getChannelId())
                 .build();
     }
 

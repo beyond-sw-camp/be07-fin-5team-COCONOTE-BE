@@ -79,6 +79,7 @@ public class TagService {
                 .tagName(tag.getName())
                 .tagColor(tag.getColor())
                 .parentThreadId(thread.getParent() != null ? thread.getParent().getId() : null)
+                .channelId(thread.getChannel().getChannelId())
                 .build();
     }
 
