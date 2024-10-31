@@ -33,6 +33,12 @@ spec:
               memory: "1Gi"
               cpu: "750m"
           env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name  # Pod의 이름을 환경 변수로 설정
+            - name: KAFKA_GROUP_ID
+              value: "coconote-group-id-$(POD_NAME)"  # KAFKA_GROUP_ID를 설정
             - name: REDIS_HOST
               valueFrom:
                 secretKeyRef:
