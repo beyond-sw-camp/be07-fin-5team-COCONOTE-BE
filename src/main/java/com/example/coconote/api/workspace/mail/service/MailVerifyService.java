@@ -877,7 +877,7 @@ public class MailVerifyService {
 				"                                                                                      font-weight: 700;\n" +
 				"                                                                                      mso-line-height-rule: exactly;\n" +
 				"                                                                                    \"\n" +
-				"                                                                                    >"+memberNickname+"님</span\n" +
+				"                                                                                    ></span\n" +
 				"                                                                                  >\n" +
 				"                                                                                  안녕하세요.\n" +
 				"                                                                                  코코노트를\n" +
