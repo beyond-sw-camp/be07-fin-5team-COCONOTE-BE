@@ -32,9 +32,6 @@ jobs:
       - name: Set environment variable for release version
         run: echo "RELEASE_VERSION=${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
 
-      - name: Build with Gradle
-        run: ./gradlew build --no-daemon
-
       - name: Build Docker Image with Jib and Push to Amazon ECR
         env:
           IMAGE_URI: 730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be
