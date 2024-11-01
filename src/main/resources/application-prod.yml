@@ -14,7 +14,7 @@ spring:
     suffix: .ftl
   config:
     activate:
-      on-profile: dev
+      on-profile: prod
   data:
     redis:
       host: ${REDIS_HOST}  # 시크릿으로부터 Redis 호스트명 설정
