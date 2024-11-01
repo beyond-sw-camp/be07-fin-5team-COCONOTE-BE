@@ -54,20 +54,20 @@ public class WebsocketController {
         Long id = jwtTokenProvider.getMemberIdFromToken(token);
         roomMessage.setSenderId(id);
 
-        Member member = memberRepository.findById(roomMessage.getSenderId()).orElseThrow(() -> new EntityNotFoundException("해당멤버가 없습니다."));
-        Workspace workspace = workspaceRepository.findById(roomMessage.getWorkspaceId()).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스가 없습니다."));
-        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스 멤버가 없습니다."));
+//        Member member = memberRepository.findById(roomMessage.getSenderId()).orElseThrow(() -> new EntityNotFoundException("해당멤버가 없습니다."));
+//        Workspace workspace = workspaceRepository.findById(roomMessage.getWorkspaceId()).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스가 없습니다."));
+//        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스 멤버가 없습니다."));
+//
+//        roomMessage.setWorkspaceMemberId(workspaceMember.getWorkspaceMemberId());
 
-        roomMessage.setWorkspaceMemberId(workspaceMember.getWorkspaceMemberId());
-
-        kafkaTemplate.send("canvas-topic", roomMessage);
+//        kafkaTemplate.send("canvas-topic", roomMessage);
         if(roomMessage.getPostMessageType().equals(PostMessageType.CANVAS)){
-            canvasService.editCanvasInSocket(roomMessage, workspaceMember);
+            canvasService.editCanvasInSocket(roomMessage);
         }else if(roomMessage.getPostMessageType().equals(PostMessageType.BLOCK)){
-            blockService.editBlockInSocket(roomMessage, workspaceMember);
+            blockService.editBlockInSocket(roomMessage);
         }
-//        log.info("카프카 이전 message : " + message.toString());
 
+//        kafkaTemplate.send("canvas-topic", roomMessage);
     }
 
     /**
