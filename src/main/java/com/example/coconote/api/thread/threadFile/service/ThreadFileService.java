@@ -50,6 +50,7 @@ public class ThreadFileService {
                 .type(MessageType.DELETE_FILE)
                 .fileId(threadFile.getFileID())
                 .channelId(thread.getChannel().getChannelId())
+                .parentThreadId(thread.getParent() != null ? thread.getParent().getId() : null)
                 .build();
     }
 
