@@ -9,7 +9,7 @@ spec:
     spec:
       containers:
         - name: coconote-backend
-          image: 730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be:latest
+          image: 730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be:v65
           imagePullPolicy: Always  # latest 태그의 이미지를 항상 가져오도록 설정
           env:
             - name: SPRING_PROFILES_ACTIVE
