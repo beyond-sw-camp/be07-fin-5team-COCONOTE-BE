@@ -1,0 +1,118 @@
+server:
+  port: 8080
+redirect:
+  url: https://coconote.site
+
+spring:
+  devtools:
+    livereload:
+      enabled: true
+    restart:
+      enabled: false
+  freemarker:
+    cache: false
+    suffix: .ftl
+  config:
+    activate:
+      on-profile: dev
+  data:
+    redis:
+      host: ${REDIS_HOST}  # 시크릿으로부터 Redis 호스트명 설정
+      port: ${REDIS_PORT}  # 시크릿으로부터 Redis 포트 설정
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: ${DB_URL}  # 시크릿에서 데이터베이스 URL 설정
+    username: ${DB_USERNAME}  # 시크릿에서 데이터베이스 사용자명 설정
+    password: ${DB_PASSWORD}  # 시크릿에서 데이터베이스 비밀번호 설정
+  jpa:
+    database-platform: org.hibernate.dialect.MariaDBDialect
+    database: mysql
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+    show_sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 100
+  mail:
+    host: ${MAIL_HOST}  # 시크릿에서 메일 호스트 설정
+    port: ${MAIL_PORT}  # 시크릿에서 메일 포트 설정
+    username: ${MAIL_USERNAME}  # 시크릿에서 메일 사용자명 설정
+    password: ${MAIL_PASSWORD}  # 시크릿에서 메일 비밀번호 설정
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+    auth-code-expiration-millis: 300000
+
+  batch:
+    job:
+      enabled: false
+    jdbc:
+      initialize-schema: never
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}  # 시크릿에서 Google 클라이언트 ID 설정
+            client-secret: ${GOOGLE_CLIENT_SECRET}  # 시크릿에서 Google 클라이언트 비밀번호 설정
+            scope: profile, email
+            redirect-uri: "https://server.coconote.site/login/oauth2/code/google"
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID}  # 시크릿에서 Kakao 클라이언트 ID 설정
+            client-secret: ${KAKAO_CLIENT_SECRET}  # 시크릿에서 Kakao 클라이언트 비밀번호 설정
+            scope: profile_nickname, account_email
+            authorization-grant-type: authorization_code
+            redirect-uri: "https://server.coconote.site/login/oauth2/code/kakao"
+            client-name: Kakao
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVER}  # 시크릿에서 Kafka 서버 설정
+    consumer:
+      group-id: ${KAFKA_GROUP_ID}  # 환경 변수로부터 가져오기
+      auto-offset-reset: earliest
+
+  opensearch:
+    host: ${OPENSEARCH_HOST}  # 시크릿에서 OpenSearch 호스트 설정
+    username: ${OPENSEARCH_USERNAME}  # 시크릿에서 OpenSearch 사용자명 설정
+    password: ${OPENSEARCH_PASSWORD}  # 시크릿에서 OpenSearch 비밀번호 설정
+
+springdoc:
+  api-docs:
+    groups:
+      enabled: true
+  cache:
+    disabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    display-request-duration: true
+    groups-order: DESC
+
+aws:
+  access_key_id: ${S3_KEY}  # 시크릿에서 S3 액세스 키 설정
+  secret_key: ${S3_SECRET}  # 시크릿에서 S3 시크릿 키 설정
+  s3:
+    region: ${S3_REGION}  # 시크릿에서 S3 리전 설정
+    bucket: ${S3_BUCKET}  # 시크릿에서 S3 버킷 이름 설정
+
+jwt:
+  secret: ${JWT_SECRET}  # 시크릿에서 JWT 시크릿 키 설정
