@@ -56,7 +56,7 @@ jobs:
 
       - name: Update k8s deployment with new image tag
         run: |
-          sed -i "s|image: 730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be:latest|image: 730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be:v${{ env.RELEASE_VERSION }}|" k8s/overlays/prod/deployment-patch.yml
+          sed -i "s|image: 730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be:v[0-9]*|image: 730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be:v${{ env.RELEASE_VERSION }}|" k8s/overlays/prod/deployment-patch.yml
           echo "Updated deployment-patch.yml:"
           cat k8s/overlays/prod/deployment-patch.yml
 
