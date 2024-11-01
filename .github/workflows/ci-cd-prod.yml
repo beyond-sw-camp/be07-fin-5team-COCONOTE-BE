@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main  # main 브랜치에 푸시될 때만 실행
+    paths-ignore:
+      - '.github/workflows/**'       # 워크플로우 파일 변경 무시
+      - 'k8s/overlays/prod/**'       # k8s 설정 파일 변경 무시
+
 
 jobs:
   build:
