@@ -86,7 +86,7 @@ spring:
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
   kafka:
-    bootstrap-servers: kafka:9092  # 시크릿에서 Kafka 서버 설정
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
     consumer:
       group-id: websocket-group
       auto-offset-reset: earliest
