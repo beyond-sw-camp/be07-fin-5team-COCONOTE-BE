@@ -89,7 +89,7 @@ jobs:
             fi
             
             # Docker Compose 설치 확인 및 설치
-            if ! docker compose version > /dev/null 2>&1; then
+            if ! docker-compose version > /dev/null 2>&1; then
               echo "Docker Compose가 설치되지 않았습니다. 설치 중..."
               sudo curl -L "https://github.com/docker/compose/releases/download/v2.1.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
               sudo chmod +x /usr/local/bin/docker-compose
@@ -99,5 +99,5 @@ jobs:
             aws ecr get-login-password --region ap-northeast-2 | sudo docker login --username AWS --password-stdin 730335516193.dkr.ecr.ap-northeast-2.amazonaws.com
             
             # Docker Compose 실행
-            sudo docker compose pull coconote_app
-            sudo docker compose up -d
+            sudo docker-compose pull coconote_app
+            sudo docker-compose up -d
