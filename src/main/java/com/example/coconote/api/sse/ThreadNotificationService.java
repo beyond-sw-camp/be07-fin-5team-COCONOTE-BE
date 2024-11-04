@@ -32,7 +32,6 @@ public class ThreadNotificationService {
     // Emitters getter 메서드
     @Getter
     private final Map<Long, Map<Long, SseEmitter>> emitters = new ConcurrentHashMap<>();
-
     private final RedisTemplate<String, String> notificationRedisTemplate; // 알림용 RedisTemplate
     private final ObjectMapper objectMapper;
     private final ChannelMemberRepository channelMemberRepository;
@@ -57,15 +56,16 @@ public class ThreadNotificationService {
     // 사용자별 워크스페이스 알림 구독
     public SseEmitter subscribe(Long memberId, Long workspaceId) {
         // 타임아웃을 30분으로 설정
-        SseEmitter emitter = new SseEmitter( 30 * 60 * 1000L); 
+        SseEmitter emitter = new SseEmitter(30 * 60 * 1000L);
 
+        // Map<workspaceId, Map<memberId, SseEmitter>>
         // 워크스페이스 단위로 SseEmitter 저장
         Map<Long, SseEmitter> workspaceEmitters = emitters.computeIfAbsent(workspaceId, w -> new ConcurrentHashMap<>());
 
-        // 이미 존재하는 Emitter가 있는지 확인
+        // 이미 존재하는 Emitter 가 있는지 확인
         if (workspaceEmitters.containsKey(memberId)) {
             log.warn("Emitter already exists for memberId={}, workspaceId={}", memberId, workspaceId);
-//            emitter 갱신
+            // emitter 갱신
             removeEmitter(workspaceId, memberId);
         }
 
@@ -81,12 +81,12 @@ public class ThreadNotificationService {
         logEmitterCount(workspaceId, workspaceEmitters.size());
 
         log.info("SSE emitter created for memberId={}, workspaceId={}", memberId, workspaceId);
-// 구독 시 초기 메시지 전송
+        // 구독 시 초기 메시지 전송
         sendWelcomeNotification(emitter, memberId, workspaceId);
         return emitter;
     }
 
-    // 구독 시 사용자에게 환영 메시지를 Emitter로 전송하는 메서드
+    // 구독 시 사용자에게 환영 메시지를 Emitter 로 전송하는 메서드
     private void sendWelcomeNotification(SseEmitter emitter, Long memberId, Long workspaceId) {
         String message = "Welcome to workspace " + workspaceId + "!"; // 환영 메시지
 
@@ -102,7 +102,7 @@ public class ThreadNotificationService {
                 .memberName("System") // 알림을 보낸 주체
                 .build();
 
-        // Emitter를 통해 메시지를 직접 전송합니다.
+        // Emitter 를 통해 메시지를 직접 전송합니다.
         try {
             emitter.send(SseEmitter.event()
                     .name("notification") // 이벤트 이름
