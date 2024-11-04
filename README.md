@@ -211,3 +211,13 @@ COCONOTE는 노션의 문서 관리와 슬랙의 실시간 커뮤니케이션을
 <br /><br />
 
 <h2 id="배포"> 배포 </h2>
+    <h3>로그인</h3>
+    <img width=100% src="./readme/deploy_login.png">
+    <h3>쓰레드</h3>
+    <img width=100% src="./readme/deploy_thread.png">
+    <h3>캔버스</h3>
+    <img width=100% src="./readme/deploy_canvas.png">
+    <h3>드라이브</h3>
+    <img width=100% src="./readme/deploy_drive.png">
+    <h3>2분할</h3>
+    <img width=100% src="./readme/deploy_split.png">
