@@ -2,8 +2,11 @@ package com.example.coconote.api.search.mapper;
 
 
 import com.example.coconote.api.search.entity.ThreadDocument;
+import com.example.coconote.api.thread.tag.entity.Tag;
 import com.example.coconote.api.thread.thread.entity.Thread;
 import com.example.coconote.api.thread.threadFile.entity.ThreadFile;
+import com.example.coconote.api.thread.threadTag.entity.ThreadTag;
+import com.example.coconote.common.IsDeleted;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -18,10 +21,12 @@ public class ThreadMapper {
                 .map(ThreadFile::getFileURL)
                 .collect(Collectors.toList());
 
-        // 태그 목록 변환
+        // 태그 목록 변환 - 삭제되지 않은 태그만 포함
         List<String> tags = thread.getThreadTags().stream()
-                .map(threadTag -> threadTag.getTag().getName())
-                .collect(Collectors.toList());
+                .map(ThreadTag::getTag)
+                .filter(tag -> tag.getIsDeleted() == IsDeleted.N) // 삭제되지 않은 태그만 포함
+                .map(Tag::getName)
+                .collect(Collectors.toList());;
 
         // 자식 쓰레드 변환
         List<ThreadDocument> childThreads = thread.getChildThreads().stream()
