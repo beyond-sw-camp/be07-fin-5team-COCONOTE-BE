@@ -96,7 +96,7 @@ jobs:
             fi
             
             # AWS ECR 로그인
-            aws ecr get-login-password --region ap-northeast-2 | sudo docker login --username AWS --password-stdin 730335516193.dkr.ecr.ap-northeast-2.amazonaws.com
+            aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 730335516193.dkr.ecr.ap-northeast-2.amazonaws.com
             
             # Docker Compose 실행
             docker-compose pull coconote_app
