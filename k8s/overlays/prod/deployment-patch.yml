@@ -1,0 +1,16 @@
+# k8s/overlays/prod/deployment-patch.yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coconote-backend
+spec:
+  replicas: 2  # Prod 환경에서는 더 높은 가용성을 위해 3개로 설정
+  template:
+    spec:
+      containers:
+        - name: coconote-backend
+          image: 730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be:v65
+          imagePullPolicy: Always  # latest 태그의 이미지를 항상 가져오도록 설정
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: dev  # dev 환경 설정을 사용-

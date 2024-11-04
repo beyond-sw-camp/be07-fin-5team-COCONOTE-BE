@@ -1,0 +1,162 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coconote-backend
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: coconote-backend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: coconote-backend
+    spec:
+      containers:
+        - name: coconote-backend
+          image: 730335516193.dkr.ecr.ap-northeast-2.amazonaws.com/coconote/coconote_be:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "750m"
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name  # Pod의 이름을 환경 변수로 설정
+            - name: KAFKA_GROUP_ID
+              value: "coconote-group-id-$(POD_NAME)"  # KAFKA_GROUP_ID를 설정
+            - name: REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: redis-host
+            - name: REDIS_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: redis-port
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: db-url
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: db-username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: db-password
+            - name: MAIL_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: mail-host
+            - name: MAIL_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: mail-port
+            - name: MAIL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: mail-username
+            - name: MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: mail-password
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: google-client-id
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: google-client-secret
+            - name: KAKAO_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: kakao-client-id
+            - name: KAKAO_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: kakao-client-secret
+            - name: OPENSEARCH_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: opensearch-host
+            - name: OPENSEARCH_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: opensearch-username
+            - name: OPENSEARCH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: opensearch-password
+            - name: S3_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: s3-key
+            - name: S3_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: s3-secret
+            - name: S3_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: s3-region
+            - name: S3_BUCKET
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: s3-bucket
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: jwt-secret
+            - name: KAFKA_BOOTSTRAP_SERVER
+              valueFrom:
+                secretKeyRef:
+                  name: coconote-backend-secrets
+                  key: kafka-bootstrap-server
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+#          livenessProbe:
+#            httpGet:
+#              path: /actuator/health
+#              port: 8080
+#            initialDelaySeconds: 20
+#            periodSeconds: 10

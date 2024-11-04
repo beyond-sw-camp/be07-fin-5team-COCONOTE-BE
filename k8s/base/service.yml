@@ -1,0 +1,14 @@
+# k8s/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: coconote-backend-service
+  namespace: default
+spec:
+  type: ClusterIP  # ClusterIP로 설정하여 Ingress를 통해 외부에 노출
+  ports:
+    - name: http
+      port: 80         # Service가 노출하는 포트
+      targetPort: 8080 # Deployment에서 설정한 containerPort
+  selector:
+    app: coconote-backend

@@ -84,6 +84,7 @@ public class Thread extends BaseEntity {
                 .parentThreadId(this.parent != null ? this.parent.getId() : null)
                 .canvasId(this.canvasId)
                 .canvasTitle(this.canvasTitle)
+                .channelId(this.channel.getChannelId())
                 .build();
     }
 
@@ -100,6 +101,7 @@ public class Thread extends BaseEntity {
                 .parentThreadId(this.parent != null ? this.parent.getId() : null)
                 .canvasId(this.canvasId)
                 .canvasTitle(this.canvasTitle)
+                .channelId(this.channel.getChannelId())
                 .build();
     }
 
@@ -119,6 +121,7 @@ public class Thread extends BaseEntity {
                 .parentThreadId(this.parent != null ? this.parent.getId() : null)
                 .canvasId(this.canvasId)
                 .canvasTitle(this.canvasTitle)
+                .channelId(this.channel.getChannelId())
                 .build();
     }
 
@@ -137,6 +140,7 @@ public class Thread extends BaseEntity {
                 .parentThreadId(this.parent != null ? this.parent.getId() : null)
                 .canvasId(this.canvasId)
                 .canvasTitle(this.canvasTitle)
+                .channelId(this.channel.getChannelId())
                 .build();
     }
 
@@ -152,5 +156,14 @@ public class Thread extends BaseEntity {
 
     public void setThreadFiles(List<ThreadFile> threadFiles) {
         this.threadFiles = threadFiles;
+    }
+
+    public ThreadResDto fromDeleteEntity() {
+        return ThreadResDto.builder()
+                .id(this.getId())
+                .type(MessageType.DELETE)
+                .parentThreadId(this.getParent() != null ? this.getParent().getId() : null)
+                .channelId(this.channel.getChannelId())
+                .build();
     }
 }

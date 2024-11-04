@@ -1,6 +1,7 @@
 package com.example.coconote.config;
 
 import com.example.coconote.api.sse.NotificationMessageListener;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -16,12 +17,24 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 public class RedisConfig {
-    // 기본 RedisConnectionFactory (기본 데이터베이스를 사용)
+
+//    @Value("${spring.data.redis.host}")
+    @Value("${REDIS_HOST}")
+//    @Value("${spring.data.redis.host}")
+    private String redisHost;
+
+//    @Value("${spring.data.redis.port}")
+    @Value("${REDIS_PORT}")
+//    @Value("${spring.data.redis.port}")
+    private int redisPort;
+
     @Bean
-    @Primary // 기본으로 사용될 ConnectionFactory 지정
+    @Primary
     public RedisConnectionFactory defaultRedisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
-        config.setDatabase(0); // 기본 데이터베이스 설정
+        config.setHostName(redisHost);  // 환경 변수에서 Redis 호스트 설정
+        config.setPort(redisPort);  // 환경 변수에서 Redis 포트 설정
+        config.setDatabase(0);
         return new LettuceConnectionFactory(config);
     }
 
@@ -37,6 +50,8 @@ public class RedisConfig {
     @Bean
     public RedisConnectionFactory notificationRedisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
+        config.setHostName(redisHost);  // 환경 변수에서 Redis 호스트 설정
+        config.setPort(redisPort);  // 환경 변수에서 Redis 포트 설정
         config.setDatabase(1);
         return new LettuceConnectionFactory(config);
     }
@@ -53,6 +68,8 @@ public class RedisConfig {
     @Bean
     public RedisConnectionFactory sectionRedisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
+        config.setHostName(redisHost);  // 환경 변수에서 Redis 호스트 설정
+        config.setPort(redisPort);  // 환경 변수에서 Redis 포트 설정
         config.setDatabase(2);
         return new LettuceConnectionFactory(config);
     }

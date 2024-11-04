@@ -135,11 +135,12 @@ public class ThreadService {
 //        isDeleted를 true로 바꾸는 것으로 대체
         thread.markAsDeleted();
         searchService.deleteThread(thread.getChannel().getSection().getWorkspace().getWorkspaceId(), thread.getId());
-        return ThreadResDto.builder()
-                .id(thread.getId())
-                .type(MessageType.DELETE)
-                .parentThreadId(thread.getParent() != null ? thread.getParent().getId() : null)
-                .build();
+//        return ThreadResDto.builder()
+//                .id(thread.getId())
+//                .type(MessageType.DELETE)
+//                .parentThreadId(thread.getParent() != null ? thread.getParent().getId() : null)
+//                .build();
+        return thread.fromDeleteEntity();
     }
 
     public ThreadResDto updateThread(ThreadReqDto threadReqDto) {

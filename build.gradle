@@ -58,6 +58,8 @@ dependencies {
 
     // kafka
     implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'software.amazon.msk:aws-msk-iam-auth:1.1.6'
+
 
 //    view
     implementation 'org.webjars.bower:bootstrap:4.3.1'
@@ -79,6 +81,8 @@ dependencies {
 
 //    jsoup
     implementation 'org.jsoup:jsoup:1.14.3'
+
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 }
 
 tasks.named('test') {

@@ -57,6 +57,7 @@ public class ThreadTagService {
                 .id(dto.getThreadId())
                 .tagId(dto.getTagId())
                 .parentThreadId(thread.getParent() != null ? thread.getParent().getId() : null)
+                .channelId(thread.getChannel().getChannelId())
                 .build();
     }
     private ThreadTag findThreadTag(Long id) {

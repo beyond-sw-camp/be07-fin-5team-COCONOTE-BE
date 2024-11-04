@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -245,19 +246,24 @@ public class SearchService {
     public SearchResultWithTotal<FileSearchResultDto> searchFiles(Long workspaceId, String keyword, int page, int size) {
         String alias = getAliasForWorkspace(workspaceId);
         SearchResponse<FileEntityDocument> response = searchDocumentsForMultipleFields(alias, keyword, List.of("fileName"), FileEntityDocument.class, page, size);
-        Channel channel = channelRepository.findById(response.hits().hits().get(0).source().getChannelId())
-                .orElseThrow(() -> new EntityNotFoundException("Channel not found with ID: " + response.hits().hits().get(0).source().getChannelId()));
-        // DTO로 변환
-        List<FileSearchResultDto> files = response.hits().hits().stream()
-                .map(document -> FileSearchResultDto.builder()
-                        .fileId(document.source().getFileId())
-                        .fileName(document.source().getFileName())
-                        .fileUrl(document.source().getFileUrl())
-                        .folderId(document.source().getFolderId())
-                        .channelId(document.source().getChannelId())
-                        .channelName(channel.getChannelName())
-                        .build())
-                .collect(Collectors.toList());
+        List<FileSearchResultDto> files;
+        if (!response.hits().hits().isEmpty()) {
+            Channel channel = channelRepository.findById(response.hits().hits().get(0).source().getChannelId())
+                    .orElseThrow(() -> new EntityNotFoundException("Channel not found with ID: " + response.hits().hits().get(0).source().getChannelId()));
+
+            files = response.hits().hits().stream()
+                    .map(document -> FileSearchResultDto.builder()
+                            .fileId(document.source().getFileId())
+                            .fileName(document.source().getFileName())
+                            .fileUrl(document.source().getFileUrl())
+                            .folderId(document.source().getFolderId())
+                            .channelId(document.source().getChannelId())
+                            .channelName(channel.getChannelName())
+                            .build())
+                    .collect(Collectors.toList());
+        } else {
+            files = Collections.emptyList();
+        }
 
         return new SearchResultWithTotal<>(files, response.hits().total().value());
     }

@@ -139,15 +139,17 @@ public class FolderService {
                 .build();
     }
 
+    @Transactional
     public FolderAllListResDto getAllFolderList(Long folderId, String email) {
         Member member = getMemberByEmail(email);
         Folder folder = getFolderByFolderId(folderId);
 //        채널이 공개 채널인지 확인
         Channel channel = getChannelByChannelId(folder.getChannel().getChannelId());
 //        체날 멤버인지 확인
-        if (!channel.getIsPublic()) {
-            throw new IllegalArgumentException("비공개 채널입니다.");
-        }
+        Workspace workspace = getWorkspaceByChannel(channel);
+        WorkspaceMember workspaceMember = getWorkspaceMember(member, workspace);
+        checkChannelMember(workspaceMember, channel);
+
         return getFolderAllListResDto(folder, folderRepository, fileRepository);
     }
 

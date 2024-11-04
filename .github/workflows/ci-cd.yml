@@ -59,37 +59,45 @@ jobs:
     needs: build
 
     steps:
-      - name: SSH to EC2
+      - name: SSH to Ubuntu Machine
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
+          host: ${{ secrets.UBUNTU_HOST }}
+          username: ${{ secrets.UBUNTU_USER }}
+          key: ${{ secrets.UBUNTU_SSH_KEY }}
+          port: ${{ secrets.UBUNTU_PORT }}
           script: |
-            cd ~/coconote
+            cd /home/jsangmin/project/coconote
             
             # AWS CLI 설치 확인 및 설치
             if ! command -v aws &> /dev/null; then
-            echo "AWS CLI가 설치되지 않았습니다. 설치 중..."
-            sudo apt-get update
-            sudo apt-get install -y unzip curl
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip awscliv2.zip
-            sudo ./aws/install
+              echo "AWS CLI가 설치되지 않았습니다. 설치 중..."
+              sudo apt-get update
+              sudo apt-get install -y unzip curl
+              curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+              unzip awscliv2.zip
+              sudo ./aws/install
+              rm -rf awscliv2.zip aws
             fi
-
+            
             # Docker 설치 확인 및 설치
             if ! type docker > /dev/null; then
-              echo "Docker is not installed, installing now..."
+              echo "Docker가 설치되지 않았습니다. 설치 중..."
               sudo apt-get update && sudo apt-get install -y docker.io
             else
-              echo "Docker is already installed."
+              echo "Docker가 이미 설치되어 있습니다."
             fi
-
+            
+            # Docker Compose 설치 확인 및 설치
+            if ! docker-compose version > /dev/null 2>&1; then
+              echo "Docker Compose가 설치되지 않았습니다. 설치 중..."
+              sudo curl -L "https://github.com/docker/compose/releases/download/v2.1.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+              sudo chmod +x /usr/local/bin/docker-compose
+            fi
+            
             # AWS ECR 로그인
             aws ecr get-login-password --region ap-northeast-2 | sudo docker login --username AWS --password-stdin 730335516193.dkr.ecr.ap-northeast-2.amazonaws.com
-
+            
             # Docker Compose 실행
-            sudo docker compose pull coconote_app
-            sudo docker compose up -d
+            docker-compose pull coconote_app
+            docker-compose up -d

@@ -1,0 +1,26 @@
+#k8s/argocd-ingress.yml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-ingress
+  namespace: argocd
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"  # Cert Manager를 통해 인증서 발급
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"  # HTTPS로 백엔드와 통신
+spec:
+  ingressClassName: nginx  # 추가된 부분
+  rules:
+    - host: argo.coconote.site  # ArgoCD에 접근할 도메인
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: argocd-server
+                port:
+                  number: 443
+  tls:
+    - hosts:
+        - argo.coconote.site
+      secretName: argo-coconote-site-tls  # 백엔드 인증서 Secret
