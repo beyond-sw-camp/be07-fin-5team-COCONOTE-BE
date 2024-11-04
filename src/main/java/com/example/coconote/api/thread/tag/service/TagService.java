@@ -5,6 +5,7 @@ import com.example.coconote.api.channel.channel.repository.ChannelRepository;
 import com.example.coconote.api.member.entity.Member;
 import com.example.coconote.api.search.dto.EntityType;
 import com.example.coconote.api.search.dto.IndexEntityMessage;
+import com.example.coconote.api.search.dto.ThreadSearchResultDto;
 import com.example.coconote.api.search.entity.ThreadDocument;
 import com.example.coconote.api.search.mapper.ThreadMapper;
 import com.example.coconote.api.thread.tag.dto.request.TagCreateReqDto;
@@ -20,6 +21,7 @@ import com.example.coconote.api.thread.thread.entity.MessageType;
 import com.example.coconote.api.thread.thread.entity.Thread;
 import com.example.coconote.api.thread.thread.repository.ThreadRepository;
 import com.example.coconote.api.thread.threadFile.dto.request.ThreadFileDto;
+import com.example.coconote.api.thread.threadFile.entity.ThreadFile;
 import com.example.coconote.api.thread.threadTag.entity.ThreadTag;
 import com.example.coconote.api.thread.threadTag.repository.ThreadTagRepository;
 import com.example.coconote.api.workspace.workspaceMember.entity.WorkspaceMember;
@@ -31,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -164,8 +167,8 @@ public class TagService {
 
 
     @Transactional
-    public List<TagSearchListResDto> searchTag(Long channelId, List<Long> tagSearchIds) {
-// 입력된 태그의 개수
+    public List<ThreadSearchResultDto> searchTag(Long channelId, List<Long> tagSearchIds) {
+        // 입력된 태그의 개수
         Long tagCount = (long) tagSearchIds.size();
 
         // 모든 태그를 만족하는 쓰레드를 찾습니다.
@@ -176,35 +179,28 @@ public class TagService {
                 .map(thread -> {
                     WorkspaceMember workspaceMember = thread.getWorkspaceMember();
 
-                    // 태그 정보 변환
-                    List<TagResDto> tagResDtos = thread.getThreadTags().stream()
-                            .map(tTag -> TagResDto.builder()
-                                    .id(tTag.getTag().getId())
-                                    .name(tTag.getTag().getName())
-                                    .color(tTag.getTag().getColor())
-                                    .threadTagId(tTag.getId())
-                                    .build())
+                    // 태그 정보 변환 - isDeleted가 N인 태그만 포함
+                    List<String> tags = thread.getThreadTags().stream()
+                            .map(tTag -> tTag.getTag())
+                            .filter(tag -> tag.getIsDeleted() == IsDeleted.N) // 삭제되지 않은 태그만 필터링
+                            .map(Tag::getName) // 태그 이름만 추출
                             .collect(Collectors.toList());
 
-                    // 파일 정보 변환
-                    List<ThreadFileDto> fileDtos = thread.getThreadFiles().stream()
-                            .map(threadFile -> ThreadFileDto.builder()
-                                    .fileId(threadFile.getId())
-                                    .fileURL(threadFile.getFileURL())
-                                    .fileName(threadFile.getFileName())
-                                    .build())
+                    // 파일 정보 변환 - 파일 URL만 포함
+                    List<String> fileUrls = thread.getThreadFiles().stream()
+                            .map(ThreadFile::getFileURL) // 파일 URL 추출
                             .collect(Collectors.toList());
 
                     // 결과 DTO 생성
-                    return TagSearchListResDto.builder()
-                            .threadId(thread.getId())
+                    return ThreadSearchResultDto.builder()
+                            .threadId(String.valueOf(thread.getId()))
                             .content(thread.getContent())
-                            .memberNickName(workspaceMember.getNickname())
+                            .memberName(workspaceMember.getNickname())
                             .profileImageUrl(workspaceMember.getProfileImage())
                             .channelId(thread.getChannel().getChannelId())
                             .createdTime(thread.getCreatedTime().toString())
-                            .tags(tagResDtos)
-                            .fileUrls(fileDtos)
+                            .tags(tags)
+                            .fileUrls(fileUrls)
                             .parentThreadId(thread.getParent() != null ? thread.getParent().getId() : null)
                             .build();
                 })
