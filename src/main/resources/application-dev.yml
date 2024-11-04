@@ -70,7 +70,7 @@ spring:
             redirect-uri: "https://server.coconote.site/login/oauth2/code/google"
           kakao:
             client-id: ${KAKAO_CLIENT_ID}
-            client-secret: ${KAKAO_CLIENT_SECRET}
+#            client-secret: ${KAKAO_CLIENT_SECRET}
             scope: profile_nickname, account_email
             authorization-grant-type: authorization_code
             redirect-uri: "https://server.coconote.site/login/oauth2/code/kakao"
