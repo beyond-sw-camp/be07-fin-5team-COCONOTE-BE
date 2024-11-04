@@ -206,23 +206,31 @@ COCONOTE는 노션의 문서 관리와 슬랙의 실시간 커뮤니케이션을
 <h3>기능별 플로우</h3>
     로그인
     <img width=100% src="./readme/flow/login.png">
+    <br />
     메일 초대
     <img width=100% src="./readme/flow/mail.png">
+    <br />
     캔버스
     <img width=100% src="./readme/flow/canvas.png">
+    <br />
     쓰레드 목록
-    <img width=100% src="./readme/flow/thread_list.png">
+    <img width=30% src="./readme/flow/thread_list.png">
+    <br />
     쓰레드 채팅
     <img width=100% src="./readme/flow/thread_chatting.png">
+    <br />
     드라이브
     <img width=100% src="./readme/flow/drive.png">
+    <br />
     워크스페이스
     <img width=100% src="./readme/flow/workspace.png">
+    <br />
     검색
     <img width=100% src="./readme/flow/search.png">
+    <br />
     알림
-    <img width=100% src="./readme/notification_1.png">
-    <img width=100% src="./readme/notification_2.png">
+    <img width=100% src="./readme/flow/notification_1.png">
+    <img width=100% src="./readme/flow/notification_2.png">
 
 <br /><br />
 
