@@ -214,7 +214,7 @@ COCONOTE는 노션의 문서 관리와 슬랙의 실시간 커뮤니케이션을
     <img width=100% src="./readme/flow/canvas.png">
     <br />
     쓰레드 목록
-    <img width=30% src="./readme/flow/thread_list.png">
+    <img width=100% src="./readme/flow/thread_list.png">
     <br />
     쓰레드 채팅
     <img width=100% src="./readme/flow/thread_chatting.png">
