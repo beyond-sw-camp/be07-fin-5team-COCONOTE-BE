@@ -57,7 +57,7 @@ public class TokenSecurityConfig {
                 .authorizeHttpRequests(authorizeRequests ->
                                 authorizeRequests
 //                                        .requestMatchers("/**").permitAll()
-                                        .requestMatchers("/", "/refresh", "/login**", "/error", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**").permitAll()
+                                        .requestMatchers("/", "/refresh", "/login**", "/error", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**", "/actuator/**").permitAll()
                                         .requestMatchers("/api/v1/ws-stomp/**","/api/v1/notifications/subscribe/*").permitAll()  // WebSocket 엔드포인트 허용
                                         .anyRequest().authenticated()
                 )

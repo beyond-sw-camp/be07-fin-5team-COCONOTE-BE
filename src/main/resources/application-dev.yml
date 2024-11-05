@@ -17,13 +17,13 @@ spring:
       on-profile: dev
   data:
     redis:
-      host: ${dev.redis.host}
-      port: ${dev.redis.port}
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: ${dev.datasource.url}  # dev 환경의 데이터베이스 URL
-    username: ${dev.datasource.username}
-    password: ${dev.datasource.password}
+    url: ${DB_URL}  # dev 환경의 데이터베이스 URL
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
   jpa:
     database-platform: org.hibernate.dialect.MariaDBDialect
     database: mysql
@@ -64,13 +64,13 @@ spring:
       client:
         registration:
           google:
-            client-id: ${dev.google.client-id}
-            client-secret: ${dev.google.client-secret}
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
             scope: profile, email
             redirect-uri: "https://server.coconote.site/login/oauth2/code/google"
           kakao:
-            client-id: ${dev.kakao.client-id}
-            client-secret: ${dev.kakao.client-secret}
+            client-id: ${KAKAO_CLIENT_ID}
+#            client-secret: ${KAKAO_CLIENT_SECRET}
             scope: profile_nickname, account_email
             authorization-grant-type: authorization_code
             redirect-uri: "https://server.coconote.site/login/oauth2/code/kakao"
@@ -86,14 +86,14 @@ spring:
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
   kafka:
-    bootstrap-servers: kafka:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
     consumer:
       group-id: websocket-group
       auto-offset-reset: earliest
   opensearch:
-    host: ${dev.opensearch.host}
-    username: ${dev.opensearch.username}
-    password: ${dev.opensearch.password}
+    host: ${OPENSEARCH_HOST}
+    username: ${OPENSEARCH_USERNAME}
+    password: ${OPENSEARCH_PASSWORD}
 
 springdoc:
   api-docs:
@@ -107,11 +107,24 @@ springdoc:
     groups-order: DESC
 
 aws:
-  access_key_id: ${dev.s3.key}
-  secret_key: ${dev.s3.secret}
+  access_key_id: ${AWS_ACCESS_KEY_ID}
+  secret_key: ${AWS_SECRET_ACCESS_KEY}
   s3:
-    region: ${dev.s3.region}
-    bucket: ${dev.s3.bucket}
+    region: ${S3_REGION}
+    bucket: ${S3_BUCKET}
 
 jwt:
-  secret: ${dev.jwt.secret}
+  secret: ${JWT_SECRET}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true

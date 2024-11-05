@@ -72,7 +72,7 @@ public class BlockService {
         Block prevBlock = null;
         if (canvasSocketReqDto.getPrevBlockId() != null) {
             prevBlock = blockRepository.findByFeIdAndIsDeleted(canvasSocketReqDto.getPrevBlockId(), IsDeleted.N)
-                    .orElseThrow(() -> new IllegalArgumentException("해당 이전 Block이 존재하지 않습니다."));
+                    .orElse(null);
         }else{
             // 생성하려는 block의 previd가 null 이면, 기존에 previd가 null인 block을 호출하여 현재 save 하려는 block의 id로 넣어줘야함
             existingBlock = blockRepository.findByCanvasIdAndPrevBlockIsNullAndIsDeleted(canvasSocketReqDto.getCanvasId(), IsDeleted.N) // prevBlockId가 null인 Block을 조회
@@ -418,8 +418,14 @@ public class BlockService {
         }
     }
 
-    public void editBlockInSocket(CanvasSocketReqDto canvasSocketReqDto, WorkspaceMember workspaceMember) {
+    @Transactional
+    public void editBlockInSocket(CanvasSocketReqDto canvasSocketReqDto) {
 //        생성, 수정, 삭제인지 type 구분해서 넣어주는 용도
+        Member member = memberRepository.findById(canvasSocketReqDto.getSenderId()).orElseThrow(() -> new EntityNotFoundException("해당멤버가 없습니다."));
+        Workspace workspace = workspaceRepository.findById(canvasSocketReqDto.getWorkspaceId()).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스가 없습니다."));
+        WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberAndWorkspaceAndIsDeleted(member, workspace, IsDeleted.N).orElseThrow(() -> new EntityNotFoundException("해당 워크스페이스 멤버가 없습니다."));
+        canvasSocketReqDto.setWorkspaceMemberId(workspaceMember.getWorkspaceMemberId());
+
         if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.CREATE_BLOCK)) { // 생성블록
             createBlock(canvasSocketReqDto, workspaceMember);
         } else if (canvasSocketReqDto.getMethod().equals(CanvasMessageMethod.UPDATE_BLOCK)) { // 수정블록
@@ -436,6 +442,8 @@ public class BlockService {
         } else {
             log.error("잘못된 block method");
         }
+
+        kafkaTemplate.send("canvas-topic", canvasSocketReqDto);
     }
 
 

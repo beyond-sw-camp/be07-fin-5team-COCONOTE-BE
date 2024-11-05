@@ -1,6 +1,7 @@
 package com.example.coconote.api.thread.tag.controller;
 
 
+import com.example.coconote.api.search.dto.ThreadSearchResultDto;
 import com.example.coconote.api.thread.tag.dto.request.TagCreateReqDto;
 import com.example.coconote.api.thread.tag.dto.request.TagSearchReqListDto;
 import com.example.coconote.api.thread.tag.dto.request.TagUpdateReqDto;
@@ -8,6 +9,7 @@ import com.example.coconote.api.thread.tag.dto.response.TagResDto;
 import com.example.coconote.api.thread.tag.dto.response.TagSearchListResDto;
 import com.example.coconote.api.thread.tag.entity.Tag;
 import com.example.coconote.api.thread.tag.service.TagService;
+import com.example.coconote.api.thread.threadFile.dto.request.ThreadFileDto;
 import com.example.coconote.common.CommonResDto;
 import com.example.coconote.security.util.CustomPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,6 +20,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/v1/tag")
@@ -55,11 +58,15 @@ public class TagController {
         tagService.deleteTag(tagId);
         return new ResponseEntity<>("태그 삭제 성공", HttpStatus.OK);
     }
+
     @Operation(summary = "태그 검색")
     @GetMapping("/search")
     public ResponseEntity<?> searchTag(@RequestParam Long channelId, @RequestParam List<Long> tagSearchIds) {
-        List<TagSearchListResDto> tagResDtos = tagService.searchTag(channelId, tagSearchIds);
-        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "태그 검색 성공", tagResDtos);
+        // 서비스 레이어에서 변환된 결과 가져오기
+        List<ThreadSearchResultDto> threadResults = tagService.searchTag(channelId, tagSearchIds);
+
+        // 응답을 `CommonResDto` 형식으로 래핑하여 반환
+        CommonResDto commonResDto = new CommonResDto(HttpStatus.OK, "태그 검색 성공", threadResults);
         return new ResponseEntity<>(commonResDto, HttpStatus.OK);
     }
 

@@ -298,6 +298,9 @@ public class ChannelService {
         if (channel.getIsDeleted().equals(IsDeleted.Y)) {
             throw new IllegalArgumentException("이미 삭제된 채널입니다.");
         }
+        if(channel.getChannelType().equals(ChannelType.DEFAULT)) {
+            throw new IllegalArgumentException("기본 채널은 반드시 공개 채널이어야 합니다.");
+        }
 
         channel.changeAccessLevel(dto.getIsPublic());
         channelRepository.save(channel);

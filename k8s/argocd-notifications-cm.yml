@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-notifications-cm
+  namespace: argocd
+data:
+  context: |
+    argocdUrl: https://argo.coconote.site  # 실제 Argo CD URL로 변경
+
+  service.webhook.discord: |
+    url: https://discord.com/api/webhooks/1301808294414913536/V6lEKxHRT7Xsm9LWPfcXyg4IW3GfJ2iiYxLAlhTYHcbi1vVAPbid4w_EgcMSlyhDMwAv
+    headers:
+    - name: Content-Type
+      value: application/json
+
+  template.discord-notification: |
+    webhook:
+      discord:
+        method: POST
+        body: |
+          {
+            "content": "🚀 **{{.app.metadata.name}}**: Sync {{.app.status.operationState.phase}}",
+            "embeds": [{
+              "title": "{{.app.metadata.name}} - Deployment Status",
+              "description": "{{if eq .app.status.operationState.phase "Succeeded"}}Application sync was successful!{{else}}Application sync failed!{{end}}",
+              "color": {{if eq .app.status.operationState.phase "Succeeded"}}5763719{{else}}16711680{{end}},
+              "fields": [
+                {
+                  "name": "Sync Status",
+                  "value": "{{.app.status.sync.status}}",
+                  "inline": true
+                },
+                {
+                  "name": "Repository",
+                  "value": "{{.app.spec.source.repoURL}}",
+                  "inline": true
+                }
+              ],
+              "url": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}"
+            }]
+          }
+
+  trigger.on-sync-succeeded: |
+    - description: Notify on successful sync
+      send: [discord-notification]
+      when: app.status.operationState.phase in ['Succeeded']
+
+  trigger.on-sync-failed: |
+    - description: Notify on sync failure
+      send: [discord-notification]
+      when: app.status.operationState.phase in ['Failed']

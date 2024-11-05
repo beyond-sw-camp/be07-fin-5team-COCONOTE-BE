@@ -125,3 +125,16 @@ aws:
 
 jwt:
   secret: ${local.jwt.secret}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
