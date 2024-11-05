@@ -37,10 +37,10 @@ spring:
         jdbc:
           batch_size: 100
   mail:
-    host: ${MAIL_HOST}  # 시크릿에서 메일 호스트 설정
-    port: ${MAIL_PORT}  # 시크릿에서 메일 포트 설정
-    username: ${MAIL_USERNAME}  # 시크릿에서 메일 사용자명 설정
-    password: ${MAIL_PASSWORD}  # 시크릿에서 메일 비밀번호 설정
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     properties:
       mail:
         smtp:
@@ -90,7 +90,6 @@ spring:
     consumer:
       group-id: websocket-group
       auto-offset-reset: earliest
-
   opensearch:
     host: ${OPENSEARCH_HOST}
     username: ${OPENSEARCH_USERNAME}

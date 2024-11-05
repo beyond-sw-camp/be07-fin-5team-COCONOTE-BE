@@ -26,6 +26,7 @@ public class RedisConfig {
 //    @Value("${spring.data.redis.port}")
     @Value("${REDIS_PORT}")
 //    @Value("${spring.data.redis.port}")
+
     private int redisPort;
 
     @Bean
