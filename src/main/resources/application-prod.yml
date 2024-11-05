@@ -116,3 +116,9 @@ aws:
 
 jwt:
   secret: ${JWT_SECRET}  # 시크릿에서 JWT 시크릿 키 설정
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
