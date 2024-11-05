@@ -418,6 +418,7 @@ public class BlockService {
         }
     }
 
+    @Transactional
     public void editBlockInSocket(CanvasSocketReqDto canvasSocketReqDto) {
 //        생성, 수정, 삭제인지 type 구분해서 넣어주는 용도
         Member member = memberRepository.findById(canvasSocketReqDto.getSenderId()).orElseThrow(() -> new EntityNotFoundException("해당멤버가 없습니다."));
