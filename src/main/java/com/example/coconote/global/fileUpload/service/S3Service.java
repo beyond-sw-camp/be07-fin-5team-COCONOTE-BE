@@ -77,7 +77,7 @@ public class S3Service {
     @Value("${aws.s3.bucket}")
     private String bucketName;
 
-    private static final long MAX_FILE_SIZE = 1 * 1024 * 1024; // 1MB
+    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
     // 다중 파일에 대한 Presigned URL 생성
     public Map<String, String> generatePresignedUrls(List<FileUploadRequest> files, String email) {
