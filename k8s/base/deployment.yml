@@ -148,12 +148,12 @@ spec:
                 secretKeyRef:
                   name: coconote-backend-secrets
                   key: kafka-bootstrap-server
-          readinessProbe:
-            httpGet:
-              path: /actuator/health
-              port: 8080
-            initialDelaySeconds: 10
-            periodSeconds: 5
+#          readinessProbe:
+#            httpGet:
+#              path: /actuator/health
+#              port: 8080
+#            initialDelaySeconds: 10
+#            periodSeconds: 5
 #          livenessProbe:
 #            httpGet:
 #              path: /actuator/health
