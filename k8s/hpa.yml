@@ -15,7 +15,7 @@ spec:
     kind: Deployment
     name: coconote-backend  # Deployment의 이름과 일치하도록 설정
   minReplicas: 2
-  maxReplicas: 4
+  maxReplicas: 3
   metrics:
     - type: Resource
       resource:
