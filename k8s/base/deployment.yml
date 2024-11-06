@@ -26,11 +26,11 @@ spec:
             - containerPort: 8080
           resources:
             requests:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: "768Mi"  # 메모리 요청을 768Mi로 증가
+              cpu: "600m"      # CPU 요청을 600m로 증가
             limits:
-              memory: "1Gi"
-              cpu: "750m"
+              memory: "1.5Gi"  # 메모리 제한을 1.5Gi로 증가
+              cpu: "1.0"       # CPU 제한을 1.0으로 증가
           env:
             - name: POD_NAME
               valueFrom:
