@@ -2,7 +2,7 @@
   지식 관리 시스템
   <br />
    <a href="https://www.meetup.com/Angular-Medellin/">
-    <img width=100% src="./readme/logo_coconote.png">
+    <img style="width:80%; max-width:250px;" src="./readme/logo_coconote.png">
   </a> 
   <br />
   
@@ -11,7 +11,7 @@
 
 
 <h2> COCONOTE 바로가기 </h2>
-   <a href="https://www.coconote.site">https://www.coconote.site</a>
+   <a href="https://coconote.site">https://coconote.site</a>
 
 
 <h2> ️💚️ TEAM 💚 </h2>
@@ -23,10 +23,14 @@
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 <br /><br />
 
+## 🗒️ 요약 PDF 자료
+<a href="readme/files/COCONOTE-지식에_혁신을_더하다_소개자료.pdf">pdf 위치로 이동하기</a>
+
 ## ❤️ 목차
 
 1. [프로젝트 소개](#소개)
 2. [기획](#기획)
+   - [협업 도구](#)
 3. [기술 스택](#기술-스택)
 4. [개발](#개발)
    - [백엔드 API 요청 및 응답 (Swagger)](#백엔드-api-요청-및-응답-swagger)
@@ -67,6 +71,20 @@ COCONOTE는 노션의 문서 관리와 슬랙의 실시간 커뮤니케이션을
 ---
 
 <h2 id="기획"> 💛 기획 </h2>
+
+<h3> 협업 미리보기 </h3>
+JIRA와 notion을 통해 협업을 진행했습니다.
+<details>
+  <summary>JIRA</summary>
+<img src="readme/coconote_jira.png">
+
+</details>
+
+<details>
+  <summary>notion</summary>
+<img src="readme/coconote_notion.jpg">
+</details>
+
 
 <h3> WBS </h3>
 
