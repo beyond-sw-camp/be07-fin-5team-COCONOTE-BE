@@ -4,7 +4,7 @@ kind: Deployment
 metadata:
   name: coconote-backend
 spec:
-  replicas: 3  # Prod 환경에서는 더 높은 가용성을 위해 3개로 설정
+  replicas: 2  # Prod 환경에서는 더 높은 가용성을 위해 3개로 설정
   template:
     spec:
       containers:
